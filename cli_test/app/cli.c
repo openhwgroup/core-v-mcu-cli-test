@@ -72,12 +72,12 @@ static void uart1_tx(const struct cli_cmd_entry *pEntry)
     // Add functionality here
     while (CLI_peek_next_arg() != NULL) {
       if (pzArg != NULL) {
-        vUartTxChar(1, ' ');
+    	  udma_uart_writeraw(1, 2, " ");
       }
       CLI_string_ptr_required("string", &pzArg);
-      vUartTxBuf(1, pzArg, strlen(pzArg));
+      udma_uart_writeraw(1, strlen(pzArg), pzArg);
     }
-    vUartTxBuf(1, "\r\n", 2);
+    udma_uart_writeraw(1, 2, "\r\n");
     dbg_str("<<DONE>>");
     return;
 }

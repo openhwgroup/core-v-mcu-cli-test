@@ -52,6 +52,7 @@
 #include "hal/include/hal_fll.h"
 #include "hal/include/hal_irq.h"
 #include "hal/include/hal_gpio.h"
+#include "drivers/include/udma_uart_driver.h"
 
 /******************************************************************************
  * This project provides two demo applications.  A simple blinky style project,
@@ -118,7 +119,7 @@ int main(void)
 		NULL, /* The parameter passed to the task - not used in this case. */
 		tskIDLE_PRIORITY+3, /* The priority assigned to the task. */
 		NULL); /* The task handle is not required, so NULL is passed. */
-	xTaskCreate(prvWriteUart1Task,"uart1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+3, NULL);
+	//xTaskCreate(prvWriteUart1Task,"uart1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+3, NULL);
 	//xTaskCreate (prvI2CTask, "I2C", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, NULL);
 	//xTaskCreate (prvCAMTask, "CAM", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
 
@@ -141,6 +142,7 @@ static void prvSetupHardware( void )
 {
 	/* Init board hardware. */
 	system_init();
+	udma_uart_open(1, 115200);
 
 	/* configure led0 (spim_csn1) as gpio */
 	gpio_pin_configure(0x5, GPIO_OUTPUT_LOW);
