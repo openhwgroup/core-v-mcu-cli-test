@@ -29,8 +29,8 @@ void prvI2CTask (void *pvParameters)
 	xI2CQueue = xQueueCreate(I2CQueueLength, sizeof(i2c_struct_t));
 	configASSERT(xI2CQueue);
     /* Set handlers. */
-    pi_fc_event_handler_set(SOC_EVENT_UDMA_I2C_RX(0), ISR_i2c_handler);
-    pi_fc_event_handler_set(SOC_EVENT_UDMA_I2C_TX(0), ISR_i2c_handler);
+    pi_fc_event_handler_set(SOC_EVENT_UDMA_I2C_RX(0), ISR_i2c_handler, NULL);
+    pi_fc_event_handler_set(SOC_EVENT_UDMA_I2C_TX(0), ISR_i2c_handler, NULL);
     /* Enable SOC events propagation to FC. */
     hal_soc_eu_set_fc_mask(SOC_EVENT_UDMA_I2C_RX(0));
     hal_soc_eu_set_fc_mask(SOC_EVENT_UDMA_I2C_TX(0));

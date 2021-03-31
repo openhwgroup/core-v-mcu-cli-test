@@ -26,7 +26,7 @@ void prvCAMTask (void *pvParameters) {
 	i2c_16write8(0x48,0x103,00);
 	i2c_16read8(0x48,0x0001);
 	*udma_cg |= 0xff;
-    pi_fc_event_handler_set(SOC_EVENT_UDMA_CPI_RX(0), ISR_cam_handler);
+    pi_fc_event_handler_set(SOC_EVENT_UDMA_CPI_RX(0), ISR_cam_handler, NULL);
 	hal_soc_eu_set_fc_mask(SOC_EVENT_UDMA_CPI_RX(0));
 	xTasktoNotify = xTaskGetCurrentTaskHandle();
 	himaxBoot(0x48);
