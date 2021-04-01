@@ -112,13 +112,13 @@ int main(void)
 
 	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
 	of this file. */
-	xTaskCreate(
-		prvWriteUart0Task, /* The function that implements the task. */
-		"uart0", /* The text name assigned to the task - for debug only as it is not used by the kernel. */
-		configMINIMAL_STACK_SIZE, /* The size of the stack to allocate to the task. */
-		NULL, /* The parameter passed to the task - not used in this case. */
-		tskIDLE_PRIORITY+3, /* The priority assigned to the task. */
-		NULL); /* The task handle is not required, so NULL is passed. */
+//	xTaskCreate(
+//		prvWriteUart0Task, /* The function that implements the task. */
+//		"uart0", /* The text name assigned to the task - for debug only as it is not used by the kernel. */
+//		configMINIMAL_STACK_SIZE, /* The size of the stack to allocate to the task. */
+//		NULL, /* The parameter passed to the task - not used in this case. */
+//		tskIDLE_PRIORITY+3, /* The priority assigned to the task. */
+//		NULL); /* The task handle is not required, so NULL is passed. */
 	//xTaskCreate(prvWriteUart1Task,"uart1", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+3, NULL);
 	//xTaskCreate (prvI2CTask, "I2C", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY+1, NULL);
 	//xTaskCreate (prvCAMTask, "CAM", configMINIMAL_STACK_SIZE, NULL, tskIDLE_PRIORITY, NULL);
@@ -142,7 +142,9 @@ static void prvSetupHardware( void )
 {
 	/* Init board hardware. */
 	system_init();
-	udma_uart_open(1, 115200);
+	for (int i = 0; i != N_UART; i++) {
+		udma_uart_open(i, 115200);
+	}
 
 	/* configure led0 (spim_csn1) as gpio */
 	gpio_pin_configure(0x5, GPIO_OUTPUT_LOW);
