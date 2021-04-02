@@ -41,6 +41,8 @@ static void uart1_tx(const struct cli_cmd_entry *pEntry);
 // MEM functions
 static void mem_print_start(const struct cli_cmd_entry *pEntry);
 static void mem_check(const struct cli_cmd_entry *pEntry);
+static void mem_peek(const struct cli_cmd_entry *pEntry);
+static void mem_poke(const struct cli_cmd_entry *pEntry);
 
 // Main menu
 const struct cli_cmd_entry my_main_menu[] = {
@@ -59,8 +61,10 @@ const struct cli_cmd_entry uart1_tests[] =
 // mem menu
 const struct cli_cmd_entry mem_tests[] =
 {
-  CLI_CMD_SIMPLE( "start",   mem_print_start,   "print start of unused memory" ),
-  CLI_CMD_SIMPLE( "check",   mem_check,         "print start of unused memory" ),
+  CLI_CMD_SIMPLE( "start", 	mem_print_start,   	"print start of unused memory" ),
+  CLI_CMD_SIMPLE( "check", 	mem_check,         	"print start of unused memory" ),
+  CLI_CMD_SIMPLE( "peek", 	mem_peek,         	"0xaddr -- print memory location " ),
+  CLI_CMD_SIMPLE( "poke",   mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
   CLI_CMD_TERMINATE()
 };
 
@@ -118,6 +122,32 @@ static void mem_check(const struct cli_cmd_entry *pEntry)
     } else {
       dbg_str("<<FAILED>>");
     }
+}
+
+static void mem_peek(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	xValue;
+    uint32_t*	pAddr;
+
+    CLI_uint32_required( "addr", &pAddr );
+    xValue = *pAddr;
+    dbg_str_hex32("value", xValue);
+    dbg_str("<<DONE>>");
+}
+
+static void mem_poke(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	xValue;
+    uint32_t*	pAddr;
+
+    CLI_uint32_required( "addr", &pAddr );
+    CLI_uint32_required( "value", &xValue);
+    *pAddr = xValue;
+    dbg_str("<<DONE>>");
 }
 
 
