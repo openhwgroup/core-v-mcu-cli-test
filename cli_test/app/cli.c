@@ -28,11 +28,12 @@
 #include <stdbool.h>
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
-//#include "qlsh_commands.h"
+#include "hal/include/hal_pinmux.h"
 
 // Sub menus
 const struct cli_cmd_entry uart1_tests[];
 const struct cli_cmd_entry mem_tests[];
+const struct cli_cmd_entry io_tests[];
 
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry);
@@ -43,10 +44,15 @@ static void mem_check(const struct cli_cmd_entry *pEntry);
 static void mem_peek(const struct cli_cmd_entry *pEntry);
 static void mem_poke(const struct cli_cmd_entry *pEntry);
 
+// IO functions
+static void io_setmux(const struct cli_cmd_entry *pEntry);
+static void io_getmux(const struct cli_cmd_entry *pEntry);
+
 // Main menu
 const struct cli_cmd_entry my_main_menu[] = {
   CLI_CMD_SUBMENU( "uart1", uart1_tests, "commands for uart1" ),
-  CLI_CMD_SUBMENU( "mem", mem_tests, "commands for memory" ),
+  CLI_CMD_SUBMENU( "mem", 	mem_tests, "commands for memory" ),
+  CLI_CMD_SUBMENU( "io", 	io_tests, 	"commands for io" ),
   CLI_CMD_TERMINATE()
 };
 
@@ -64,6 +70,14 @@ const struct cli_cmd_entry mem_tests[] =
   CLI_CMD_SIMPLE( "check", 	mem_check,         	"print start of unused memory" ),
   CLI_CMD_SIMPLE( "peek", 	mem_peek,         	"0xaddr -- print memory location " ),
   CLI_CMD_SIMPLE( "poke",   mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
+  CLI_CMD_TERMINATE()
+};
+
+// IO menu
+const struct cli_cmd_entry io_tests[] =
+{
+  CLI_CMD_SIMPLE( "setmux", io_setmux,         	"ionum mux_sel 	-- set mux_sel for ionum " ),
+  CLI_CMD_SIMPLE( "getmux", io_getmux,         	"ionum  		-- get mux_sel for ionum" ),
   CLI_CMD_TERMINATE()
 };
 
@@ -148,6 +162,34 @@ static void mem_poke(const struct cli_cmd_entry *pEntry)
     *pAddr = xValue;
     dbg_str("<<DONE>>");
 }
+
+// IO functions
+static void io_setmux(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	mux_sel;
+    uint32_t	ionum;
+
+    CLI_uint32_required( "ionum", &ionum );
+    CLI_uint32_required( "mux_sel", &mux_sel);
+    hal_setpinmux(ionum, mux_sel);
+    dbg_str("<<DONE>>");
+}
+
+static void io_getmux(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	ionum;
+    uint32_t	mux_sel;
+
+    CLI_uint32_required( "ionum", &ionum );
+    mux_sel = hal_getpinmux(ionum);
+    dbg_str_hex32("mux_sel", mux_sel);
+    dbg_str("<<DONE>>");
+}
+
 
 
 
