@@ -27,7 +27,6 @@
 #include <string.h>
 #include <stdbool.h>
 #include "libs/cli/include/cli.h"
-#include "periph-tasks/include/write_uart_task.h"
 #include "libs/utils/include/dbg_uart.h"
 //#include "qlsh_commands.h"
 

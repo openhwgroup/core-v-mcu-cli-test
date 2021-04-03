@@ -95,7 +95,6 @@ static void prvSetupHardware( void );
 
 
 /*-----------------------------------------------------------*/
-#include <periph-tasks/include/write_uart_task.h>
 #include <app/include/i2c_task.h>
 #include <app/include/estruct.h>
 

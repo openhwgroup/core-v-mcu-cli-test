@@ -63,7 +63,6 @@
  */
 
 /* Standard includes. */
-#include <periph-tasks/include/write_uart_task.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
