@@ -34,6 +34,7 @@
 const struct cli_cmd_entry uart1_tests[];
 const struct cli_cmd_entry mem_tests[];
 const struct cli_cmd_entry io_tests[];
+//const struct cli_cmd_entry i2cm0_tests[];
 
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry);
@@ -48,11 +49,16 @@ static void mem_poke(const struct cli_cmd_entry *pEntry);
 static void io_setmux(const struct cli_cmd_entry *pEntry);
 static void io_getmux(const struct cli_cmd_entry *pEntry);
 
+// I2CM0 functions
+//static void i2cm0_readbyte(const struct cli_cmd_entry *pEntry);
+//static void i2c_writebyte(const struct cli_cmd_entry *pEntry);
+
 // Main menu
 const struct cli_cmd_entry my_main_menu[] = {
   CLI_CMD_SUBMENU( "uart1", uart1_tests, "commands for uart1" ),
   CLI_CMD_SUBMENU( "mem", 	mem_tests, "commands for memory" ),
   CLI_CMD_SUBMENU( "io", 	io_tests, 	"commands for io" ),
+ //CLI_CMD_SUBMENU( "i2cm0", i2cm0_tests, 	"commands for i2cm0" ),
   CLI_CMD_TERMINATE()
 };
 
@@ -80,6 +86,14 @@ const struct cli_cmd_entry io_tests[] =
   CLI_CMD_SIMPLE( "getmux", io_getmux,         	"ionum  		-- get mux_sel for ionum" ),
   CLI_CMD_TERMINATE()
 };
+
+// I2CM0 menu
+//const struct cli_cmd_entry i2cm0_tests[] =
+//{
+//  CLI_CMD_SIMPLE( "readbyte", i2cm0_readbyte,	"i2c_addr reg_addr 	-- read register" ),
+//  //CLI_CMD_SIMPLE( "getmux", io_getmux,        "ionum  		-- get mux_sel for ionum" ),
+//  CLI_CMD_TERMINATE()
+//};
 
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry)
@@ -190,6 +204,19 @@ static void io_getmux(const struct cli_cmd_entry *pEntry)
     dbg_str("<<DONE>>");
 }
 
-
+// I2CM0 functions
+//static uint8_t i2c_read_buffer[256];
+//static void i2cm0_readbyte(const struct cli_cmd_entry *pEntry)
+//{
+//    (void)pEntry;
+//    // Add functionality here
+//    uint32_t	i2c_addr;
+//    uint32_t	reg_addr;
+//
+//    CLI_uint32_required( "i2c_addr", &i2c_addr );
+//    CLI_uint32_required( "reg_addr", &reg_addr );
+//
+//    udma_i2c_read(0, i2c_addr, reg_addr, 1, i2c_read_buffer, false);
+//}
 
 
