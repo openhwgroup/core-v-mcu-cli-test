@@ -89,6 +89,10 @@ __attribute__((section(".text"))) void fc_soc_event_handler(void)
 
 	event_id &= 0xFF;
 
+	if (event_id == 8 || event_id == 9) {
+		event_id = event_id & 0xF;
+	}
+
 	/* redirect to handler with jump table */
 	if (fc_event_handlers[event_id] != NULL) {
 		fc_event_handlers[event_id]((void *)event_id);

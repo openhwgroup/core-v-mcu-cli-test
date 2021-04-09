@@ -16,8 +16,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef DRIVERS_INCLUDE_UDMA_I2C_DRIVER_H_
-#define DRIVERS_INCLUDE_UDMA_I2C_DRIVER_H_
+#ifndef DRIVERS_INCLUDE_UDMA_I2CM_DRIVER_H_
+#define DRIVERS_INCLUDE_UDMA_I2CM_DRIVER_H_
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -25,7 +25,7 @@
 #include "hal/include/hal_udma_ctrl_reg_defs.h"
 
 typedef enum {
-		kDataValid
+		kI2cmDataValid
 } udma_i2c_control_type_t;
 
 typedef enum {
@@ -40,15 +40,15 @@ typedef enum {
 	kI2cCmdWaitEvt	= 0x10,
 } i2c_cmd_t;
 
-uint16_t udma_i2c_open (uint8_t i2c_id, uint32_t i2c_clk_freq);
-uint16_t udma_i2c_close (uint8_t i2c_id);
-void udma_i2c_write(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t write_len, uint8_t* write_data, bool more_follows);
-void udma_i2c_read(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
+uint16_t udma_i2cm_open (uint8_t i2c_id, uint32_t i2c_clk_freq);
+uint16_t udma_i2cm_close (uint8_t i2c_id);
+void udma_i2cm_write(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t write_len, uint8_t* write_data, bool more_follows);
+void udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
 
 
 // helper functions
-void _udma_i2c_write_addr_plus_regaddr (uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr);
-void _udma_i2c_read(uint8_t i2c_id, uint8_t i2c_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
-void _udma_i2c_send_stop(uint8_t i2c_id);
+void _udma_i2cm_write_addr_plus_regaddr (uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr);
+void _udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
+void _udma_i2cm_send_stop(uint8_t i2c_id);
 
-#endif /* DRIVERS_INCLUDE_UDMA_I2C_DRIVER_H_ */
+#endif /* DRIVERS_INCLUDE_UDMA_I2CM_DRIVER_H_ */

@@ -46,13 +46,14 @@ uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	/* Set semaphore */
 	SemaphoreHandle_t shSemaphoreHandle;		// FreeRTOS.h has a define for xSemaphoreHandle, so can't use that
 	shSemaphoreHandle = xSemaphoreCreateBinary();
+	configASSERT(shSemaphoreHandle);
 	xSemaphoreGive(shSemaphoreHandle);
 	uart_semaphores_rx[uart_id] = shSemaphoreHandle;
-	configASSERT(uart_semaphores_rx[uart_id]);
+
 	shSemaphoreHandle = xSemaphoreCreateBinary();
+	configASSERT(shSemaphoreHandle);
 	xSemaphoreGive(shSemaphoreHandle);
 	uart_semaphores_tx[uart_id] = shSemaphoreHandle;
-	configASSERT(uart_semaphores_tx[uart_id]);
 
 	/* Set handlers. */
 	pi_fc_event_handler_set(SOC_EVENT_UDMA_UART_RX(uart_id), NULL, uart_semaphores_rx[uart_id]);

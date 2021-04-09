@@ -32,7 +32,7 @@
 #endif
 
 #ifndef __I
-#define __I volatile
+#define __IO volatile
 #endif
 
 #ifndef __O
@@ -70,7 +70,7 @@ typedef struct {
       __IO uint32_t  clr        :  1;
     } rx_cfg_b;
   };
-  __I uint32_t    unused0[1];
+  __IO uint32_t    unused0[1];
 
   // Offset = 0x0010
   union {
@@ -99,7 +99,7 @@ typedef struct {
       __IO uint32_t  clr        :  1;
     } tx_cfg_b;
   };
-  __I uint32_t    unused1[1];
+  __IO uint32_t    unused1[1];
 
   // Offset = 0x0020
   union {

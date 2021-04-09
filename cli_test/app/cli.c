@@ -26,15 +26,22 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+#include "target/core-v-mcu/include/core-v-mcu-config.h"
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
 #include "hal/include/hal_pinmux.h"
+#include "hal/include/hal_apb_soc_ctrl_regs.h"
 
 // Sub menus
+const struct cli_cmd_entry misc_functions[];
 const struct cli_cmd_entry uart1_tests[];
 const struct cli_cmd_entry mem_tests[];
 const struct cli_cmd_entry io_tests[];
-//const struct cli_cmd_entry i2cm0_tests[];
+const struct cli_cmd_entry i2cm0_tests[];
+const struct cli_cmd_entry i2cm1_tests[];
+
+// MISC functions
+static void misc_info(const struct cli_cmd_entry *pEntry);
 
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry);
@@ -50,15 +57,27 @@ static void io_setmux(const struct cli_cmd_entry *pEntry);
 static void io_getmux(const struct cli_cmd_entry *pEntry);
 
 // I2CM0 functions
-//static void i2cm0_readbyte(const struct cli_cmd_entry *pEntry);
-//static void i2c_writebyte(const struct cli_cmd_entry *pEntry);
+static void i2cm_readbyte(const struct cli_cmd_entry *pEntry);
+static void i2cm_writebyte(const struct cli_cmd_entry *pEntry);
+static void i2cm_cmd0(const struct cli_cmd_entry *pEntry);
+static void i2cm_cmd1(const struct cli_cmd_entry *pEntry);
+static void i2cm_cmds(const struct cli_cmd_entry *pEntry);
 
 // Main menu
 const struct cli_cmd_entry my_main_menu[] = {
-  CLI_CMD_SUBMENU( "uart1", uart1_tests, "commands for uart1" ),
-  CLI_CMD_SUBMENU( "mem", 	mem_tests, "commands for memory" ),
-  CLI_CMD_SUBMENU( "io", 	io_tests, 	"commands for io" ),
- //CLI_CMD_SUBMENU( "i2cm0", i2cm0_tests, 	"commands for i2cm0" ),
+  CLI_CMD_SUBMENU( "misc", 	misc_functions, "miscellaneous functions" ),
+  CLI_CMD_SUBMENU( "uart1", uart1_tests, 	"commands for uart1" ),
+  CLI_CMD_SUBMENU( "mem", 	mem_tests, 		"commands for memory" ),
+  CLI_CMD_SUBMENU( "io", 	io_tests, 		"commands for io" ),
+  CLI_CMD_SUBMENU( "i2cm0", i2cm0_tests, 	"commands for i2cm0" ),
+  CLI_CMD_SUBMENU( "i2cm1", i2cm1_tests, 	"commands for i2cm1" ),
+  CLI_CMD_TERMINATE()
+};
+
+// MISC menu
+const struct cli_cmd_entry misc_functions[] =
+{
+  CLI_CMD_SIMPLE( "info", misc_info, "print build info" ),
   CLI_CMD_TERMINATE()
 };
 
@@ -88,12 +107,55 @@ const struct cli_cmd_entry io_tests[] =
 };
 
 // I2CM0 menu
-//const struct cli_cmd_entry i2cm0_tests[] =
-//{
-//  CLI_CMD_SIMPLE( "readbyte", i2cm0_readbyte,	"i2c_addr reg_addr 	-- read register" ),
-//  //CLI_CMD_SIMPLE( "getmux", io_getmux,        "ionum  		-- get mux_sel for ionum" ),
-//  CLI_CMD_TERMINATE()
-//};
+const struct cli_cmd_entry i2cm0_tests[] =
+{
+  CLI_CMD_WITH_ARG( "readbyte", i2cm_readbyte,	0, "i2c_addr reg_addr 	-- read register" ),
+  //CLI_CMD_SIMPLE( "getmux", io_getmux,        "ionum  		-- get mux_sel for ionum" ),
+  CLI_CMD_WITH_ARG( "cmd0",		i2cm_cmd0,		0, "send cmd part0" ),
+  CLI_CMD_WITH_ARG( "cmd1",		i2cm_cmd1,		0, "send cmd part1" ),
+  CLI_CMD_WITH_ARG( "cmds",		i2cm_cmds,		0, "send cmd stop" ),
+  CLI_CMD_TERMINATE()
+};
+
+// I2CM1 menu
+const struct cli_cmd_entry i2cm1_tests[] =
+{
+  CLI_CMD_WITH_ARG( "readbyte", i2cm_readbyte,	1, "i2c_addr reg_addr 	-- read register" ),
+  //CLI_CMD_SIMPLE( "getmux", io_getmux,        "ionum  		-- get mux_sel for ionum" ),
+  CLI_CMD_TERMINATE()
+};
+
+// MISC functions
+static void misc_info(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    char pzTemp[] = "0000-00-00 00:00";
+    SocCtrl_t* 	psocctrl = SOC_CTRL_START_ADDR;
+    uint32_t 	xval;
+
+    xval = psocctrl->build_date;
+    pzTemp[0] += (char)((xval >> 28) & 0xFU);
+    pzTemp[1] += (char)((xval >> 24) & 0xFU);
+    pzTemp[2] += (char)((xval >> 20) & 0xFU);
+    pzTemp[3] += (char)((xval >> 16) & 0xFU);
+
+    pzTemp[5] += (char)((xval >> 12) & 0xFU);
+    pzTemp[6] += (char)((xval >>  8) & 0xFU);
+
+    pzTemp[8] += (char)((xval >>  4) & 0xFU);
+    pzTemp[9] += (char)((xval >>  0) & 0xFU);
+
+    xval = psocctrl->build_time;
+    pzTemp[11] += (char)((xval >> 12) & 0xFU);
+	pzTemp[12] += (char)((xval >>  8) & 0xFU);
+
+	pzTemp[14] += (char)((xval >>  4) & 0xFU);
+	pzTemp[15] += (char)((xval >>  0) & 0xFU);
+
+    dbg_str_str("build_info", pzTemp);
+    dbg_str("<<DONE>>");
+}
 
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry)
@@ -205,18 +267,75 @@ static void io_getmux(const struct cli_cmd_entry *pEntry)
 }
 
 // I2CM0 functions
-//static uint8_t i2c_read_buffer[256];
-//static void i2cm0_readbyte(const struct cli_cmd_entry *pEntry)
-//{
-//    (void)pEntry;
-//    // Add functionality here
-//    uint32_t	i2c_addr;
-//    uint32_t	reg_addr;
-//
-//    CLI_uint32_required( "i2c_addr", &i2c_addr );
-//    CLI_uint32_required( "reg_addr", &reg_addr );
-//
-//    udma_i2c_read(0, i2c_addr, reg_addr, 1, i2c_read_buffer, false);
-//}
+static uint8_t i2c_read_buffer[256];
+static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	i2c_addr;
+    uint32_t	reg_addr;
 
+    CLI_uint32_required( "i2c_addr", &i2c_addr );
+    CLI_uint32_required( "reg_addr", &reg_addr );
+
+    udma_i2cm_read(pEntry->cookie, i2c_addr, reg_addr, 1, i2c_read_buffer, false);
+}
+
+#include "FreeRTOS.h"
+#include "semphr.h"
+#include "target/core-v-mcu/include/core-v-mcu-config.h"
+#include "hal/include/hal_udma_i2c_reg_defs.h"
+#include <drivers/include/udma_i2cm_driver.h>
+
+extern SemaphoreHandle_t  i2cm_semaphores_rx[N_I2CM];
+extern SemaphoreHandle_t  i2cm_semaphores_tx[N_I2CM];
+
+static uint8_t i2c_cmd0_buf[] = {0xE0, 0x00, 25, 0x00, 0x80, 0xDF, 0xC0, 0x01, 0x40, 0x60};
+static uint8_t i2c_cmd1_buf[] = {0x00, 0x00};
+static uint8_t i2c_cmds_buf[] = {0x20, 0xA0, 0xFF};
+static uint8_t i2c_data_buf[10];
+
+static void i2cm_cmd0(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	int i2cm_id = 0;
+	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+
+	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	pi2cm_regs->tx_saddr = i2c_cmd0_buf;
+	pi2cm_regs->tx_size = 15;
+	pi2cm_regs->rx_saddr = i2c_data_buf;
+	pi2cm_regs->rx_size = 2;
+
+	pi2cm_regs->rx_cfg_b.en = 1;
+	pi2cm_regs->tx_cfg_b.en = 1;
+}
+static void i2cm_cmd1(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	int i2cm_id = 0;
+	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+
+	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	pi2cm_regs->tx_saddr = i2c_cmd1_buf;
+	pi2cm_regs->tx_size = sizeof(i2c_cmd1_buf);
+	pi2cm_regs->tx_cfg_b.en = 1;
+}
+static void i2cm_cmds(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	int i2cm_id = 0;
+	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+
+	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	pi2cm_regs->tx_saddr = i2c_cmds_buf;
+	pi2cm_regs->tx_size = sizeof(i2c_cmds_buf);
+	pi2cm_regs->tx_cfg_b.en = 1;
+}
 
