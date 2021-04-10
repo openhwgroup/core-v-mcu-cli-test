@@ -147,11 +147,11 @@ static void misc_info(const struct cli_cmd_entry *pEntry)
     pzTemp[9] += (char)((xval >>  0) & 0xFU);
 
     xval = psocctrl->build_time;
-    pzTemp[11] += (char)((xval >> 12) & 0xFU);
-	pzTemp[12] += (char)((xval >>  8) & 0xFU);
+    pzTemp[11] += (char)((xval >> 20) & 0xFU);
+	pzTemp[12] += (char)((xval >> 16) & 0xFU);
 
-	pzTemp[14] += (char)((xval >>  4) & 0xFU);
-	pzTemp[15] += (char)((xval >>  0) & 0xFU);
+	pzTemp[14] += (char)((xval >> 12) & 0xFU);
+	pzTemp[15] += (char)((xval >>  8) & 0xFU);
 
     dbg_str_str("build_info", pzTemp);
     dbg_str("<<DONE>>");
