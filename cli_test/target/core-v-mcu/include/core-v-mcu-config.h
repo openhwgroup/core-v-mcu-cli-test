@@ -22,7 +22,7 @@
 #define __CORE_V_MCU_CONFIG_H_
 
 #define BUILD_DATE 0x20210410
-#define BUILD_TIME 0x00170512
+#define BUILD_TIME 0x00202048
 
 //  SOC options
 #define N_IO                 48
@@ -114,6 +114,9 @@
 //  FLL configuration information
 #define FLL_START_ADDR 0x1A100000
 
+//  GPIO configuration information
+#define GPIO_START_ADDR 0x1A101000
+
 //  Timer configuration information
 #define SOC_CTRL_START_ADDR 0x1A104000
 
@@ -122,5 +125,8 @@
 
 //  Timer configuration information
 #define TIMER_START_ADDR 0x1A10B000
+
+//  AdvTimer configuration information
+#define ADV_TIMER_START_ADDR 0x1A105000
 
 #endif //__CORE_V_MCU_CONFIG_H_
