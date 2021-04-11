@@ -1,0 +1,685 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SOC_CTRL &#8212; core-v-mcu</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.e7340bb3dbd8dde6db86f25597f54a1b.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="APB_GPIO" href="hal_apb_gpio_reg_defs.html" />
+    <link rel="prev" title="APB_TIMER_UNIT" href="hal_apb_timer_unit_reg_defs.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  <img src="../_static/QL_Logo.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">core-v-mcu</h1>
+  
+</a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="hal_apb_timer_unit_reg_defs.html"
+                        title="previous chapter">APB_TIMER_UNIT</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="hal_apb_gpio_reg_defs.html"
+                        title="next chapter">APB_GPIO</a></p>
+<h3><a href="../core-v-mcu-datasheet.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md-source-files/overview.html">Overview: CORE_V_MCU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_interrupt_cntrl_reg_defs.html">APB_INTERRUPT_CNTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_timer_unit_reg_defs.html">APB_TIMER_UNIT</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">SOC_CTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_gpio_reg_defs.html">APB_GPIO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_ctrl_reg_defs.html">UDMA_CTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_uart_reg_defs.html">UDMA_UART</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_i2c_reg_defs.html">UDMA_I2C</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/md-files/hal_apb_soc_ctrl_reg_defs.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/md-files/hal_apb_soc_ctrl_reg_defs.md.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i>
+            Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#info-offset-0x0000">
+   INFO offset = 0x0000
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#build-date-offset-0x000c">
+   BUILD_DATE offset = 0x000C
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#build-time-offset-0x0010">
+   BUILD_TIME offset = 0x0010
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#jtagreg-offset-0x0074">
+   JTAGREG offset = 0x0074
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#corestatus-offset-0x00a0">
+   CORESTATUS offset = 0x00A0
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#cs-ro-offset-0x00c0">
+   CS_RO offset = 0x00C0
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#bootsel-offset-0x00c4">
+   BOOTSEL offset = 0x00C4
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#clksel-offset-0x00c8">
+   CLKSEL offset = 0x00C8
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#clk-div-clu-offset-0x00d8">
+   CLK_DIV_CLU offset = 0x00D8
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#sel-clk-dc-fifo-efpga-offset-0x00e0">
+   SEL_CLK_DC_FIFO_EFPGA offset = 0x00E0
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#clk-gating-dc-fifo-efpga-offset-0x00e4">
+   CLK_GATING_DC_FIFO_EFPGA offset = 0x00E4
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reset-type1-efpga-offset-0x00e8">
+   RESET_TYPE1_EFPGA offset = 0x00E8
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#enable-in-out-efpga-offset-0x00ec">
+   ENABLE_IN_OUT_EFPGA offset = 0x00EC
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#efpga-control-in-offset-0x00f0">
+   EFPGA_CONTROL_IN offset = 0x00F0
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#efpga-status-out-offset-0x00f4">
+   EFPGA_STATUS_OUT offset = 0x00F4
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#io-ctrl-48-offset-0x0400">
+   IO_CTRL[48] offset = 0x0400
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#notes">
+   Notes:
+  </a>
+ </li>
+</ul>
+
+        </nav>
+        
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="soc-ctrl">
+<h1>SOC_CTRL<a class="headerlink" href="#soc-ctrl" title="Permalink to this headline">¶</a></h1>
+<p>Memory address: SOC_CTRL_START_ADDR (`SOC_CTRL_START_ADDR)</p>
+<p>This APB peripheral primarily controls I/O configuration and I/O function connection.
+It also supports a few registers for miscellaneous functions.</p>
+<p>I/O control supports two functions:</p>
+<ul class="simple">
+<li><p>I/O configuration</p></li>
+<li><p>I/O function selection</p></li>
+</ul>
+<p>I/O configuration is a series of bits that control driver characteristics, such as drive strength and slew rate.
+I/O function selection controls the select field of a mux that connects the I/O to different signals in the device.</p>
+<div class="section" id="info-offset-0x0000">
+<h2>INFO offset = 0x0000<a class="headerlink" href="#info-offset-0x0000" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>N_CORES</td>
+<td>31:16</td>
+<td>RO</td>
+<td></td>
+<td>Number of cores in design</td>
+</tr>
+<tr>
+<td>N_CLUSTERS</td>
+<td>15:0</td>
+<td>RO</td>
+<td></td>
+<td>Number of clusters in design</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="build-date-offset-0x000c">
+<h2>BUILD_DATE offset = 0x000C<a class="headerlink" href="#build-date-offset-0x000c" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>YEAR</td>
+<td>31:16</td>
+<td>RO</td>
+<td></td>
+<td>Year in BCD</td>
+</tr>
+<tr>
+<td>MONTH</td>
+<td>15:8</td>
+<td>RO</td>
+<td></td>
+<td>Month in BCD</td>
+</tr>
+<tr>
+<td>DAY</td>
+<td>7:0</td>
+<td>RO</td>
+<td></td>
+<td>Day in BCD</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="build-time-offset-0x0010">
+<h2>BUILD_TIME offset = 0x0010<a class="headerlink" href="#build-time-offset-0x0010" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>HOUR</td>
+<td>23:16</td>
+<td>RO</td>
+<td></td>
+<td>Hour in BCD</td>
+</tr>
+<tr>
+<td>MINUTES</td>
+<td>15:8</td>
+<td>RO</td>
+<td></td>
+<td>Minutes in BCD</td>
+</tr>
+<tr>
+<td>SECONDS</td>
+<td>7:0</td>
+<td>RO</td>
+<td></td>
+<td>Seconds in BCD</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="jtagreg-offset-0x0074">
+<h2>JTAGREG offset = 0x0074<a class="headerlink" href="#jtagreg-offset-0x0074" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="corestatus-offset-0x00a0">
+<h2>CORESTATUS offset = 0x00A0<a class="headerlink" href="#corestatus-offset-0x00a0" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EOC</td>
+<td>31:31</td>
+<td>RW</td>
+<td></td>
+<td>EOC condition</td>
+</tr>
+<tr>
+<td>STATUS</td>
+<td>30:0</td>
+<td>RW</td>
+<td></td>
+<td>Status bits</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="cs-ro-offset-0x00c0">
+<h2>CS_RO offset = 0x00C0<a class="headerlink" href="#cs-ro-offset-0x00c0" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EOC</td>
+<td>31:31</td>
+<td>RO</td>
+<td></td>
+<td>EOC condition</td>
+</tr>
+<tr>
+<td>STATUS</td>
+<td>30:0</td>
+<td>RO</td>
+<td></td>
+<td>Status bits</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="bootsel-offset-0x00c4">
+<h2>BOOTSEL offset = 0x00C4<a class="headerlink" href="#bootsel-offset-0x00c4" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="clksel-offset-0x00c8">
+<h2>CLKSEL offset = 0x00C8<a class="headerlink" href="#clksel-offset-0x00c8" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="clk-div-clu-offset-0x00d8">
+<h2>CLK_DIV_CLU offset = 0x00D8<a class="headerlink" href="#clk-div-clu-offset-0x00d8" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="sel-clk-dc-fifo-efpga-offset-0x00e0">
+<h2>SEL_CLK_DC_FIFO_EFPGA offset = 0x00E0<a class="headerlink" href="#sel-clk-dc-fifo-efpga-offset-0x00e0" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="clk-gating-dc-fifo-efpga-offset-0x00e4">
+<h2>CLK_GATING_DC_FIFO_EFPGA offset = 0x00E4<a class="headerlink" href="#clk-gating-dc-fifo-efpga-offset-0x00e4" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="reset-type1-efpga-offset-0x00e8">
+<h2>RESET_TYPE1_EFPGA offset = 0x00E8<a class="headerlink" href="#reset-type1-efpga-offset-0x00e8" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RESET_LB</td>
+<td>3:3</td>
+<td>R/W</td>
+<td>0x0</td>
+<td>Reset eFPGA Left Bottom Quadrant</td>
+</tr>
+<tr>
+<td>RESET_RB</td>
+<td>2:2</td>
+<td>R/W</td>
+<td>0x0</td>
+<td>Reset eFPGA Right Bottom Quadrant</td>
+</tr>
+<tr>
+<td>RESET_RT</td>
+<td>1:1</td>
+<td>R/W</td>
+<td>0x0</td>
+<td>Reset eFPGA Right Top Quadrant</td>
+</tr>
+<tr>
+<td>RESET_LT</td>
+<td>0:0</td>
+<td>R/W</td>
+<td>0x0</td>
+<td>Reset eFPGA Left Top Quadrant</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="enable-in-out-efpga-offset-0x00ec">
+<h2>ENABLE_IN_OUT_EFPGA offset = 0x00EC<a class="headerlink" href="#enable-in-out-efpga-offset-0x00ec" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ENABLE_EVENTS</td>
+<td>5:5</td>
+<td>R/W</td>
+<td>0x00</td>
+<td>Enable events from efpga to SOC</td>
+</tr>
+<tr>
+<td>ENABLE_SOC_ACCESS</td>
+<td>4:4</td>
+<td>R/W</td>
+<td>0x0</td>
+<td>Enable SOC memory mapped access to EFPGA</td>
+</tr>
+<tr>
+<td>ENABLE_TCDM_P3</td>
+<td>3:3</td>
+<td>R/W</td>
+<td>0x0</td>
+<td>Enable EFPGA access via TCDM port 3</td>
+</tr>
+<tr>
+<td>ENABLE_TCDM_P2</td>
+<td>2:2</td>
+<td>R/W</td>
+<td>1x0</td>
+<td>Enable EFPGA access via TCDM port 2</td>
+</tr>
+<tr>
+<td>ENABLE_TCDM_P1</td>
+<td>1:1</td>
+<td>R/W</td>
+<td>2x0</td>
+<td>Enable EFPGA access via TCDM port 1</td>
+</tr>
+<tr>
+<td>ENABLE_TCDM_P0</td>
+<td>0:0</td>
+<td>R/W</td>
+<td>3x0</td>
+<td>Enable EFPGA access via TCDM port 0</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="efpga-control-in-offset-0x00f0">
+<h2>EFPGA_CONTROL_IN offset = 0x00F0<a class="headerlink" href="#efpga-control-in-offset-0x00f0" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="efpga-status-out-offset-0x00f4">
+<h2>EFPGA_STATUS_OUT offset = 0x00F4<a class="headerlink" href="#efpga-status-out-offset-0x00f4" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EFPGA_VERSION</td>
+<td>7:0</td>
+<td>R0</td>
+<td></td>
+<td>EFPGA version info</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="io-ctrl-48-offset-0x0400">
+<h2>IO_CTRL[48] offset = 0x0400<a class="headerlink" href="#io-ctrl-48-offset-0x0400" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CFG</td>
+<td>13:8</td>
+<td>RW</td>
+<td>0x00</td>
+<td>Pad configuration (TBD)</td>
+</tr>
+<tr>
+<td>MUX</td>
+<td>1:0</td>
+<td>RW</td>
+<td>0x00</td>
+<td>Mux select</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Access type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RW</td>
+<td>Read &amp; Write</td>
+</tr>
+<tr>
+<td>RO</td>
+<td>Read Only</td>
+</tr>
+<tr>
+<td>RC</td>
+<td>Read &amp; Clear after read</td>
+</tr>
+<tr>
+<td>WO</td>
+<td>Write Only</td>
+</tr>
+<tr>
+<td>WS</td>
+<td>Write Sets (value ignored; always writes a 1)</td>
+</tr>
+<tr>
+<td>RW1S</td>
+<td>Read &amp; on Write bits with 1 get set, bits with 0 left unchanged</td>
+</tr>
+<tr>
+<td>RW1C</td>
+<td>Read &amp; on Write bits with 1 get cleared, bits with 0 left unchanged</td>
+</tr>
+<tr>
+<td>RW0C</td>
+<td>Read &amp; on Write bits with 0 get cleared, bits with 1 left unchanged</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="hal_apb_timer_unit_reg_defs.html" title="previous page">APB_TIMER_UNIT</a>
+    <a class='right-next' id="next-link" href="hal_apb_gpio_reg_defs.html" title="next page">APB_GPIO</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+            &copy; Copyright (c) 2021, QuickLogic.<br/>
+          Last updated on 10 April 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>

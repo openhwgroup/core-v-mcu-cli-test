@@ -1,0 +1,401 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>UDMA_CTRL &#8212; core-v-mcu</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.e7340bb3dbd8dde6db86f25597f54a1b.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="UDMA_UART" href="hal_udma_uart_reg_defs.html" />
+    <link rel="prev" title="APB_GPIO" href="hal_apb_gpio_reg_defs.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  <img src="../_static/QL_Logo.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">core-v-mcu</h1>
+  
+</a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="hal_apb_gpio_reg_defs.html"
+                        title="previous chapter">APB_GPIO</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="hal_udma_uart_reg_defs.html"
+                        title="next chapter">UDMA_UART</a></p>
+<h3><a href="../core-v-mcu-datasheet.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md-source-files/overview.html">Overview: CORE_V_MCU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_interrupt_cntrl_reg_defs.html">APB_INTERRUPT_CNTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_timer_unit_reg_defs.html">APB_TIMER_UNIT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_soc_ctrl_reg_defs.html">SOC_CTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_gpio_reg_defs.html">APB_GPIO</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">UDMA_CTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_uart_reg_defs.html">UDMA_UART</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_i2c_reg_defs.html">UDMA_I2C</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/md-files/hal_udma_ctrl_reg_defs.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/md-files/hal_udma_ctrl_reg_defs.md.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i>
+            Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reg-cg-offset-0x000">
+   REG_CG offset = 0x000
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reg-cfg-evt-offset-0x004">
+   REG_CFG_EVT offset = 0x004
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#reg-rst-offset-0x008">
+   REG_RST offset = 0x008
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#notes">
+   Notes:
+  </a>
+ </li>
+</ul>
+
+        </nav>
+        
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="udma-ctrl">
+<h1>UDMA_CTRL<a class="headerlink" href="#udma-ctrl" title="Permalink to this headline">¶</a></h1>
+<p>The UDMA addresses are organized as an array of channels.
+The first channel, channel 0, is a control channel that is used to:</p>
+<ul class="simple">
+<li><p>enable or disable the peripheral clocks</p></li>
+<li><p>reset the periperal controller</p></li>
+<li><p>set compare value for the event macthing mechanism</p></li>
+</ul>
+<p>The base address for the UDMA channels is defined as UDMA_START_ADDR in core-v-mcu-config.h
+The size of each channel is UDMA_CH_SIZE, therefore the address of channels N is UDMA_START_ADDR+N*UDMA_CH_SIZE.
+core-v-mcu-config.h has explicit defines for each peripheral.
+For instance,  if there are 2 UARTS then there are three defines:</p>
+<ul class="simple">
+<li><p>UDMA_CH_ADDR_UART – address of first UART</p></li>
+<li><p>UDMA_CH_ADDR_UART0 – address of UART0</p></li>
+<li><p>UDMA_CH_ADDR_UART1 – address of UART1</p></li>
+</ul>
+<p>The reason for having the UDMA_CH_UART define
+is so that you can programmatically access UART I by using
+UDMA_CH_ADDR_UART + I * UDMA_CH_SIZE</p>
+<p>The register definitions for the control channel are specified in this section.
+The register definitions for each peripheral are specified in sections named UDMA_XXXXX.</p>
+<div class="section" id="reg-cg-offset-0x000">
+<h2>REG_CG offset = 0x000<a class="headerlink" href="#reg-cg-offset-0x000" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PERIPH_CLK_ENABLE</td>
+<td>31:0</td>
+<td>RW</td>
+<td>0x0</td>
+<td>Enable for peripheral clocks;</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>see core-v-mcu_config 'Peripheral clock enable masks' for bit positions</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="reg-cfg-evt-offset-0x004">
+<h2>REG_CFG_EVT offset = 0x004<a class="headerlink" href="#reg-cfg-evt-offset-0x004" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CMP_EVENT3</td>
+<td>31:24</td>
+<td></td>
+<td>0x00</td>
+<td>Compare value for event detection</td>
+</tr>
+<tr>
+<td>CMP_EVENT2</td>
+<td>23:16</td>
+<td></td>
+<td>0x01</td>
+<td>Compare value for event detection</td>
+</tr>
+<tr>
+<td>CMP_EVENT1</td>
+<td>15:8</td>
+<td></td>
+<td>0x02</td>
+<td>Compare value for event detection</td>
+</tr>
+<tr>
+<td>CMP_EVENT0</td>
+<td>7:0</td>
+<td></td>
+<td>0x03</td>
+<td>Compare value for event detection</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="reg-rst-offset-0x008">
+<h2>REG_RST offset = 0x008<a class="headerlink" href="#reg-rst-offset-0x008" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PERIPH_RESET</td>
+<td>31:0</td>
+<td>RW</td>
+<td>0x0</td>
+<td>Reset for peripherals;</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>use core-v-mcu_config 'Peripheral clock enable masks' for bit positions</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Access type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RW</td>
+<td>Read &amp; Write</td>
+</tr>
+<tr>
+<td>RO</td>
+<td>Read Only</td>
+</tr>
+<tr>
+<td>RC</td>
+<td>Read &amp; Clear after read</td>
+</tr>
+<tr>
+<td>WO</td>
+<td>Write Only</td>
+</tr>
+<tr>
+<td>WS</td>
+<td>Write Sets (value ignored; always writes a 1)</td>
+</tr>
+<tr>
+<td>RW1S</td>
+<td>Read &amp; on Write bits with 1 get set, bits with 0 left unchanged</td>
+</tr>
+<tr>
+<td>RW1C</td>
+<td>Read &amp; on Write bits with 1 get cleared, bits with 0 left unchanged</td>
+</tr>
+<tr>
+<td>RW0C</td>
+<td>Read &amp; on Write bits with 0 get cleared, bits with 1 left unchanged</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="hal_apb_gpio_reg_defs.html" title="previous page">APB_GPIO</a>
+    <a class='right-next' id="next-link" href="hal_udma_uart_reg_defs.html" title="next page">UDMA_UART</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+            &copy; Copyright (c) 2021, QuickLogic.<br/>
+          Last updated on 10 April 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>
