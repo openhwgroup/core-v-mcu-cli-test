@@ -1,0 +1,252 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overview: CORE_V_MCU &#8212; core-v-mcu</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.e7340bb3dbd8dde6db86f25597f54a1b.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="APB_INTERRUPT_CNTRL" href="../md-files/hal_apb_interrupt_cntrl_reg_defs.html" />
+    <link rel="prev" title="core-v-mcu datasheet" href="../core-v-mcu-datasheet.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  <img src="../_static/QL_Logo.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">core-v-mcu</h1>
+  
+</a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../core-v-mcu-datasheet.html"
+                        title="previous chapter">core-v-mcu datasheet</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../md-files/hal_apb_interrupt_cntrl_reg_defs.html"
+                        title="next chapter">APB_INTERRUPT_CNTRL</a></p>
+<h3><a href="../core-v-mcu-datasheet.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Overview: CORE_V_MCU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md-files/hal_apb_interrupt_cntrl_reg_defs.html">APB_INTERRUPT_CNTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md-files/hal_apb_timer_unit_reg_defs.html">APB_TIMER_UNIT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md-files/hal_apb_soc_ctrl_reg_defs.html">SOC_CTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md-files/hal_apb_gpio_reg_defs.html">APB_GPIO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md-files/hal_udma_ctrl_reg_defs.html">UDMA_CTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md-files/hal_udma_uart_reg_defs.html">UDMA_UART</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../md-files/hal_udma_i2c_reg_defs.html">UDMA_I2C</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/md-source-files/overview.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/md-source-files/overview.md.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i>
+            Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#purpose">
+   Purpose
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#development-kits">
+   Development Kits
+  </a>
+ </li>
+</ul>
+
+        </nav>
+        
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="overview-core-v-mcu">
+<h1>Overview: CORE_V_MCU<a class="headerlink" href="#overview-core-v-mcu" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="purpose">
+<h2>Purpose<a class="headerlink" href="#purpose" title="Permalink to this headline">¶</a></h2>
+<p>The purpose of the core-v-mcu is to showcase the cv32e40p fully verified RISC-V core available from the Open Hardware Group.
+The cv32e40p core is connected to a representative set of peripherals:</p>
+<ul class="simple">
+<li><p>2xUART</p></li>
+<li><p>2xI2C master</p></li>
+<li><p>1xI2C slave</p></li>
+<li><p>2xQSPI master</p></li>
+<li><p>1xCAMERA</p></li>
+<li><p>1xSDIO</p></li>
+<li><p>4xPWM</p></li>
+</ul>
+<p>as well as an eFPGA accelerator with 4 math units.</p>
+<p>The system supports 512KB of SRAM and 2 PLLs.</p>
+<p><img alt="Block Diagram" src="../_images/core-v-mcu-block-diagram.png" /></p>
+</div>
+<div class="section" id="development-kits">
+<h2>Development Kits<a class="headerlink" href="#development-kits" title="Permalink to this headline">¶</a></h2>
+<p>The core-v-mcu is delivered as either:</p>
+<ul class="simple">
+<li><p>a Xilinx bitstream that runs on the Digilent Nexsy A7 board</p></li>
+<li><p>a Xilinx bitstream that runs on the Digilent Genesys2 board</p></li>
+<li><p>an SOC implemented with GLOBAFOUNDRIES 22nm fdx SOI technology that runs on an Open Hardware Group HDK1 board</p></li>
+</ul>
+<p>All boards have multiple PMOD connectors that suport various PMOD modules which are used to connect debug and various peripherals.</p>
+</div>
+</div>
+
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="../core-v-mcu-datasheet.html" title="previous page">core-v-mcu datasheet</a>
+    <a class='right-next' id="next-link" href="../md-files/hal_apb_interrupt_cntrl_reg_defs.html" title="next page">APB_INTERRUPT_CNTRL</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+            &copy; Copyright (c) 2021, QuickLogic.<br/>
+          Last updated on 10 April 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>

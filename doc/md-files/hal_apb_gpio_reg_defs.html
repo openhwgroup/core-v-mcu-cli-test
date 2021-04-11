@@ -1,0 +1,774 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APB_GPIO &#8212; core-v-mcu</title>
+    
+  <link rel="stylesheet" href="../_static/css/index.f658d18f9b420779cfdf24aa0a7e2d77.css">
+
+    
+  <link rel="stylesheet"
+    href="../_static/vendor/fontawesome/5.13.0/css/all.min.css">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-solid-900.woff2">
+  <link rel="preload" as="font" type="font/woff2" crossorigin
+    href="../_static/vendor/fontawesome/5.13.0/webfonts/fa-brands-400.woff2">
+
+    
+      
+  <link rel="stylesheet"
+    href="../_static/vendor/open-sans_all/1.44.1/index.css">
+  <link rel="stylesheet"
+    href="../_static/vendor/lato_latin-ext/1.44.1/index.css">
+
+    
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/sphinx-book-theme.e7340bb3dbd8dde6db86f25597f54a1b.css" type="text/css" />
+    
+  <link rel="preload" as="script" href="../_static/js/index.d3f166471bb80abb5163.js">
+
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx-book-theme.7d483ff0a819d6edff12ce0b1ead3928.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="UDMA_CTRL" href="hal_udma_ctrl_reg_defs.html" />
+    <link rel="prev" title="SOC_CTRL" href="hal_apb_soc_ctrl_reg_defs.html" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="docsearch:language" content="en" />
+
+
+
+  </head>
+  <body data-spy="scroll" data-target="#bd-toc-nav" data-offset="80">
+    
+
+    <div class="container-xl">
+      <div class="row">
+          
+<div class="col-12 col-md-3 bd-sidebar site-navigation show" id="site-navigation">
+    
+        <div class="navbar-brand-box">
+<a class="navbar-brand text-wrap" href="../index.html">
+  
+  <img src="../_static/QL_Logo.png" class="logo" alt="logo">
+  
+  
+  <h1 class="site-logo" id="site-title">core-v-mcu</h1>
+  
+</a>
+</div>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="hal_apb_soc_ctrl_reg_defs.html"
+                        title="previous chapter">SOC_CTRL</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="hal_udma_ctrl_reg_defs.html"
+                        title="next chapter">UDMA_CTRL</a></p>
+<h3><a href="../core-v-mcu-datasheet.html">Table of Contents</a></h3>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../md-source-files/overview.html">Overview: CORE_V_MCU</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_interrupt_cntrl_reg_defs.html">APB_INTERRUPT_CNTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_timer_unit_reg_defs.html">APB_TIMER_UNIT</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_apb_soc_ctrl_reg_defs.html">SOC_CTRL</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">APB_GPIO</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_ctrl_reg_defs.html">UDMA_CTRL</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_uart_reg_defs.html">UDMA_UART</a></li>
+<li class="toctree-l1"><a class="reference internal" href="hal_udma_i2c_reg_defs.html">UDMA_I2C</a></li>
+</ul>
+
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/md-files/hal_apb_gpio_reg_defs.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+</div>
+
+
+          
+
+
+          
+<main class="col py-md-3 pl-md-4 bd-content overflow-auto" role="main">
+    
+    <div class="topbar container-xl fixed-top">
+    <div class="topbar-contents row">
+        <div class="col-12 col-md-3 bd-topbar-whitespace site-navigation show"></div>
+        <div class="col pl-md-4 topbar-main">
+            
+            <button id="navbar-toggler" class="navbar-toggler ml-0" type="button" data-toggle="collapse"
+                data-toggle="tooltip" data-placement="bottom" data-target=".site-navigation" aria-controls="navbar-menu"
+                aria-expanded="true" aria-label="Toggle navigation" aria-controls="site-navigation"
+                title="Toggle navigation" data-toggle="tooltip" data-placement="left">
+                <i class="fas fa-bars"></i>
+                <i class="fas fa-arrow-left"></i>
+                <i class="fas fa-arrow-up"></i>
+            </button>
+            
+            
+<div class="dropdown-buttons-trigger">
+    <button id="dropdown-buttons-trigger" class="btn btn-secondary topbarbtn" aria-label="Download this page"><i
+            class="fas fa-download"></i></button>
+
+    <div class="dropdown-buttons">
+        <!-- ipynb file if we had a myst markdown file -->
+        
+        <!-- Download raw file -->
+        <a class="dropdown-buttons" href="../_sources/md-files/hal_apb_gpio_reg_defs.md.txt"><button type="button"
+                class="btn btn-secondary topbarbtn" title="Download source file" data-toggle="tooltip"
+                data-placement="left">.md</button></a>
+        <!-- Download PDF via print -->
+        <button type="button" id="download-print" class="btn btn-secondary topbarbtn" title="Print to PDF"
+            onClick="window.print()" data-toggle="tooltip" data-placement="left">.pdf</button>
+    </div>
+</div>
+
+            <!-- Source interaction buttons -->
+
+
+            <!-- Full screen (wrap in <a> to have style consistency -->
+            <a class="full-screen-button"><button type="button" class="btn btn-secondary topbarbtn" data-toggle="tooltip"
+                    data-placement="bottom" onclick="toggleFullScreen()" aria-label="Fullscreen mode"
+                    title="Fullscreen mode"><i
+                        class="fas fa-expand"></i></button></a>
+
+            <!-- Launch buttons -->
+
+        </div>
+
+        <!-- Table of contents -->
+        <div class="d-none d-md-block col-md-2 bd-toc show">
+            
+        <div class="tocsection onthispage pt-5 pb-3">
+            <i class="fas fa-list"></i>
+            Contents
+        </div>
+        <nav id="bd-toc-nav">
+            <ul class="nav section-nav flex-column">
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setgpio-offset-0x00">
+   SETGPIO offset = 0x00
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#clrgpio-offset-0x04">
+   CLRGPIO offset = 0x04
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#toggpio-offset-0x08">
+   TOGGPIO offset = 0x08
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pin0-offset-0x10">
+   PIN0 offset = 0x10
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pin1-offset-0x14">
+   PIN1 offset = 0x14
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pin2-offset-0x18">
+   PIN2 offset = 0x18
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#pin3-offset-0x1c">
+   PIN3 offset = 0x1C
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#out0-offset-0x20">
+   OUT0 offset = 0x20
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#out1-offset-0x24">
+   OUT1 offset = 0x24
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#out2-offset-0x28">
+   OUT2 offset = 0x28
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#out3-offset-0x2c">
+   OUT3 offset = 0x2C
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setsel-offset-0x30">
+   SETSEL offset = 0x30
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#rdstat-offset-0x34">
+   RDSTAT offset = 0x34
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setdir-offset-0x38">
+   SETDIR offset = 0x38
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#setint-offset-0x3c">
+   SETINT offset = 0x3C
+  </a>
+ </li>
+ <li class="toc-h2 nav-item toc-entry">
+  <a class="reference internal nav-link" href="#notes">
+   Notes:
+  </a>
+ </li>
+</ul>
+
+        </nav>
+        
+        </div>
+    </div>
+</div>
+    <div id="main-content" class="row">
+        <div class="col-12 col-md-9 pl-md-3 pr-md-0">
+        
+              <div>
+                
+  <div class="section" id="apb-gpio">
+<h1>APB_GPIO<a class="headerlink" href="#apb-gpio" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="setgpio-offset-0x00">
+<h2>SETGPIO offset = 0x00<a class="headerlink" href="#setgpio-offset-0x00" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_ADDR</td>
+<td>7:0</td>
+<td>WO</td>
+<td></td>
+<td>Set GPIO[GPIO_ADDR] = 1</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="clrgpio-offset-0x04">
+<h2>CLRGPIO offset = 0x04<a class="headerlink" href="#clrgpio-offset-0x04" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_ADDR</td>
+<td>7:0</td>
+<td>WO</td>
+<td></td>
+<td>Set GPIO[GPIO_ADDR] = 0</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="toggpio-offset-0x08">
+<h2>TOGGPIO offset = 0x08<a class="headerlink" href="#toggpio-offset-0x08" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_ADDR</td>
+<td>7:0</td>
+<td>WO</td>
+<td></td>
+<td>Invert the output of GPIO[GPIO_ADDR]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="pin0-offset-0x10">
+<h2>PIN0 offset = 0x10<a class="headerlink" href="#pin0-offset-0x10" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_VALUE</td>
+<td>31:0</td>
+<td>RO</td>
+<td></td>
+<td>GPIO_VALUE[31:0] = GPIO[31:0]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="pin1-offset-0x14">
+<h2>PIN1 offset = 0x14<a class="headerlink" href="#pin1-offset-0x14" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_VALUE</td>
+<td>31:0</td>
+<td>RO</td>
+<td></td>
+<td>GPIO_VALUE[31:0] = GPIO[63:32]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="pin2-offset-0x18">
+<h2>PIN2 offset = 0x18<a class="headerlink" href="#pin2-offset-0x18" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_VALUE</td>
+<td>31:0</td>
+<td>RO</td>
+<td></td>
+<td>GPIO_VALUE[31:0] = GPIO[95:64]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="pin3-offset-0x1c">
+<h2>PIN3 offset = 0x1C<a class="headerlink" href="#pin3-offset-0x1c" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_VALUE</td>
+<td>31:0</td>
+<td>RO</td>
+<td></td>
+<td>GPIO_VALUE[31:0] = GPIO[127:96]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="out0-offset-0x20">
+<h2>OUT0 offset = 0x20<a class="headerlink" href="#out0-offset-0x20" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VALUE</td>
+<td>31:0</td>
+<td>WO</td>
+<td></td>
+<td>Drive VALUE[31:0] onto GPIO[31:0]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="out1-offset-0x24">
+<h2>OUT1 offset = 0x24<a class="headerlink" href="#out1-offset-0x24" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VALUE</td>
+<td>31:0</td>
+<td>WO</td>
+<td></td>
+<td>Drive VALUE[31:0] onto GPIO[63:32]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="out2-offset-0x28">
+<h2>OUT2 offset = 0x28<a class="headerlink" href="#out2-offset-0x28" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VALUE</td>
+<td>31:0</td>
+<td>WO</td>
+<td></td>
+<td>Drive VALUE[31:0] onto GPIO[95:64]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="out3-offset-0x2c">
+<h2>OUT3 offset = 0x2C<a class="headerlink" href="#out3-offset-0x2c" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>VALUE</td>
+<td>31:0</td>
+<td>WO</td>
+<td></td>
+<td>Drive VALUE[31:0] onto GPIO[127:96]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="setsel-offset-0x30">
+<h2>SETSEL offset = 0x30<a class="headerlink" href="#setsel-offset-0x30" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPIO_ADDR</td>
+<td>7:0</td>
+<td>WO</td>
+<td></td>
+<td>Set GPIO_ADDR for use by RDSTAT</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>Note: SETGPIO, CLRGPIO, TOGGPIO and SETINT set GPIO_ADDR</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="rdstat-offset-0x34">
+<h2>RDSTAT offset = 0x34<a class="headerlink" href="#rdstat-offset-0x34" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DIR</td>
+<td>25:24</td>
+<td>RO</td>
+<td></td>
+<td>Read direction control for GPIO[GPIO_ADDR]</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x0</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x1</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x2</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x3</td>
+</tr>
+<tr>
+<td>INTTYPE</td>
+<td>18:16</td>
+<td>RO</td>
+<td></td>
+<td>Type of interrupt for GPIO[GPIO_ADDR]</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x0</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x1</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x2</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td>0x3</td>
+</tr>
+<tr>
+<td>INPUT</td>
+<td>12:12</td>
+<td>RO</td>
+<td></td>
+<td>Input value reported by GPIO[GPIO_ADDR]</td>
+</tr>
+<tr>
+<td>OUTPUT</td>
+<td>8:8</td>
+<td>RO</td>
+<td></td>
+<td>Output value that is set on GPIO[GPIO_ADDR]</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="setdir-offset-0x38">
+<h2>SETDIR offset = 0x38<a class="headerlink" href="#setdir-offset-0x38" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DIR</td>
+<td>25:24</td>
+<td>WO</td>
+<td></td>
+<td>Direction control for GPIO[GPIO_ADDR}</td>
+</tr>
+<tr>
+<td>GPIO_ADDR</td>
+<td>7:0</td>
+<td>WO</td>
+<td></td>
+<td>Address of GPIO to set direction for</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="setint-offset-0x3c">
+<h2>SETINT offset = 0x3C<a class="headerlink" href="#setint-offset-0x3c" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Field</th>
+<th>Bits</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>INTTYPE</td>
+<td>19:17</td>
+<td>WO</td>
+<td></td>
+<td>Type of interrupt for GPIO[GPIO_ADDR]</td>
+</tr>
+<tr>
+<td>INTENABLE</td>
+<td>16:16</td>
+<td>WO</td>
+<td></td>
+<td>Enable interrupt on GPIO[GPIO_ADDDR]</td>
+</tr>
+<tr>
+<td>GPIO_ADDR</td>
+<td>7:0</td>
+<td>WO</td>
+<td></td>
+<td>Address of GPIO to set interrupt tye and enable for</td>
+</tr>
+</tbody>
+</table></div>
+<div class="section" id="notes">
+<h2>Notes:<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<table border="1" class="docutils">
+<thead>
+<tr>
+<th>Access type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RW</td>
+<td>Read &amp; Write</td>
+</tr>
+<tr>
+<td>RO</td>
+<td>Read Only</td>
+</tr>
+<tr>
+<td>RC</td>
+<td>Read &amp; Clear after read</td>
+</tr>
+<tr>
+<td>WO</td>
+<td>Write Only</td>
+</tr>
+<tr>
+<td>WS</td>
+<td>Write Sets (value ignored; always writes a 1)</td>
+</tr>
+<tr>
+<td>RW1S</td>
+<td>Read &amp; on Write bits with 1 get set, bits with 0 left unchanged</td>
+</tr>
+<tr>
+<td>RW1C</td>
+<td>Read &amp; on Write bits with 1 get cleared, bits with 0 left unchanged</td>
+</tr>
+<tr>
+<td>RW0C</td>
+<td>Read &amp; on Write bits with 0 get cleared, bits with 1 left unchanged</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+
+
+              </div>
+              
+        
+        <div class='prev-next-bottom'>
+            
+    <a class='left-prev' id="prev-link" href="hal_apb_soc_ctrl_reg_defs.html" title="previous page">SOC_CTRL</a>
+    <a class='right-next' id="next-link" href="hal_udma_ctrl_reg_defs.html" title="next page">UDMA_CTRL</a>
+
+        </div>
+        
+        </div>
+    </div>
+    <footer class="footer mt-5 mt-md-0">
+    <div class="container">
+      <p>
+        
+            &copy; Copyright (c) 2021, QuickLogic.<br/>
+          Last updated on 10 April 2021.<br/>
+      </p>
+    </div>
+  </footer>
+</main>
+
+
+      </div>
+    </div>
+
+    
+  <script src="../_static/js/index.d3f166471bb80abb5163.js"></script>
+
+
+    
+  </body>
+</html>

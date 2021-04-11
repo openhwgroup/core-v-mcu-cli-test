@@ -1,0 +1,120 @@
+# APB_GPIO
+
+
+### SETGPIO offset = 0x00
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_ADDR  |   7:0 |    WO |            | Set GPIO[GPIO_ADDR] = 1 |
+
+### CLRGPIO offset = 0x04
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_ADDR  |   7:0 |    WO |            | Set GPIO[GPIO_ADDR] = 0 |
+
+### TOGGPIO offset = 0x08
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_ADDR  |   7:0 |    WO |            | Invert the output of GPIO[GPIO_ADDR] |
+
+### PIN0 offset = 0x10
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_VALUE |  31:0 |    RO |            | GPIO_VALUE[31:0] = GPIO[31:0] |
+
+### PIN1 offset = 0x14
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_VALUE |  31:0 |    RO |            | GPIO_VALUE[31:0] = GPIO[63:32] |
+
+### PIN2 offset = 0x18
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_VALUE |  31:0 |    RO |            | GPIO_VALUE[31:0] = GPIO[95:64] |
+
+### PIN3 offset = 0x1C
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_VALUE |  31:0 |    RO |            | GPIO_VALUE[31:0] = GPIO[127:96] |
+
+### OUT0 offset = 0x20
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| VALUE      |  31:0 |    WO |            | Drive VALUE[31:0] onto GPIO[31:0] |
+
+### OUT1 offset = 0x24
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| VALUE      |  31:0 |    WO |            | Drive VALUE[31:0] onto GPIO[63:32] |
+
+### OUT2 offset = 0x28
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| VALUE      |  31:0 |    WO |            | Drive VALUE[31:0] onto GPIO[95:64] |
+
+### OUT3 offset = 0x2C
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| VALUE      |  31:0 |    WO |            | Drive VALUE[31:0] onto GPIO[127:96] |
+
+### SETSEL offset = 0x30
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| GPIO_ADDR  |   7:0 |    WO |            | Set GPIO_ADDR for use by RDSTAT |
+|            |       |       |            | Note: SETGPIO, CLRGPIO, TOGGPIO and SETINT set GPIO_ADDR |
+
+### RDSTAT offset = 0x34
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| DIR        | 25:24 |    RO |            | Read direction control for GPIO[GPIO_ADDR] |
+|            |       |       |            | 0x0             |
+|            |       |       |            | 0x1             |
+|            |       |       |            | 0x2             |
+|            |       |       |            | 0x3             |
+| INTTYPE    | 18:16 |    RO |            | Type of interrupt for GPIO[GPIO_ADDR] |
+|            |       |       |            | 0x0             |
+|            |       |       |            | 0x1             |
+|            |       |       |            | 0x2             |
+|            |       |       |            | 0x3             |
+| INPUT      | 12:12 |    RO |            | Input value reported by GPIO[GPIO_ADDR] |
+| OUTPUT     |   8:8 |    RO |            | Output value that is set on GPIO[GPIO_ADDR] |
+
+### SETDIR offset = 0x38
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| DIR        | 25:24 |    WO |            | Direction control for GPIO[GPIO_ADDR} |
+| GPIO_ADDR  |   7:0 |    WO |            | Address of GPIO to set direction for |
+
+### SETINT offset = 0x3C
+
+| Field      |  Bits |  Type |    Default | Description     |
+| --------------------- |   --- |   --- |        --- | ------------------------- |
+| INTTYPE    | 19:17 |    WO |            | Type of interrupt for GPIO[GPIO_ADDR] |
+| INTENABLE  | 16:16 |    WO |            | Enable interrupt on GPIO[GPIO_ADDDR] |
+| GPIO_ADDR  |   7:0 |    WO |            | Address of GPIO to set interrupt tye and enable for |
+
+### Notes:
+
+| Access type | Description |
+| ----------- | ----------- |
+| RW          | Read & Write |
+| RO          | Read Only    |
+| RC          | Read & Clear after read |
+| WO          | Write Only |
+| WS          | Write Sets (value ignored; always writes a 1) |
+| RW1S        | Read & on Write bits with 1 get set, bits with 0 left unchanged |
+| RW1C        | Read & on Write bits with 1 get cleared, bits with 0 left unchanged |
+| RW0C        | Read & on Write bits with 0 get cleared, bits with 1 left unchanged |

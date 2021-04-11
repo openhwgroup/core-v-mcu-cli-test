@@ -21,8 +21,8 @@
 #ifndef __CORE_V_MCU_CONFIG_H_
 #define __CORE_V_MCU_CONFIG_H_
 
-#define BUILD_DATE 0x20210403
-#define BUILD_TIME 0x00000648
+#define BUILD_DATE 0x20210410
+#define BUILD_TIME 0x00170512
 
 //  SOC options
 #define N_IO                 48
