@@ -30,6 +30,7 @@
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
 #include "hal/include/hal_pinmux.h"
+#include "hal/include/hal_gpio.h"
 #include "hal/include/hal_apb_soc_ctrl_regs.h"
 
 // Sub menus
@@ -37,6 +38,7 @@ const struct cli_cmd_entry misc_functions[];
 const struct cli_cmd_entry uart1_tests[];
 const struct cli_cmd_entry mem_tests[];
 const struct cli_cmd_entry io_tests[];
+const struct cli_cmd_entry gpio_functions[];
 const struct cli_cmd_entry i2cm0_tests[];
 const struct cli_cmd_entry i2cm1_tests[];
 
@@ -56,6 +58,13 @@ static void mem_poke(const struct cli_cmd_entry *pEntry);
 static void io_setmux(const struct cli_cmd_entry *pEntry);
 static void io_getmux(const struct cli_cmd_entry *pEntry);
 
+// GPIO functions
+static void gpio_set(const struct cli_cmd_entry *pEntry);
+static void gpio_clr(const struct cli_cmd_entry *pEntry);
+static void gpio_toggle(const struct cli_cmd_entry *pEntry);
+static void gpio_read_status(const struct cli_cmd_entry *pEntry);
+static void gpio_set_mode(const struct cli_cmd_entry *pEntry);
+
 // I2CM0 functions
 static void i2cm_readbyte(const struct cli_cmd_entry *pEntry);
 static void i2cm_writebyte(const struct cli_cmd_entry *pEntry);
@@ -69,6 +78,7 @@ const struct cli_cmd_entry my_main_menu[] = {
   CLI_CMD_SUBMENU( "uart1", uart1_tests, 	"commands for uart1" ),
   CLI_CMD_SUBMENU( "mem", 	mem_tests, 		"commands for memory" ),
   CLI_CMD_SUBMENU( "io", 	io_tests, 		"commands for io" ),
+  CLI_CMD_SUBMENU( "gpio", 	gpio_functions, "commands for gpio" ),
   CLI_CMD_SUBMENU( "i2cm0", i2cm0_tests, 	"commands for i2cm0" ),
   CLI_CMD_SUBMENU( "i2cm1", i2cm1_tests, 	"commands for i2cm1" ),
   CLI_CMD_TERMINATE()
@@ -103,6 +113,17 @@ const struct cli_cmd_entry io_tests[] =
 {
   CLI_CMD_SIMPLE( "setmux", io_setmux,         	"ionum mux_sel 	-- set mux_sel for ionum " ),
   CLI_CMD_SIMPLE( "getmux", io_getmux,         	"ionum  		-- get mux_sel for ionum" ),
+  CLI_CMD_TERMINATE()
+};
+
+// GPIO menu
+const struct cli_cmd_entry gpio_functions[] =
+{
+  CLI_CMD_SIMPLE( "set", 	gpio_set,         	"gpio_num	-- set to one" ),
+  CLI_CMD_SIMPLE( "clr", 	gpio_clr,         	"gpio_num	-- clear to zero" ),
+  CLI_CMD_SIMPLE( "toggle",	gpio_toggle,        "gpio_num	-- toggle state of gpio" ),
+  CLI_CMD_SIMPLE( "status",	gpio_read_status,   "gpio_num	-- read status of gpio: in, out, interrupt type and mode" ),
+  CLI_CMD_SIMPLE( "mode",	gpio_set_mode,       "gpio_num gpio_mode	-- set mode of gpio" ),
   CLI_CMD_TERMINATE()
 };
 
@@ -263,6 +284,76 @@ static void io_getmux(const struct cli_cmd_entry *pEntry)
     CLI_uint32_required( "ionum", &ionum );
     mux_sel = hal_getpinmux(ionum);
     dbg_str_hex32("mux_sel", mux_sel);
+    dbg_str("<<DONE>>");
+}
+
+// GPIO functions
+static void gpio_set(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	gpio_num;
+
+    CLI_uint32_required( "gpio_num", &gpio_num );
+    hal_set_gpio((uint8_t)gpio_num);
+    dbg_str("<<DONE>>");
+}
+
+static void gpio_clr(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	gpio_num;
+
+    CLI_uint32_required( "gpio_num", &gpio_num );
+    hal_clr_gpio((uint8_t)gpio_num);
+    dbg_str("<<DONE>>");
+}
+
+static void gpio_toggle(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	gpio_num;
+
+    CLI_uint32_required( "gpio_num", &gpio_num );
+    hal_toggle_gpio((uint8_t)gpio_num);
+    dbg_str("<<DONE>>");
+}
+
+static void gpio_read_status(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	gpio_num;
+    uint8_t	input_value;
+    uint8_t	output_value;
+    uint8_t	interrupt_type;
+    uint8_t	gpio_mode;
+
+    CLI_uint32_required( "gpio_num", &gpio_num );
+    hal_read_gpio_status(gpio_num, &input_value, &output_value, &interrupt_type, &gpio_mode);
+    dbg_str_hex8("input", (uint32_t)input_value);
+    dbg_str_hex8("output", (uint32_t)output_value);
+    dbg_str_hex8("interrupt_type", (uint32_t)interrupt_type);
+    dbg_str_hex8("gpio_mode", (uint32_t)gpio_mode);
+
+    uint32_t register_value;
+    hal_read_gpio_status_raw(gpio_num, &register_value);
+    dbg_str_hex32("rdstatus", register_value);
+    dbg_str("<<DONE>>");
+}
+
+static void gpio_set_mode(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+    uint32_t	gpio_num;
+    uint32_t	gpio_mode;
+
+    CLI_uint32_required( "gpio_num", &gpio_num );
+    CLI_uint32_required( "gpio_mode", &gpio_mode );
+    hal_set_gpio_mode((uint8_t)gpio_num, (uint8_t)gpio_mode);
     dbg_str("<<DONE>>");
 }
 

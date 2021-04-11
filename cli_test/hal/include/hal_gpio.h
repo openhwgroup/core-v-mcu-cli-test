@@ -24,6 +24,12 @@ void hal_set_gpio(uint8_t gpio_num);
 void hal_clr_gpio(uint8_t gpio_num);
 void hal_toggle_gpio(uint8_t gpio_num);
 
-
+void hal_set_gpio_num(uint8_t gpio_num);
+void hal_read_gpio_status(uint8_t gpio_num, uint8_t* input_value, uint8_t* output_value, uint8_t* interrupt_type, uint8_t* gpio_mode);
+void hal_read_gpio_status_raw(uint8_t gpio_num, uint32_t* register_value);
+void hal_set_gpio_mode(uint8_t gpio_num, uint8_t gpio_mode);
+void hal_set_gpio_interrupt(uint8_t gpio_num, uint8_t interrupt_type, uint8_t interrupt_enable);
+void hal_enable_gpio_interrupt(uint8_t gpio_num);
+void hal_disable_gpio_interrupt(uint8_t gpio_num);
 
 #endif /* HAL_INCLUDE_HAL_GPIO_H_ */

@@ -379,7 +379,8 @@ int CLI_numX_getshow_X( const char *name, void *puthere, int width, int flags )
             width = -width;
         }
         width = width / 4;
-        CLI_printf("%s = 0x%0*llx\n", name, width, u.u64 );
+        //CLI_printf("%s = 0x%0*llx\n", name, width, u.u64 );
+        CLI_printf("%s = 0x%0*lx\n", name, width, (uint32_t)u.u64 );
     } else {
         /* we print as decimal, signed */
         if( (width < 0) || (width=='I') ){
