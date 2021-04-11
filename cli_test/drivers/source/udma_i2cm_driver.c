@@ -38,9 +38,7 @@ uint16_t udma_i2cm_open (uint8_t i2cm_id, uint32_t clk_freq) {
 	volatile UdmaCtrl_t*		pudma_ctrl = (UdmaCtrl_t*)UDMA_CH_ADDR_CTRL;
 	uint32_t					clk_divisor;
 
-	UdmaI2c_t test;
 	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
-	test = *pi2cm_regs;
 
 	/* See if already initialized */
 	if (i2cm_semaphores_rx[i2cm_id] != NULL || i2cm_semaphores_tx[i2cm_id] != NULL) {
