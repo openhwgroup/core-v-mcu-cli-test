@@ -47,7 +47,7 @@ typedef struct {
   union {
     __IO uint32_t setgpio;
     struct {
-      __IO uint32_t  gpio_addr  :  8;
+      __IO uint32_t  gpio_num   :  8;
     } setgpio_b;
   };
 
@@ -55,7 +55,7 @@ typedef struct {
   union {
     __IO uint32_t clrgpio;
     struct {
-      __IO uint32_t  gpio_addr  :  8;
+      __IO uint32_t  gpio_num   :  8;
     } clrgpio_b;
   };
 
@@ -63,7 +63,7 @@ typedef struct {
   union {
     __IO uint32_t toggpio;
     struct {
-      __IO uint32_t  gpio_addr  :  8;
+      __IO uint32_t  gpio_num   :  8;
     } toggpio_b;
   };
   __I uint32_t    unused0[1];
@@ -136,7 +136,7 @@ typedef struct {
   union {
     __IO uint32_t setsel;
     struct {
-      __IO uint32_t  gpio_addr  :  8;
+      __IO uint32_t  gpio_num   :  8;
     } setsel_b;
   };
 
@@ -151,25 +151,25 @@ typedef struct {
       __IO uint32_t             :  3;
       __IO uint32_t  inttype    :  3;
       __IO uint32_t             :  5;
-      __IO uint32_t  dir        :  2;
+      __IO uint32_t  mode       :  2;
     } rdstat_b;
   };
 
   // Offset = 0x0038
   union {
-    __IO uint32_t setdir;
+    __IO uint32_t setmode;
     struct {
-      __IO uint32_t  gpio_addr  :  8;
+      __IO uint32_t  gpio_num   :  8;
       __IO uint32_t             : 16;
-      __IO uint32_t  dir        :  2;
-    } setdir_b;
+      __IO uint32_t  mode       :  2;
+    } setmode_b;
   };
 
   // Offset = 0x003c
   union {
     __IO uint32_t setint;
     struct {
-      __IO uint32_t  gpio_addr  :  8;
+      __IO uint32_t  gpio_num   :  8;
       __IO uint32_t             :  8;
       __IO uint32_t  intenable  :  1;
       __IO uint32_t  inttype    :  3;
@@ -179,62 +179,62 @@ typedef struct {
 
 
 #define REG_SETGPIO                    0x00
-#define   REG_SETGPIO_GPIO_ADDR_LSB                0
-#define   REG_SETGPIO_GPIO_ADDR_MASK               0xff
+#define   REG_SETGPIO_gpio_num_LSB                 0
+#define   REG_SETGPIO_gpio_num_MASK                0xff
 #define REG_CLRGPIO                    0x04
-#define   REG_CLRGPIO_GPIO_ADDR_LSB                0
-#define   REG_CLRGPIO_GPIO_ADDR_MASK               0xff
+#define   REG_CLRGPIO_gpio_num_LSB                 0
+#define   REG_CLRGPIO_gpio_num_MASK                0xff
 #define REG_TOGGPIO                    0x08
-#define   REG_TOGGPIO_GPIO_ADDR_LSB                0
-#define   REG_TOGGPIO_GPIO_ADDR_MASK               0xff
+#define   REG_TOGGPIO_gpio_num_LSB                 0
+#define   REG_TOGGPIO_gpio_num_MASK                0xff
 #define REG_PIN0                       0x10
-#define   REG_PIN0_GPIO_VALUE_LSB                  0
-#define   REG_PIN0_GPIO_VALUE_MASK                 0xffffffff
+#define   REG_PIN0_gpio_value_LSB                  0
+#define   REG_PIN0_gpio_value_MASK                 0xffffffff
 #define REG_PIN1                       0x14
-#define   REG_PIN1_GPIO_VALUE_LSB                  0
-#define   REG_PIN1_GPIO_VALUE_MASK                 0xffffffff
+#define   REG_PIN1_gpio_value_LSB                  0
+#define   REG_PIN1_gpio_value_MASK                 0xffffffff
 #define REG_PIN2                       0x18
-#define   REG_PIN2_GPIO_VALUE_LSB                  0
-#define   REG_PIN2_GPIO_VALUE_MASK                 0xffffffff
+#define   REG_PIN2_gpio_value_LSB                  0
+#define   REG_PIN2_gpio_value_MASK                 0xffffffff
 #define REG_PIN3                       0x1C
-#define   REG_PIN3_GPIO_VALUE_LSB                  0
-#define   REG_PIN3_GPIO_VALUE_MASK                 0xffffffff
+#define   REG_PIN3_gpio_value_LSB                  0
+#define   REG_PIN3_gpio_value_MASK                 0xffffffff
 #define REG_OUT0                       0x20
-#define   REG_OUT0_VALUE_LSB                       0
-#define   REG_OUT0_VALUE_MASK                      0xffffffff
+#define   REG_OUT0_value_LSB                       0
+#define   REG_OUT0_value_MASK                      0xffffffff
 #define REG_OUT1                       0x24
-#define   REG_OUT1_VALUE_LSB                       0
-#define   REG_OUT1_VALUE_MASK                      0xffffffff
+#define   REG_OUT1_value_LSB                       0
+#define   REG_OUT1_value_MASK                      0xffffffff
 #define REG_OUT2                       0x28
-#define   REG_OUT2_VALUE_LSB                       0
-#define   REG_OUT2_VALUE_MASK                      0xffffffff
+#define   REG_OUT2_value_LSB                       0
+#define   REG_OUT2_value_MASK                      0xffffffff
 #define REG_OUT3                       0x2C
-#define   REG_OUT3_VALUE_LSB                       0
-#define   REG_OUT3_VALUE_MASK                      0xffffffff
+#define   REG_OUT3_value_LSB                       0
+#define   REG_OUT3_value_MASK                      0xffffffff
 #define REG_SETSEL                     0x30
-#define   REG_SETSEL_GPIO_ADDR_LSB                 0
-#define   REG_SETSEL_GPIO_ADDR_MASK                0xff
+#define   REG_SETSEL_gpio_num_LSB                  0
+#define   REG_SETSEL_gpio_num_MASK                 0xff
 #define REG_RDSTAT                     0x34
-#define   REG_RDSTAT_DIR_LSB                       24
-#define   REG_RDSTAT_DIR_MASK                      0x3
+#define   REG_RDSTAT_mode_LSB                      24
+#define   REG_RDSTAT_mode_MASK                     0x3
 #define   REG_RDSTAT_INTTYPE_LSB                   16
 #define   REG_RDSTAT_INTTYPE_MASK                  0x7
 #define   REG_RDSTAT_INPUT_LSB                     12
 #define   REG_RDSTAT_INPUT_MASK                    0x1
 #define   REG_RDSTAT_OUTPUT_LSB                    8
 #define   REG_RDSTAT_OUTPUT_MASK                   0x1
-#define REG_SETDIR                     0x38
-#define   REG_SETDIR_DIR_LSB                       24
-#define   REG_SETDIR_DIR_MASK                      0x3
-#define   REG_SETDIR_GPIO_ADDR_LSB                 0
-#define   REG_SETDIR_GPIO_ADDR_MASK                0xff
+#define REG_SETMODE                    0x38
+#define   REG_SETMODE_mode_LSB                     24
+#define   REG_SETMODE_mode_MASK                    0x3
+#define   REG_SETMODE_gpio_num_LSB                 0
+#define   REG_SETMODE_gpio_num_MASK                0xff
 #define REG_SETINT                     0x3C
 #define   REG_SETINT_INTTYPE_LSB                   17
 #define   REG_SETINT_INTTYPE_MASK                  0x7
 #define   REG_SETINT_INTENABLE_LSB                 16
 #define   REG_SETINT_INTENABLE_MASK                0x1
-#define   REG_SETINT_GPIO_ADDR_LSB                 0
-#define   REG_SETINT_GPIO_ADDR_MASK                0xff
+#define   REG_SETINT_gpio_num_LSB                  0
+#define   REG_SETINT_gpio_num_MASK                 0xff
 
 #ifndef __REGFIELD_OPS_
 #define __REGFIELD_OPS_
