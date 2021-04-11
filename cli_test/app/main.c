@@ -40,6 +40,7 @@
 
 /* FreeRTOS kernel includes. */
 #include <FreeRTOS.h>
+#include <hal/include/hal_gpio_pulp.h>
 #include <task.h>
 
 /* c stdlib */
@@ -51,7 +52,6 @@
 #include "hal/include/hal_timer_irq.h"
 #include "hal/include/hal_fll.h"
 #include "hal/include/hal_irq.h"
-#include "hal/include/hal_gpio.h"
 #include "drivers/include/udma_uart_driver.h"
 
 /******************************************************************************
