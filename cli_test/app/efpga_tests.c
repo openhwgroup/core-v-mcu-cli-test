@@ -14,13 +14,141 @@
 #include "include/estruct.h"
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
+static void ram_test(const struct cli_cmd_entry *pEntry);
 // EFPGA menu
 const struct cli_cmd_entry efpga_cli_tests[] =
 {
   CLI_CMD_SIMPLE( "tcdm", tcdm_test, "Tcdm 0-4 read/write tests" ),
+  CLI_CMD_SIMPLE( "ram", ram_test, "32 bit ram tests" ),
   CLI_CMD_TERMINATE()
 };
 
+static void ram_test(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	    // Add functionality here
+		char *message;
+		uint32_t offset;
+		apb_soc_ctrl_typedef *soc_ctrl;
+		efpga_typedef *efpga;
+		int errors = 0;
+		int i;
+		soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
+		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
+		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
+		message  = pvPortMalloc(80);
+		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+		// Init all rams to 0
+		sprintf(message,"Initializing 6 RAMs");
+		dbg_str(message);
+		for (i = 0; i < 512; i++) {
+			efpga->m0_oper0[i] = 0;
+			efpga->m0_oper1[i] = 0;
+			efpga->m0_coef[i] = 0;
+			efpga->m1_oper0[i] = 0;
+			efpga->m1_oper1[i] = 0;
+			efpga->m1_coef[i] = 0;
+		}
+		for (i = 512; i < 1024; i++) { // expect 0xffffffff in next 512 locations
+			if (efpga->m0_oper0[i] != 0xffffffff) errors++;
+			if (efpga->m0_oper1[i] != 0xffffffff) errors++;
+			if (efpga->m0_coef[i] != 0xffffffff) errors++;
+			if (efpga->m1_oper0[i] != 0xffffffff) errors++;
+			if (efpga->m1_oper1[i] != 0xffffffff) errors++;
+			if (efpga->m1_coef[i] != 0xffffffff) errors++;
+		}
+		if (errors == 0)
+			sprintf(message," PASSED!\r\n");
+		else
+			sprintf(message," *** %d Test Failures\r\n",errors);
+		errors = 0;
+		dbg_str(message);
+		sprintf(message,"Testing m0_oper0");
+		dbg_str(message);
+		for (i = 0; i < 512; i++) {
+			efpga->m0_oper0[i] = i;
+		}
+		for (i = 0; i < 512; i++) {
+			if (efpga->m0_oper0[i+512] != ~i) errors++;
+		}
+		if (errors == 0)
+			sprintf(message," PASSED!\r\n");
+		else
+			sprintf(message," *** %d Test Failures\r\n",errors);
+		dbg_str(message);
+		errors = 0;
+		sprintf(message,"Testing m0_oper1");
+		dbg_str(message);
+		for (i = 0 ; i < 512; i++) {
+			efpga->m0_oper1[i] = i;
+		}
+		for (i = 0 ; i < 512; i++) {
+			if (efpga->m0_oper1[i+512] != ~i) errors++;
+		}
+		if (errors == 0)
+			sprintf(message," PASSED!\r\n");
+		else
+			sprintf(message," *** %d Test Failures\r\n",errors);
+		dbg_str(message);
+		errors = 0;
+		sprintf(message,"Testing m0_coef");
+		dbg_str(message);
+		for (i = 0 ; i < 512; i++) {
+			efpga->m0_coef[i] = i;
+		}
+		for (i = 0 ; i < 512; i++) {
+			if (efpga->m0_coef[i+512] != ~i) errors++;
+		}
+		if (errors == 0)
+			sprintf(message," PASSED!\r\n");
+		else
+			sprintf(message," *** %d Test Failures\r\n",errors);
+		dbg_str(message);
+		errors = 0;
+		sprintf(message,"Testing m1_oper0");
+		dbg_str(message);
+		for (i = 0 ; i < 512; i++) {
+			efpga->m1_oper0[i] = i;
+		}
+		for (i = 0 ; i < 512; i++) {
+			if (efpga->m1_oper0[i+512] != ~i) errors++;
+		}
+		if (errors == 0)
+			sprintf(message," PASSED!\r\n");
+		else
+			sprintf(message," *** %d Test Failures\r\n",errors);
+		dbg_str(message);
+		errors = 0;
+		sprintf(message,"Testing m1_oper1");
+		dbg_str(message);
+		for (i = 0 ; i < 512; i++) {
+			efpga->m1_oper1[i] = i;
+		}
+		for (i = 0 ; i < 512; i++) {
+			if (efpga->m1_oper1[i+512] != ~i) errors++;
+		}
+		if (errors == 0)
+			sprintf(message," PASSED!\r\n");
+		else
+			sprintf(message," *** %d Test Failures\r\n",errors);
+		dbg_str(message);
+		errors = 0;
+		sprintf(message,"Testing m1_coef");
+		dbg_str(message);
+		for (i = 0 ; i < 512; i++) {
+			efpga->m1_coef[i] = i;
+		}
+		for (i = 0 ; i < 512; i++) {
+			if (efpga->m1_coef[i+512] != ~i) errors++;
+		}
+		if (errors == 0)
+			sprintf(message," PASSED!\r\n");
+		else
+			sprintf(message," *** %d Test Failures\r\n",errors);
+		errors = 0;
+		dbg_str(message);
+		vPortFree(message);
+}
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry)
 {
@@ -43,6 +171,7 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	dbg_str(message);
 	{
 		unsigned int i, j;
+		int errors = 0;
 		i = efpga->test_read;
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
@@ -70,6 +199,7 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 			scratch[i] = i;
 
 			if (j != i) {
+				errors++;
 				sprintf(message,"scratch  = %x expected %x \r\n", j, i);
 				dbg_str(message);
 			}
@@ -91,10 +221,16 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 			else
 			j = efpga->m1_oper1[i-0x30];
 			if (j != i) {
+				errors++;
 				sprintf(message,"mX_operY  = %x expected %x \r\n", j, i);
 				dbg_str(message);
 			}
 		}
+		if (errors == 0)
+			sprintf(message,"PASSED!\r\n");
+		else
+			sprintf(message,"*** %d Test Failures\r\n",errors);
+		dbg_str(message);
 	}
 	vPortFree(scratch);
 	vPortFree(message);
