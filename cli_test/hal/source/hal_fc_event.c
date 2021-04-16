@@ -87,7 +87,7 @@ __attribute__((section(".text"))) void fc_soc_event_handler(void)
 	__asm volatile( "csrs mie, %0" :: "r"(0x800) );
 	uint32_t event_id = NVIC->FIFO;
 
-	event_id &= 0xFF;
+event_id &= 0xFF;
 
 	if (event_id == 8 || event_id == 9) {
 		event_id = event_id & 0xF;

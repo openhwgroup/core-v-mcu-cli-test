@@ -69,7 +69,13 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			efpga->m0_oper0[i] = i;
 		}
 		for (i = 0; i < 512; i++) {
-			if (efpga->m0_oper0[i+512] != ~i) errors++;
+			if (efpga->m0_oper0[i+512] != ~i) {
+				if (errors++ < 10) {
+					sprintf(message,"m0_oper0[%d] = %x\r\n",
+							i, efpga->m0_oper0[i]);
+					dbg_str(message);
+				}
+			}
 		}
 		if (errors == 0)
 			sprintf(message," PASSED!\r\n");
@@ -83,7 +89,12 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			efpga->m0_oper1[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m0_oper1[i+512] != ~i) errors++;
+			if (efpga->m0_oper1[i+512] != ~i)
+			if (errors++ < 10) {
+				sprintf(message,"m0_oper0[%d] = %x\r\n",
+						i, efpga->m0_oper0[i]);
+				dbg_str(message);
+			}
 		}
 		if (errors == 0)
 			sprintf(message," PASSED!\r\n");
