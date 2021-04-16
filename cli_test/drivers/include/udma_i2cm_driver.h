@@ -25,25 +25,27 @@
 #include "hal/include/hal_udma_ctrl_reg_defs.h"
 
 typedef enum {
-		kI2cmDataValid
-} udma_i2c_control_type_t;
+		kI2cmReset
+} udma_i2cm_control_type_t;
 
 typedef enum {
-	kI2cCmdStart 	= 0x00,
-	kI2cCmdStop		= 0x20,
-	kI2cCmdRdAck	= 0x40,
-	kI2cCmdRdNack	= 0x60,
-	kI2cCmdWr		= 0x80,
-	kI2cCmdWait		= 0xA0,
-	kI2cCmdRpt		= 0xC0,
-	kI2cCmdCfg		= 0xE0,
-	kI2cCmdWaitEvt	= 0x10,
-} i2c_cmd_t;
+	kI2cmCmdStart 	= 0x00,
+	kI2cmCmdStop		= 0x20,
+	kI2cmCmdRdAck	= 0x40,
+	kI2cmCmdRdNack	= 0x60,
+	kI2cmCmdWr		= 0x80,
+	kI2cmCmdWait		= 0xA0,
+	kI2cmCmdRpt		= 0xC0,
+	kI2cmCmdCfg		= 0xE0,
+	kI2cmCmdWaitEvt	= 0x10,
+} i2cm_cmd_t;
 
 uint16_t udma_i2cm_open (uint8_t i2c_id, uint32_t i2c_clk_freq);
 uint16_t udma_i2cm_close (uint8_t i2c_id);
+uint16_t udma_i2cm_control(uint8_t i2c_id, udma_i2cm_control_type_t control_type, void* pparam);
 void udma_i2cm_write(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t write_len, uint8_t* write_data, bool more_follows);
 void udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
+
 
 
 // helper functions

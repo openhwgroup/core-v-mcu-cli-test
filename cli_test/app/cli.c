@@ -29,9 +29,11 @@
 #include "target/core-v-mcu/include/core-v-mcu-config.h"
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
+#include "hal/include/hal_apb_soc_ctrl_regs.h"
 #include "hal/include/hal_pinmux.h"
 #include "hal/include/hal_gpio.h"
-#include "hal/include/hal_apb_soc_ctrl_regs.h"
+
+#include "drivers/include/udma_i2cm_driver.h"
 
 // Sub menus
 const struct cli_cmd_entry misc_functions[];
@@ -68,6 +70,7 @@ static void gpio_set_mode(const struct cli_cmd_entry *pEntry);
 // I2CM0 functions
 static void i2cm_readbyte(const struct cli_cmd_entry *pEntry);
 static void i2cm_writebyte(const struct cli_cmd_entry *pEntry);
+static void i2cm_reset(const struct cli_cmd_entry *pEntry);
 static void i2cm_cmd0(const struct cli_cmd_entry *pEntry);
 static void i2cm_cmd1(const struct cli_cmd_entry *pEntry);
 static void i2cm_cmds(const struct cli_cmd_entry *pEntry);
@@ -132,6 +135,7 @@ const struct cli_cmd_entry i2cm0_tests[] =
 {
   CLI_CMD_WITH_ARG( "readbyte", i2cm_readbyte,	0, "i2c_addr reg_addr 	-- read register" ),
   //CLI_CMD_SIMPLE( "getmux", io_getmux,        "ionum  		-- get mux_sel for ionum" ),
+  CLI_CMD_WITH_ARG( "reset",	i2cm_reset,		0, "reset controller" ),
   CLI_CMD_WITH_ARG( "cmd0",		i2cm_cmd0,		0, "send cmd part0" ),
   CLI_CMD_WITH_ARG( "cmd1",		i2cm_cmd1,		0, "send cmd part1" ),
   CLI_CMD_WITH_ARG( "cmds",		i2cm_cmds,		0, "send cmd stop" ),
@@ -370,6 +374,14 @@ static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
     CLI_uint32_required( "reg_addr", &reg_addr );
 
     udma_i2cm_read(pEntry->cookie, i2c_addr, reg_addr, 1, i2c_read_buffer, false);
+}
+
+static void i2cm_reset(const struct cli_cmd_entry *pEntry)
+{
+    (void)pEntry;
+    // Add functionality here
+
+    udma_i2cm_control(pEntry->cookie, kI2cmReset, NULL);
 }
 
 #include "FreeRTOS.h"
