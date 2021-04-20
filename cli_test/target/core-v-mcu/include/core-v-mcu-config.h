@@ -11,7 +11,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES ORETH CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -21,8 +21,8 @@
 #ifndef __CORE_V_MCU_CONFIG_H_
 #define __CORE_V_MCU_CONFIG_H_
 
-#define BUILD_DATE 0x20210410
-#define BUILD_TIME 0x00202048
+#define BUILD_DATE 0x20210417
+#define BUILD_TIME 0x00201530
 
 //  SOC options
 #define N_IO                 48
@@ -56,13 +56,13 @@
 #define UDMA_UART_ID(id)        (0 + id)
 #define UDMA_CH_ADDR_UART0      (0x1A102000 + 1 * 0x80)
 #define UDMA_CH_ADDR_UART1      (0x1A102000 + 2 * 0x80)
-#define UDMA_CH_ADDR_I2CM       (0x1A102000 + 3 * 0x80)
-#define UDMA_I2CM_ID(id)        (2 + id)
-#define UDMA_CH_ADDR_I2CM0      (0x1A102000 + 3 * 0x80)
-#define UDMA_CH_ADDR_I2CM1      (0x1A102000 + 4 * 0x80)
-#define UDMA_CH_ADDR_QSPIM      (0x1A102000 + 5 * 0x80)
-#define UDMA_QSPIM_ID(id)       (4 + id)
-#define UDMA_CH_ADDR_QSPIM0     (0x1A102000 + 5 * 0x80)
+#define UDMA_CH_ADDR_QSPIM      (0x1A102000 + 3 * 0x80)
+#define UDMA_QSPIM_ID(id)       (2 + id)
+#define UDMA_CH_ADDR_QSPIM0     (0x1A102000 + 3 * 0x80)
+#define UDMA_CH_ADDR_I2CM       (0x1A102000 + 4 * 0x80)
+#define UDMA_I2CM_ID(id)        (3 + id)
+#define UDMA_CH_ADDR_I2CM0      (0x1A102000 + 4 * 0x80)
+#define UDMA_CH_ADDR_I2CM1      (0x1A102000 + 5 * 0x80)
 #define UDMA_CH_ADDR_I2SC       (0x1A102000 + 6 * 0x80)
 #define UDMA_I2SC_ID(id)        (5 + id)
 #define UDMA_CH_ADDR_I2SC0      (0x1A102000 + 6 * 0x80)
@@ -97,9 +97,9 @@
 //  Peripheral clock enable masks
 #define UDMA_CTRL_UART0_CLKEN      (1 << 0)
 #define UDMA_CTRL_UART1_CLKEN      (1 << 1)
-#define UDMA_CTRL_I2CM0_CLKEN      (1 << 2)
-#define UDMA_CTRL_I2CM1_CLKEN      (1 << 3)
-#define UDMA_CTRL_QSPIM0_CLKEN     (1 << 4)
+#define UDMA_CTRL_QSPIM0_CLKEN     (1 << 2)
+#define UDMA_CTRL_I2CM0_CLKEN      (1 << 3)
+#define UDMA_CTRL_I2CM1_CLKEN      (1 << 4)
 #define UDMA_CTRL_I2SC0_CLKEN      (1 << 5)
 #define UDMA_CTRL_CSI20_CLKEN      (1 << 5)
 #define UDMA_CTRL_HYPER0_CLKEN     (1 << 5)
