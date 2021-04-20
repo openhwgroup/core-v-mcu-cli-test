@@ -62,12 +62,36 @@ typedef struct {
 	volatile unsigned int reserved70[0x1e4]; // 0x70 - 0x7FF
 	volatile unsigned int test_read;
 	volatile unsigned int reserved804[0x1ff];
-	volatile unsigned int m0_oper0[0x400];
-	volatile unsigned int m0_oper1[0x400];
-	volatile unsigned int m0_coef[0x400];
-	volatile unsigned int m1_oper0[0x400];
-	volatile unsigned int m1_oper1[0x400];
-	volatile unsigned int m1_coef[0x400];
+	union {
+		volatile unsigned char b[0x1000];
+		volatile unsigned short w[0x800];
+		volatile unsigned int l[0x400];
+	} m0_oper0;
+	union {
+		volatile unsigned char b[0x1000];
+		volatile unsigned short w[0x800];
+		volatile unsigned int l[0x400];
+	} m0_oper1;
+	union {
+		volatile unsigned char b[0x1000];
+		volatile unsigned short w[0x800];
+		volatile unsigned int l[0x400];
+	} m0_coef;
+	union {
+		volatile unsigned char b[0x1000];
+		volatile unsigned short w[0x800];
+		volatile unsigned int l[0x400];
+	} m1_oper0;
+	union {
+		volatile unsigned char b[0x1000];
+		volatile unsigned short w[0x800];
+		volatile unsigned int l[0x400];
+	} m1_oper1;
+	union {
+		volatile unsigned char b[0x1000];
+		volatile unsigned short w[0x800];
+		volatile unsigned int l[0x400];
+	} m1_coef;
 } efpga_typedef;
 
 typedef struct {

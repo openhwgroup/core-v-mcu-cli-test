@@ -15,13 +15,39 @@
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
+static void dev_test(const struct cli_cmd_entry *pEntry);
 // EFPGA menu
 const struct cli_cmd_entry efpga_cli_tests[] =
 {
   CLI_CMD_SIMPLE( "tcdm", tcdm_test, "Tcdm 0-4 read/write tests" ),
   CLI_CMD_SIMPLE( "ram", ram_test, "32 bit ram tests" ),
+  CLI_CMD_SIMPLE ( "dev", dev_test ,""),
   CLI_CMD_TERMINATE()
 };
+static void dev_test(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	    // Add functionality here
+		char *message;
+		uint32_t offset;
+		apb_soc_ctrl_typedef *soc_ctrl;
+		efpga_typedef *efpga;
+		int errors = 0;
+		int i;
+		soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
+		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
+		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
+		message  = pvPortMalloc(80);
+		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+		efpga->m0_ram_ctl = 0x2; //32b w, 8b r
+		efpga->m0_oper0.l[0] = 0x55aa6699;
+		sprintf(message,"m0_oper.l[0] = %08x\r\n",efpga->m0_oper0.l[0]);
+		dbg_str(message);
+		for (i = 0 ; i < 4; i++) {
+			sprintf(message,"m0_oper[%d] = %x\r\n",i, efpga->m0_oper0.b[i]);
+			dbg_str(message);
+		}
+}
 
 static void ram_test(const struct cli_cmd_entry *pEntry)
 {
@@ -42,20 +68,20 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Initializing 6 RAMs");
 		dbg_str(message);
 		for (i = 0; i < 512; i++) {
-			efpga->m0_oper0[i] = 0;
-			efpga->m0_oper1[i] = 0;
-			efpga->m0_coef[i] = 0;
-			efpga->m1_oper0[i] = 0;
-			efpga->m1_oper1[i] = 0;
-			efpga->m1_coef[i] = 0;
+			efpga->m0_oper0.l[i] = 0;
+			efpga->m0_oper1.l[i] = 0;
+			efpga->m0_coef.l[i] = 0;
+			efpga->m1_oper0.l[i] = 0;
+			efpga->m1_oper1.l[i] = 0;
+			efpga->m1_coef.l[i] = 0;
 		}
 		for (i = 512; i < 1024; i++) { // expect 0xffffffff in next 512 locations
-			if (efpga->m0_oper0[i] != 0xffffffff) errors++;
-			if (efpga->m0_oper1[i] != 0xffffffff) errors++;
-			if (efpga->m0_coef[i] != 0xffffffff) errors++;
-			if (efpga->m1_oper0[i] != 0xffffffff) errors++;
-			if (efpga->m1_oper1[i] != 0xffffffff) errors++;
-			if (efpga->m1_coef[i] != 0xffffffff) errors++;
+			if (efpga->m0_oper0.l[i] != 0xffffffff) errors++;
+			if (efpga->m0_oper1.l[i] != 0xffffffff) errors++;
+			if (efpga->m0_coef.l[i] != 0xffffffff) errors++;
+			if (efpga->m1_oper0.l[i] != 0xffffffff) errors++;
+			if (efpga->m1_oper1.l[i] != 0xffffffff) errors++;
+			if (efpga->m1_coef.l[i] != 0xffffffff) errors++;
 		}
 		if (errors == 0)
 			sprintf(message," PASSED!\r\n");
@@ -66,13 +92,13 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m0_oper0");
 		dbg_str(message);
 		for (i = 0; i < 512; i++) {
-			efpga->m0_oper0[i] = i;
+			efpga->m0_oper0.l[i] = i;
 		}
 		for (i = 0; i < 512; i++) {
-			if (efpga->m0_oper0[i+512] != ~i) {
+			if (efpga->m0_oper0.l[i+512] != ~i) {
 				if (errors++ < 10) {
 					sprintf(message,"m0_oper0[%d] = %x\r\n",
-							i, efpga->m0_oper0[i]);
+							i, efpga->m0_oper0.l[i]);
 					dbg_str(message);
 				}
 			}
@@ -86,13 +112,13 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m0_oper1");
 		dbg_str(message);
 		for (i = 0 ; i < 512; i++) {
-			efpga->m0_oper1[i] = i;
+			efpga->m0_oper1.l[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m0_oper1[i+512] != ~i)
+			if (efpga->m0_oper1.l[i+512] != ~i)
 			if (errors++ < 10) {
-				sprintf(message,"m0_oper0[%d] = %x\r\n",
-						i, efpga->m0_oper0[i]);
+				sprintf(message,"m0_oper1[%d] = %x\r\n",
+						i, efpga->m0_oper0.l[i]);
 				dbg_str(message);
 			}
 		}
@@ -105,10 +131,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m0_coef");
 		dbg_str(message);
 		for (i = 0 ; i < 512; i++) {
-			efpga->m0_coef[i] = i;
+			efpga->m0_coef.l[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m0_coef[i+512] != ~i) errors++;
+			if (efpga->m0_coef.l[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
 			sprintf(message," PASSED!\r\n");
@@ -119,10 +145,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m1_oper0");
 		dbg_str(message);
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_oper0[i] = i;
+			efpga->m1_oper0.l[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_oper0[i+512] != ~i) errors++;
+			if (efpga->m1_oper0.l[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
 			sprintf(message," PASSED!\r\n");
@@ -133,10 +159,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m1_oper1");
 		dbg_str(message);
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_oper1[i] = i;
+			efpga->m1_oper1.l[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_oper1[i+512] != ~i) errors++;
+			if (efpga->m1_oper1.l[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
 			sprintf(message," PASSED!\r\n");
@@ -147,10 +173,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m1_coef");
 		dbg_str(message);
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_coef[i] = i;
+			efpga->m1_coef.l[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_coef[i+512] != ~i) errors++;
+			if (efpga->m1_coef.l[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
 			sprintf(message," PASSED!\r\n");
@@ -194,18 +220,18 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 // Initialize eFPGA RAMs
 		for (i = 0; i < 0x40; i = i + 1) {
 			scratch[i] = 0;
-			efpga->m0_oper0[i] = i;
-			efpga->m0_oper1[i] = i+0x10;
-			efpga->m1_oper0[i] = i+0x20;
-			efpga->m1_oper1[i] = i+0x30;
+			efpga->m0_oper0.l[i] = i;
+			efpga->m0_oper1.l[i] = i+0x10;
+			efpga->m1_oper0.l[i] = i+0x20;
+			efpga->m1_oper1.l[i] = i+0x30;
 		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
-			efpga->m0_oper0[i] = 0;
-			efpga->m0_oper1[i] = 0;
-			efpga->m1_oper0[i] = 0;
-			efpga->m1_oper1[i] = 0;
+			efpga->m0_oper0.l[i] = 0;
+			efpga->m0_oper1.l[i] = 0;
+			efpga->m1_oper0.l[i] = 0;
+			efpga->m1_oper1.l[i] = 0;
 			j = scratch[i];
 			scratch[i] = i;
 
@@ -224,13 +250,13 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
 			if(i < 0x10)
-			j = efpga->m0_oper0[i];
+			j = efpga->m0_oper0.l[i];
 			else if (i < 0x20)
-			j = efpga->m0_oper1[i-0x10];
+			j = efpga->m0_oper1.l[i-0x10];
 			else if (i < 0x30)
-			j = efpga->m1_oper0[i-0x20];
+			j = efpga->m1_oper0.l[i-0x20];
 			else
-			j = efpga->m1_oper1[i-0x30];
+			j = efpga->m1_oper1.l[i-0x30];
 			if (j != i) {
 				errors++;
 				sprintf(message,"mX_operY  = %x expected %x \r\n", j, i);
