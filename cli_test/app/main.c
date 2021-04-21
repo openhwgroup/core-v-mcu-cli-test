@@ -131,9 +131,6 @@ static void prvSetupHardware( void )
 {
 	/* Init board hardware. */
 	system_init();
-
-	/* configure led0 (spim_csn1) as gpio */
-	gpio_pin_configure(0x5, GPIO_OUTPUT_LOW);
 }
 /*-----------------------------------------------------------*/
 

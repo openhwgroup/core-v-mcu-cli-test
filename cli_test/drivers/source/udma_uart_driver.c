@@ -135,7 +135,7 @@ uint16_t udma_uart_control(uint8_t uart_id, udma_uart_control_type_t control_typ
 	UdmaUart_t*				puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
 
 	switch(control_type) {
-	case kDataValid:
+	case kUartDataValid:
 		return puart->valid_b.rx_data_valid;
 	default:
 		return 0xFFFF;

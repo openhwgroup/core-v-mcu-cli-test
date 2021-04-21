@@ -24,7 +24,7 @@
 #include "hal/include/hal_udma_ctrl_reg_defs.h"
 
 typedef enum {
-		kDataValid
+		kUartDataValid
 } udma_uart_control_type_t;
 
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate);
