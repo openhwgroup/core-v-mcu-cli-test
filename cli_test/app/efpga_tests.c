@@ -204,6 +204,10 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
 	soc_ctrl->rst_efpga = 0xf;
 	soc_ctrl->ena_efpga = 0x7f;
+
+	efpga->m0_ram_ctl = 0;
+	efpga->m1_ram_ctl = 0;
+
 	sprintf(message,"TCDM test - Scratch offset = %x\r\n", offset);
 	dbg_str(message);
 	{
@@ -259,7 +263,7 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 			j = efpga->m1_oper1.l[i-0x30];
 			if (j != i) {
 				errors++;
-				sprintf(message,"mX_operY  = %x expected %x \r\n", j, i);
+        sprintf(message,"mX_operY  = %x expected %x \r\n", j, i);
 				dbg_str(message);
 			}
 		}
