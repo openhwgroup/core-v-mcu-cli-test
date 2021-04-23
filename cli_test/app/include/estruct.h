@@ -59,38 +59,45 @@ typedef struct {
 	volatile unsigned int efpga_in32;
 	volatile unsigned int efpga_in64;
 	volatile unsigned int events;
-	volatile unsigned int reserved70[0x1e4]; // 0x70 - 0x7FF
+	volatile unsigned int reserved70[4];
+	volatile unsigned int tcdm_result[4];
+	volatile unsigned int reserved90[0x1C];
+	volatile unsigned int m0_m0_data_out;
+	volatile unsigned int m0_m1_data_out;
+	volatile unsigned int m1_m0_data_out;
+	volatile unsigned int m1_m1_data_out;
+	volatile unsigned int reserved110[0x1BC]; // 0x110 - 0x7FF
 	volatile unsigned int test_read;
 	volatile unsigned int reserved804[0x1ff];
 	union {
 		volatile unsigned char b[0x1000];
-		volatile unsigned short w[0x800];
-		volatile unsigned int l[0x400];
+		volatile unsigned short hw[0x800];
+		volatile unsigned int w[0x400];
 	} m0_oper0;
 	union {
 		volatile unsigned char b[0x1000];
-		volatile unsigned short w[0x800];
-		volatile unsigned int l[0x400];
+		volatile unsigned short hw[0x800];
+		volatile unsigned int w[0x400];
 	} m0_oper1;
 	union {
 		volatile unsigned char b[0x1000];
-		volatile unsigned short w[0x800];
-		volatile unsigned int l[0x400];
+		volatile unsigned short hw[0x800];
+		volatile unsigned int w[0x400];
 	} m0_coef;
 	union {
 		volatile unsigned char b[0x1000];
-		volatile unsigned short w[0x800];
-		volatile unsigned int l[0x400];
+		volatile unsigned short hw[0x800];
+		volatile unsigned int w[0x400];
 	} m1_oper0;
 	union {
 		volatile unsigned char b[0x1000];
-		volatile unsigned short w[0x800];
-		volatile unsigned int l[0x400];
+		volatile unsigned short hw[0x800];
+		volatile unsigned int w[0x400];
 	} m1_oper1;
 	union {
 		volatile unsigned char b[0x1000];
-		volatile unsigned short w[0x800];
-		volatile unsigned int l[0x400];
+		volatile unsigned short hw[0x800];
+		volatile unsigned int w[0x400];
 	} m1_coef;
 } efpga_typedef;
 
