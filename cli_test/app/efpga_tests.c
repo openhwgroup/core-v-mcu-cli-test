@@ -235,6 +235,7 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 		}
 		test_no ++;
 	}while(test_no < 7);
+
 	//dbg_str(message);
 	vPortFree(message);
 }
@@ -248,18 +249,20 @@ static void dev_test(const struct cli_cmd_entry *pEntry)
 		apb_soc_ctrl_typedef *soc_ctrl;
 		efpga_typedef *efpga;
 		int errors = 0;
-		int i;
+		unsigned int i, data1, data2;
 		soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
 		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+
 		efpga->m0_ram_ctl = 0x2; //32b w, 8b r
 		efpga->m0_oper0.w[0] = 0x55aa6699;
 		sprintf(message,"m0_oper.w[0] = %08x\r\n",efpga->m0_oper0.w[0]);
 		dbg_str(message);
 		for (i = 0 ; i < 4; i++) {
-			sprintf(message,"m0_oper[%d] = %x\r\n",i, efpga->m0_oper0.b[i]);
+			efpga->m0_m0_clken = 0xf;
+			sprintf(message,"epga->m0_m0_data_out = %08x\r\n",efpga->m0_m0_data_out);
 			dbg_str(message);
 		}
 }
