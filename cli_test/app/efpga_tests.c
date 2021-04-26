@@ -255,10 +255,19 @@ static void dev_test(const struct cli_cmd_entry *pEntry)
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
 		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+		efpga->m0_ram_ctl = 0x0; //32b w, 8b r
+		efpga->m0_m0_odata = 0x2;
+		efpga->m0_oper0.w[0] = 4;
+		efpga->m0_coef.w[0] = 5;
+		efpga->m0_cdata = 0x3;
+		data1 = efpga->m0_m0_odata;
+		data2 = efpga->m0_cdata;
 
-		efpga->m0_ram_ctl = 0x2; //32b w, 8b r
-		efpga->m0_oper0.w[0] = 0x55aa6699;
-		sprintf(message,"m0_oper.w[0] = %08x\r\n",efpga->m0_oper0.w[0]);
+		efpga->m0_m0_ctl = 0x80000000;
+		efpga->m0_m0_ctl = 0x0;
+		sprintf(message,"data1 = 0x%0x\r\ndata2 = 0x%0x\r\n",data1, data2);
+		dbg_str(message);
+		sprintf(message,"epga->m0_m0_data_out = %08x\r\n",efpga->m0_m0_data_out);
 		dbg_str(message);
 		for (i = 0 ; i < 4; i++) {
 			efpga->m0_m0_clken = 0xf;
@@ -266,7 +275,6 @@ static void dev_test(const struct cli_cmd_entry *pEntry)
 			dbg_str(message);
 		}
 }
-
 static void ram_test(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
