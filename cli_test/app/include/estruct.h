@@ -61,14 +61,21 @@ typedef struct {
 	volatile unsigned int events;
 	volatile unsigned int reserved70[4];
 	volatile unsigned int tcdm_result[4];
-	volatile unsigned int reserved90[0x1C];
+	volatile unsigned int m0_m0_odata;
+	volatile unsigned int m0_m1_odata;
+	volatile unsigned int m0_cdata;
+	volatile unsigned int reserved9c;
+	volatile unsigned int m1_m0_odata;
+	volatile unsigned int m1_m1_odata;
+	volatile unsigned int m1_cdata;
+	volatile unsigned int reservedac[0x15];
 	volatile unsigned int m0_m0_data_out;
 	volatile unsigned int m0_m1_data_out;
 	volatile unsigned int m1_m0_data_out;
 	volatile unsigned int m1_m1_data_out;
 	volatile unsigned int reserved110[0x1BC]; // 0x110 - 0x7FF
 	volatile unsigned int test_read;
-	volatile unsigned int reserved804[0x1ff];
+	volatile unsigned int reserved804[0x1fc];
 	union {
 		volatile unsigned char b[0x1000];
 		volatile unsigned short hw[0x800];
