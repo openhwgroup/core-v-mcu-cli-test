@@ -75,7 +75,7 @@ typedef struct {
 	volatile unsigned int m1_m1_data_out;
 	volatile unsigned int reserved110[0x1BC]; // 0x110 - 0x7FF
 	volatile unsigned int test_read;
-	volatile unsigned int reserved804[0x1fc];
+	volatile unsigned int reserved804[0x1ff];
 	union {
 		volatile unsigned char b[0x1000];
 		volatile unsigned short hw[0x800];
