@@ -89,7 +89,7 @@ __attribute__((section(".text"))) void fc_soc_event_handler(void)
 
 event_id &= 0xFF;
 
-	if (event_id == 8 || event_id == 9) {
+	if (event_id >= 12) {
 		event_id = event_id & 0xF;
 	}
 

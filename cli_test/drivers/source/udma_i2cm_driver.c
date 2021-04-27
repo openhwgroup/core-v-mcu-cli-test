@@ -101,37 +101,36 @@ void udma_i2cm_read(uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr, uint16
 	_udma_i2cm_read(i2cm_id, i2cm_addr, read_len, read_buffer, more_follows);
 }
 
-static uint8_t auccmd_tx[16];
+static uint8_t auccmd_tx[32];
 void udma_i2cm_write (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr, uint16_t write_len, uint8_t *write_data,  bool more_follows) {
 	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	uint8_t*					pcmd = auccmd_tx;
+	uint8_t*					pdata = write_data;
+	SemaphoreHandle_t 			shSemaphoreHandleTx = i2cm_semaphores_tx[i2cm_id];
 
 	configASSERT(write_len < 256);
 
-	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_rx[i2cm_id];
-	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) != pdTRUE );
-	shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
-	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) != pdTRUE );
-
-	_udma_i2cm_write_addr_plus_regaddr (i2cm_id, i2cm_addr, reg_addr);
-	configASSERT(xSemaphoreTake( shSemaphoreHandle, 1000000 ) != pdTRUE ); // Wait for any prior transmission to complete
+	configASSERT( xSemaphoreTake( shSemaphoreHandleTx, 1000000 ) == pdTRUE ); // Wait for any prior transmission to complete
 
 	*pcmd++ = kI2cmCmdCfg;
 	*pcmd++ = aucclkdiv[1];
 	*pcmd++ = aucclkdiv[0];
-	*pcmd++ = kI2cmCmdStart;		// Put Start transaction on I2C bus
-	*pcmd++ = kI2cmCmdWr;		// Write device's address (next byte)
-	*pcmd++ = i2cm_addr & 0xfe; 	// Clear R/WRbar bit from i2c device's address to indicate write
-	if (write_len > 0) {
-		*pcmd++ = 0xC0; 		// i2cm_CMD_RPT
-		*pcmd++ = (uint8_t)write_len;
+	*pcmd++ = kI2cmCmdStart;			// Put Start transaction on I2C bus
+	*pcmd++ = kI2cmCmdRpt; 				// Set up for several writes: i2cm_CMD_RPT
+	*pcmd++ = (uint8_t)(write_len + 2);	// I@CM_ADDR + REG_ADDR + data
+	*pcmd++ = kI2cmCmdWr; 				// Command to repeat: I2C CMD_WR
+	*pcmd++ = i2cm_addr & 0xfe; 		// Clear R/WRbar bit from i2c device's address to indicate write
+	*pcmd++ = reg_addr;					// Target address for following data
+	for (int i = 0; i != write_len; i++) {
+		*pcmd++ = *pdata++;
 	}
-	*pcmd++ = kI2cmCmdWr; 		// I2C CMD_WR
 	pi2cm_regs->tx_saddr = auccmd_tx;
 	pi2cm_regs->tx_size = (uint32_t)(pcmd - auccmd_tx);
 	pi2cm_regs->tx_cfg_b.en = 1;
 
-	configASSERT(xSemaphoreTake( shSemaphoreHandle, 1000000 ) != pdTRUE );	// Wait for this trans to complete
+	// Block until UDMA transaction is completed
+	configASSERT(xSemaphoreTake( shSemaphoreHandleTx, 1000000 ) == pdTRUE );
+	configASSERT(xSemaphoreGive( shSemaphoreHandleTx ) == pdTRUE );
 
 	if (!more_follows) {
 		_udma_i2cm_send_stop(i2cm_id);

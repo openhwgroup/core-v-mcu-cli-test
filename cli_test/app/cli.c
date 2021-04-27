@@ -26,6 +26,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
+
+#include "FreeRTOS.h"
+#include "semphr.h"	// Required for configASSERT
+
 #include "target/core-v-mcu/include/core-v-mcu-config.h"
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
@@ -34,15 +38,18 @@
 #include "hal/include/hal_gpio.h"
 
 #include "drivers/include/udma_i2cm_driver.h"
+#include "drivers/include/udma_uart_driver.h"
 
 // Sub menus
 const struct cli_cmd_entry misc_functions[];
-const struct cli_cmd_entry uart1_tests[];
+const struct cli_cmd_entry uart1_functions[];
+const struct cli_cmd_entry mem_functions[];
 const struct cli_cmd_entry mem_tests[];
-const struct cli_cmd_entry io_tests[];
+const struct cli_cmd_entry io_functions[];
 const struct cli_cmd_entry gpio_functions[];
+const struct cli_cmd_entry i2cm0_functions[];
 const struct cli_cmd_entry i2cm0_tests[];
-const struct cli_cmd_entry i2cm1_tests[];
+const struct cli_cmd_entry i2cm1_functions[];
 extern const struct cli_cmd_entry efpga_cli_tests[];
 
 // MISC functions
@@ -53,9 +60,11 @@ static void uart1_tx(const struct cli_cmd_entry *pEntry);
 
 // MEM functions
 static void mem_print_start(const struct cli_cmd_entry *pEntry);
-static void mem_check(const struct cli_cmd_entry *pEntry);
 static void mem_peek(const struct cli_cmd_entry *pEntry);
 static void mem_poke(const struct cli_cmd_entry *pEntry);
+
+// MEM tests
+static void mem_check(const struct cli_cmd_entry *pEntry);
 
 // IO functions
 static void io_setmux(const struct cli_cmd_entry *pEntry);
@@ -72,22 +81,22 @@ static void gpio_set_mode(const struct cli_cmd_entry *pEntry);
 static void i2cm_readbyte(const struct cli_cmd_entry *pEntry);
 static void i2cm_writebyte(const struct cli_cmd_entry *pEntry);
 static void i2cm_reset(const struct cli_cmd_entry *pEntry);
-static void i2cm_cmd0(const struct cli_cmd_entry *pEntry);
-static void i2cm_cmd1(const struct cli_cmd_entry *pEntry);
-static void i2cm_cmds(const struct cli_cmd_entry *pEntry);
 static void i2c_temp(const struct cli_cmd_entry *pEntry);
+
+// I2CM tests
+static void i2cm_singlebyte_test(const struct cli_cmd_entry *pEntry);
 
 // Main menu
 const struct cli_cmd_entry my_main_menu[] = {
 
-		CLI_CMD_SUBMENU( "misc", 	misc_functions, "miscellaneous functions" ),
-		CLI_CMD_SUBMENU( "uart1", uart1_tests, 	"commands for uart1" ),
-		CLI_CMD_SUBMENU( "mem", 	mem_tests, 		"commands for memory" ),
-		CLI_CMD_SUBMENU( "io", 	io_tests, 		"commands for io" ),
-		CLI_CMD_SUBMENU( "gpio", 	gpio_functions, "commands for gpio" ),
-		CLI_CMD_SUBMENU( "i2cm0", i2cm0_tests, 	"commands for i2cm0" ),
-		CLI_CMD_SUBMENU( "i2cm1", i2cm1_tests, 	"commands for i2cm1" ),
-		CLI_CMD_SUBMENU( "efpga", efpga_cli_tests,    "commands for efpga connectivity"),
+		CLI_CMD_SUBMENU( "misc", 	misc_functions, 	"miscellaneous functions" ),
+		CLI_CMD_SUBMENU( "uart1", 	uart1_functions, 	"commands for uart1" ),
+		CLI_CMD_SUBMENU( "mem", 	mem_functions, 		"commands for memory" ),
+		CLI_CMD_SUBMENU( "io", 		io_functions, 		"commands for io" ),
+		CLI_CMD_SUBMENU( "gpio", 	gpio_functions, 	"commands for gpio" ),
+		CLI_CMD_SUBMENU( "i2cm0", 	i2cm0_functions, 	"commands for i2cm0" ),
+		CLI_CMD_SUBMENU( "i2cm1", 	i2cm1_functions, 	"commands for i2cm1" ),
+		CLI_CMD_SUBMENU( "efpga", 	efpga_cli_tests,    "commands for efpga connectivity"),
 		CLI_CMD_TERMINATE()
 
 };
@@ -100,24 +109,31 @@ const struct cli_cmd_entry misc_functions[] =
 };
 
 // UART1 menu
-const struct cli_cmd_entry uart1_tests[] =
+const struct cli_cmd_entry uart1_functions[] =
 {
 		CLI_CMD_SIMPLE( "tx", uart1_tx, "<string>: write <string> to uart1" ),
 		CLI_CMD_TERMINATE()
 };
 
 // mem menu
-const struct cli_cmd_entry mem_tests[] =
+const struct cli_cmd_entry mem_functions[] =
 {
 		CLI_CMD_SIMPLE( "start", 	mem_print_start,   	"print start of unused memory" ),
-		CLI_CMD_SIMPLE( "check", 	mem_check,         	"print start of unused memory" ),
 		CLI_CMD_SIMPLE( "peek", 	mem_peek,         	"0xaddr -- print memory location " ),
-		CLI_CMD_SIMPLE( "poke",   mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
+		CLI_CMD_SIMPLE( "poke",   	mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
+		CLI_CMD_SUBMENU( "test", 	mem_tests, 			"tests" ),
+		CLI_CMD_TERMINATE()
+};
+
+// mem menu
+const struct cli_cmd_entry mem_tests[] =
+{
+		CLI_CMD_SIMPLE( "check", 	mem_check,         	"print start of unused memory" ),
 		CLI_CMD_TERMINATE()
 };
 
 // IO menu
-const struct cli_cmd_entry io_tests[] =
+const struct cli_cmd_entry io_functions[] =
 {
 		CLI_CMD_SIMPLE( "setmux", io_setmux,         	"ionum mux_sel 	-- set mux_sel for ionum " ),
 		CLI_CMD_SIMPLE( "getmux", io_getmux,         	"ionum  		-- get mux_sel for ionum" ),
@@ -127,34 +143,38 @@ const struct cli_cmd_entry io_tests[] =
 // GPIO menu
 const struct cli_cmd_entry gpio_functions[] =
 {
-		CLI_CMD_SIMPLE( "set", 	gpio_set,         	"gpio_num	-- set to one" ),
-		CLI_CMD_SIMPLE( "clr", 	gpio_clr,         	"gpio_num	-- clear to zero" ),
+		CLI_CMD_SIMPLE( "set", 	gpio_set,         		"gpio_num	-- set to one" ),
+		CLI_CMD_SIMPLE( "clr", 	gpio_clr,         		"gpio_num	-- clear to zero" ),
 		CLI_CMD_SIMPLE( "toggle",	gpio_toggle,        "gpio_num	-- toggle state of gpio" ),
 		CLI_CMD_SIMPLE( "status",	gpio_read_status,   "gpio_num	-- read status of gpio: in, out, interrupt type and mode" ),
-		CLI_CMD_SIMPLE( "mode",	gpio_set_mode,       "gpio_num gpio_mode	-- set mode of gpio" ),
+		CLI_CMD_SIMPLE( "mode",	gpio_set_mode,       	"gpio_num gpio_mode	-- set mode of gpio" ),
 		CLI_CMD_TERMINATE()
 };
 
 // I2CM0 menu
+const struct cli_cmd_entry i2cm0_functions[] =
+{
+
+  CLI_CMD_WITH_ARG( "readbyte", 	i2cm_readbyte,	0, "i2c_addr reg_addr 			-- read register" ),
+  CLI_CMD_WITH_ARG( "writebyte", 	i2cm_writebyte,	0, "i2c_addr reg_addr value 	-- read register" ),
+  CLI_CMD_SUBMENU ( "test", 		i2cm0_tests, 		"tests" ),
+  CLI_CMD_TERMINATE()
+
+};
+
 const struct cli_cmd_entry i2cm0_tests[] =
 {
 
-  CLI_CMD_WITH_ARG( "readbyte", i2cm_readbyte,	0, "i2c_addr reg_addr 	-- read register" ),
-  //CLI_CMD_SIMPLE( "getmux", io_getmux,        "ionum  		-- get mux_sel for ionum" ),
-  CLI_CMD_WITH_ARG( "reset",	i2cm_reset,		0, "reset controller" ),
-  CLI_CMD_WITH_ARG( "cmd0",		i2cm_cmd0,		0, "send cmd part0" ),
-  CLI_CMD_WITH_ARG( "cmd1",		i2cm_cmd1,		0, "send cmd part1" ),
-  CLI_CMD_WITH_ARG( "cmds",		i2cm_cmds,		0, "send cmd stop" ),
+  CLI_CMD_WITH_ARG( "singlebyte", 	i2cm_singlebyte_test,	0, "i2c_addr reg_addr	-- writes 0xA5 and then 0x5A to register and checks result" ),
   CLI_CMD_TERMINATE()
 
 };
 
 // I2CM1 menu
-const struct cli_cmd_entry i2cm1_tests[] =
+const struct cli_cmd_entry i2cm1_functions[] =
 {
 		CLI_CMD_WITH_ARG( "readbyte", i2cm_readbyte,	1, "i2c_addr reg_addr 	-- read register" ),
-		CLI_CMD_SIMPLE ( "temp", i2c_temp,"resd on board temperature"),
-		//CLI_CMD_SIMPLE( "getmux", io_getmux,        "ionum  		-- get mux_sel for ionum" ),
+		CLI_CMD_SIMPLE ( "temp", i2c_temp,					"read on board temperature"),
 		CLI_CMD_TERMINATE()
 };
 
@@ -229,7 +249,7 @@ static void mem_check(const struct cli_cmd_entry *pEntry)
 		*pl = (uint32_t)pl;
 	}
 
-	// pl=0x1c070000; *pl = 76;  // Enable to force and error
+	// pl=0x1c070000; *pl = 76;  // Enable to force an error
 
 	for (pl = (uint32_t*)(&__l2_shared_end); (uint32_t)pl < 0x1c080000; pl++) {
 		if (*pl != (uint32_t)pl) {
@@ -369,8 +389,12 @@ static void gpio_set_mode(const struct cli_cmd_entry *pEntry)
 	dbg_str("<<DONE>>");
 }
 
-// I2CM0 functions
-static uint8_t i2c_read_buffer[256];
+/////////////////////////////////////////////////////////////////
+//
+// I2CM functions
+//
+/////////////////////////////////////////////////////////////////
+static uint8_t i2c_buffer[256];
 static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
@@ -381,7 +405,24 @@ static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
 	CLI_uint32_required( "i2c_addr", &i2c_addr );
 	CLI_uint32_required( "reg_addr", &reg_addr );
 
-	udma_i2cm_read(pEntry->cookie, i2c_addr, reg_addr, 2, i2c_read_buffer, false);
+	udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
+	dbg_str_hex8("reg", (int)i2c_buffer[0]);
+}
+
+static void i2cm_writebyte(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint32_t	i2c_addr;
+	uint32_t	reg_addr;
+	uint32_t	reg_value;
+
+	CLI_uint32_required( "i2c_addr", &i2c_addr );
+	CLI_uint32_required( "reg_addr", &reg_addr );
+	CLI_uint32_required( "reg_value", &reg_value );
+
+	i2c_buffer[0] = (uint8_t)reg_value;
+	udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
 }
 
 static void i2cm_reset(const struct cli_cmd_entry *pEntry)
@@ -392,71 +433,45 @@ static void i2cm_reset(const struct cli_cmd_entry *pEntry)
     udma_i2cm_control(pEntry->cookie, kI2cmReset, NULL);
 }
 
-#include "FreeRTOS.h"
-#include "semphr.h"
-#include "target/core-v-mcu/include/core-v-mcu-config.h"
-#include "hal/include/hal_udma_i2c_reg_defs.h"
-#include <drivers/include/udma_i2cm_driver.h>
-
-extern SemaphoreHandle_t  i2cm_semaphores_rx[N_I2CM];
-extern SemaphoreHandle_t  i2cm_semaphores_tx[N_I2CM];
-
-static uint8_t i2c_cmd0_buf[] = {0xE0, 0x00, 25, 0x00, 0x80, 0xDF, 0xC0, 0x01, 0x40, 0x60};
-static uint8_t i2c_cmd1_buf[] = {0x00, 0x00};
-static uint8_t i2c_cmds_buf[] = {0x20, 0xA0, 0xFF};
-static uint8_t i2c_data_buf[10];
-
-static void i2cm_cmd0(const struct cli_cmd_entry *pEntry)
+static void i2cm_singlebyte_test(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
-	int i2cm_id = 0;
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	uint32_t	i2c_addr;
+	uint32_t	reg_addr;
+	bool		fPassed = false;
 
-	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
-	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
-	pi2cm_regs->tx_saddr = i2c_cmd0_buf;
-	pi2cm_regs->tx_size = 15;
-	pi2cm_regs->rx_saddr = i2c_data_buf;
-	pi2cm_regs->rx_size = 2;
+	CLI_uint32_required( "i2c_addr", &i2c_addr );
+	CLI_uint32_required( "reg_addr", &reg_addr );
 
-	pi2cm_regs->rx_cfg_b.en = 1;
-	pi2cm_regs->tx_cfg_b.en = 1;
+	i2c_buffer[0] = 0xA5;
+	udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
+	udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
+	dbg_str_int("First access", i2c_buffer[0]);
+	if (i2c_buffer[0] == 0xA5) {
+		i2c_buffer[0] = 0x5A;
+		udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
+		udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
+		dbg_str_int("Second access", i2c_buffer[0]);
+		if (i2c_buffer[0] == 0x5A) {
+			fPassed = true;
+		}
+	}
+	if (fPassed) {
+		dbg_str("<<PASSED>>");
+	} else {
+		dbg_str("<<FAILED>>");
+	}
 }
-static void i2cm_cmd1(const struct cli_cmd_entry *pEntry)
-{
-	(void)pEntry;
-	// Add functionality here
-	int i2cm_id = 0;
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 
-	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
-	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
-	pi2cm_regs->tx_saddr = i2c_cmd1_buf;
-	pi2cm_regs->tx_size = sizeof(i2c_cmd1_buf);
-	pi2cm_regs->tx_cfg_b.en = 1;
-}
-static void i2cm_cmds(const struct cli_cmd_entry *pEntry)
-{
-	(void)pEntry;
-	// Add functionality here
-	int i2cm_id = 0;
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
-
-	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
-	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
-	pi2cm_regs->tx_saddr = i2c_cmds_buf;
-	pi2cm_regs->tx_size = sizeof(i2c_cmds_buf);
-	pi2cm_regs->tx_cfg_b.en = 1;
-}
 static void i2c_temp (const struct cli_cmd_entry *pEntry)
 {
 	char *message = 0;
 	int temp;
 	message  = pvPortMalloc(80);
 	configASSERT (message);
-	udma_i2cm_read(1, 0x96, 0, 2, i2c_read_buffer, false);
-	temp = (i2c_read_buffer[0] << 8) + i2c_read_buffer[1];
+	udma_i2cm_read(1, 0x96, 0, 2, i2c_buffer, false);
+	temp = (i2c_buffer[0] << 8) + i2c_buffer[1];
 	temp = ((temp *625) / 44000) + 32;
 	sprintf(message," Board temp = %d F\r\n", temp);
 	dbg_str(message);
