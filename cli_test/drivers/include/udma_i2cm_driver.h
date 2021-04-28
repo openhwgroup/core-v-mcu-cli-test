@@ -30,11 +30,11 @@ typedef enum {
 
 typedef enum {
 	kI2cmCmdStart 	= 0x00,
-	kI2cmCmdStop		= 0x20,
+	kI2cmCmdStop	= 0x20,
 	kI2cmCmdRdAck	= 0x40,
 	kI2cmCmdRdNack	= 0x60,
 	kI2cmCmdWr		= 0x80,
-	kI2cmCmdWait		= 0xA0,
+	kI2cmCmdWait	= 0xA0,
 	kI2cmCmdRpt		= 0xC0,
 	kI2cmCmdCfg		= 0xE0,
 	kI2cmCmdWaitEvt	= 0x10,
