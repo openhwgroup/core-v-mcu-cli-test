@@ -3,13 +3,19 @@ Eclipse/FreeRTOS/core-v-mcu example program
 
 ### Installation
 Eclipse relies on a larger ecosystem of tools.  This project uses a particualr set of tools in a particualr set of locations.  These instructions do not cover loading the other tools, or adapting the preferences to point to different tools or different locations.  These instructions assume that you are familar enough with Eclispe to make any required changes.
-### Step 1: 
+### Step 1:
+Downlad and install the approriate corev-gcc toolchain from
+~~~
+https://www.embecosm.com/resources/tool-chain-downloads/#corev
+~~~
+
+### Step 2: 
 Download and install Eclipse for Embedded and not Host based eclipse.  
 ~~~
 https://projects.eclipse.org/projects/iot.embed-cdt/downloads
 ~~~
 
-### Step 2:
+### Step 3:
 Install OpenOCD.  Recommend getting it from this location:
 ~~~
 https://sourceforge.net/projects/openocd/files/openocd/
@@ -18,12 +24,12 @@ I used 0.11.0-rc2.
 
 Installation is accomplished by:
 ~~~
-./configure && make
+./configure --enable-ftdi && make
 sudo make install
 ~~~ 
 
 
-### Step 3: run Eclipse, import projects directly from git (import launch in step 4)
+### Step 4: run Eclipse, import projects directly from git (import launch in step 5)
 
 NOTE: importing the cli_test does not imprt the information to launch the debugger, so after importing cli_test, be sure to either import the launch configuration or create your own.
 
@@ -68,7 +74,7 @@ eclipse
 
 ![step10](./images/10-ProjectsAreSetup.png)
 
-# Step 4: Import launch configuration
+# Step 5: Import launch configuration
 This step pulls in the launch configurations which are configured to use hs2 and OpenOCD.
 If your hardware setup is different, you can either ignore this step and create your own, or use this step and modify to fit your configuration.
 
