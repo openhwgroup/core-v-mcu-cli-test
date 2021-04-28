@@ -56,6 +56,10 @@ static void mem_print_start(const struct cli_cmd_entry *pEntry);
 static void mem_check(const struct cli_cmd_entry *pEntry);
 static void mem_peek(const struct cli_cmd_entry *pEntry);
 static void mem_poke(const struct cli_cmd_entry *pEntry);
+static void mem_peek_16(const struct cli_cmd_entry *pEntry);
+static void mem_poke_16(const struct cli_cmd_entry *pEntry);
+static void mem_peek_8(const struct cli_cmd_entry *pEntry);
+static void mem_poke_8(const struct cli_cmd_entry *pEntry);
 
 // IO functions
 static void io_setmux(const struct cli_cmd_entry *pEntry);
@@ -113,6 +117,12 @@ const struct cli_cmd_entry mem_tests[] =
 		CLI_CMD_SIMPLE( "check", 	mem_check,         	"print start of unused memory" ),
 		CLI_CMD_SIMPLE( "peek", 	mem_peek,         	"0xaddr -- print memory location " ),
 		CLI_CMD_SIMPLE( "poke",   mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
+		CLI_CMD_SIMPLE( "md.b", 	mem_peek_8,         	"0xaddr -- print 8-bit memory location " ),
+		CLI_CMD_SIMPLE( "mw.b",   mem_poke_8,         	"0xaddr 0xvalue -- write 8-bit alue to addr" ),
+		CLI_CMD_SIMPLE( "md.w", 	mem_peek_16,         	"0xaddr -- print 16-bit memory location " ),
+		CLI_CMD_SIMPLE( "mw.w",   mem_poke_16,         	"0xaddr 0xvalue -- write 16-bit value to addr" ),
+		CLI_CMD_SIMPLE( "md.l", 	mem_peek,         	"0xaddr -- print 32-bit memory location " ),
+		CLI_CMD_SIMPLE( "mw.l",   mem_poke,         	"0xaddr 0xvalue -- write 32-bit value to addr" ),
 		CLI_CMD_TERMINATE()
 };
 
@@ -272,6 +282,56 @@ static void mem_poke(const struct cli_cmd_entry *pEntry)
 	dbg_str("<<DONE>>");
 }
 
+static void mem_peek_16(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint16_t	xValue;
+	uint16_t*	pAddr;
+
+	CLI_uint32_required( "addr", &pAddr );
+	xValue = *pAddr;
+	dbg_str_hex16("value", xValue);
+	dbg_str("<<DONE>>");
+}
+
+static void mem_poke_16(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint16_t	xValue;
+	uint16_t*	pAddr;
+
+	CLI_uint32_required( "addr", &pAddr );
+	CLI_uint16_required( "value", &xValue);
+	*pAddr = xValue;
+	dbg_str("<<DONE>>");
+}
+static void mem_peek_8(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint8_t	xValue;
+	uint8_t*	pAddr;
+
+	CLI_uint32_required( "addr", &pAddr );
+	xValue = *pAddr;
+	dbg_str_hex8("value", xValue);
+	dbg_str("<<DONE>>");
+}
+
+static void mem_poke_8(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint8_t	xValue;
+	uint8_t*	pAddr;
+
+	CLI_uint32_required( "addr", &pAddr );
+	CLI_uint32_required( "value", &xValue);
+	*pAddr = xValue;
+	dbg_str("<<DONE>>");
+}
 // IO functions
 static void io_setmux(const struct cli_cmd_entry *pEntry)
 {
