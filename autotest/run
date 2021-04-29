@@ -1,0 +1,2 @@
+#!/bin/bash
+python3 test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB1
