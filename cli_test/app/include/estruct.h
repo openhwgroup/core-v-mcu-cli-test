@@ -64,12 +64,13 @@ typedef struct {
 
 	volatile unsigned int m0_m0_odata;
 	volatile unsigned int m0_m1_odata;
-	volatile unsigned int m0_cdata;
-	volatile unsigned int reserved9c;
+	volatile unsigned int m0_m0_cdata;
+	volatile unsigned int m0_m1_cdata;
 	volatile unsigned int m1_m0_odata;
 	volatile unsigned int m1_m1_odata;
-	volatile unsigned int m1_cdata;
-	volatile unsigned int reservedac[0x15];
+	volatile unsigned int m1_m0_cdata;
+	volatile unsigned int m1_m1_cdata;
+	volatile unsigned int reservedb0[0x14];
 
 	volatile unsigned int m0_m0_data_out;
 	volatile unsigned int m0_m1_data_out;

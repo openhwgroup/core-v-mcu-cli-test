@@ -255,30 +255,32 @@ static void dev_test(const struct cli_cmd_entry *pEntry)
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
 		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
-		efpga->m0_ram_ctl = 0x0; //32b w, 8b r
-		efpga->m0_m0_odata = 0x11111111;
-		efpga->m0_oper0.w[0] = 0x87654321;
-		efpga->m0_coef.w[0] = 5;
-		efpga->m0_cdata = 0x87654321 ;
-		data1 = efpga->m0_m0_odata;
-		data2 = efpga->m0_cdata;
+		efpga->m1_ram_ctl = 0x0; //32b w, 8b r
+		efpga->m1_m1_odata = 0x1;
+		efpga->m1_oper1.w[0] = 0x2;
+		efpga->m1_coef.w[0] = 5;
+		efpga->m1_m1_cdata = 0x1;
+		data1 = efpga->m1_oper1.w[0];
+		data2 = efpga->m1_coef.w[0];
+//		data1 = efpga->m1_m1_odata;
+//		data2 = efpga->m1_cdata;
 
-		efpga->m0_m0_ctl = 0x80000000;
-		efpga->m0_m0_ctl = 0x0;
+		efpga->m1_m1_ctl = 0x80000000;
+		efpga->m1_m1_ctl = 0x4000;
 		sprintf(message,"data1 = 0x%0x\r\ndata2 = 0x%0x\r\n",data1, data2);
 		dbg_str(message);
-		sprintf(message,"epga->m0_m0_data_out = %08x\r\n",efpga->m0_m0_data_out);
+		sprintf(message,"epga->m1_m1_data_out = %08x\r\n",efpga->m1_m1_data_out);
 		dbg_str(message);
-		for (i = 0 ; i < 40; i++) {
-			efpga->m0_m0_clken = 0xf;
-			sprintf(message,"epga->m0_m0_data_out = %08d\r\n",efpga->m0_m0_data_out);
+		for (i = 0 ; i < 4; i++) {
+			efpga->m1_m1_clken = 0xf;
+			sprintf(message,"epga->m1_m1_data_out = %08d\r\n",efpga->m1_m1_data_out);
 			dbg_str(message);
 		}
-		efpga->m0_m0_ctl = 0x80000000;
-		efpga->m0_m0_ctl = 0x00003000;
-		for (i = 0 ; i < 40; i++) {
-			efpga->m0_m0_clken = 0xf;
-			sprintf(message,"epga->m0_m0_data_out = %08x\r\n",efpga->m0_m0_data_out);
+		efpga->m1_m1_ctl = 0x80000000;
+		efpga->m1_m1_ctl = 0x00008000;
+		for (i = 0 ; i < 4; i++) {
+			efpga->m1_m1_clken = 0xf;
+			sprintf(message,"epga->m0_m0_data_out = %08x\r\n",efpga->m1_m1_data_out);
 			dbg_str(message);
 		}
 }
