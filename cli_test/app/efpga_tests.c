@@ -1,9 +1,28 @@
-/*
- * efpga_tests.c
+/*==========================================================
+ * Copyright 2021 QuickLogic Corporation
  *
- *  Created on: Apr 12, 2021
- *      Author: gregmartin
- */
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *==========================================================*/
+
+/*==========================================================
+ *
+ *    File   : efpga_tests.c
+ *    Purpose: To test efpga block
+ *    Author: gregmartin
+ *
+ *=========================================================*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,14 +34,15 @@
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
-static void dev_test(const struct cli_cmd_entry *pEntry);
+static void m_mltiply_test(const struct cli_cmd_entry *pEntry);
+
 static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry);
 // EFPGA menu
 const struct cli_cmd_entry efpga_cli_tests[] =
 {
   CLI_CMD_SIMPLE( "tcdm", tcdm_test, "Tcdm 0-4 read/write tests" ),
   CLI_CMD_SIMPLE( "ram", ram_test, "32 bit ram tests" ),
-  CLI_CMD_SIMPLE ( "dev", dev_test ,"dev_test"),
+  CLI_CMD_SIMPLE ( "mlt", m_mltiply_test ,"mltiply_test"),
   CLI_CMD_SIMPLE( "rw", ram_32bit_16bit_8bit_test, "ram_rw_tests" ),
   CLI_CMD_TERMINATE()
 };
@@ -33,6 +53,14 @@ typedef union {
 	volatile unsigned int w[0x400];
 } ram_word;
 
+typedef struct {
+	volatile unsigned int *m_ctl;
+	volatile unsigned int *m_clken;
+	volatile unsigned int *m_odata;
+	volatile unsigned int *m_cdata;
+	volatile unsigned int *m_data_out;
+}mlti_ctl;
+
 static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl) {
 
 	unsigned int i,err;
@@ -41,99 +69,132 @@ static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl
 	unsigned char rdbuff_b[4] = { 0xef,0xbe,0xad,0xde };
 	unsigned short int rdbuff_hw[2] = {0xbeef,0xdead};
 
-
+#if EFPGA_DEBUG
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 	dbg_str("writing 32bit and reading 8bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
 	*ram_ctl = 0x222;
 	ram_adr->w[0] = 0xdeadbeef;
+
+#if EFPGA_DEBUG
 	sprintf(message,"ram_adr->w[0]= 0x%0x\r\n",ram_adr->w[0]);
 	dbg_str(message);
+#endif
+
 	for (i = 0; i < 4; i++) {
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->b[%d]= 0x%0x\r\n",i, ram_adr->b[i]);
 		dbg_str(message);
+#endif
 		if(ram_adr->b[i] != rdbuff_b[i]) err++;
 	}
 	memset(&ram_adr->w[0],0x0, 1);
 
+#if EFPGA_DEBUG
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 	dbg_str("writing 8bit and reading 32bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
 
 	*ram_ctl = 0x888;
 	for (i = 0; i < 4; i++) {
 		ram_adr->b[i] = rdbuff_b[i];
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->w[0]= 0x%0x\r\n",ram_adr->w[0]);
 		dbg_str(message);
+#endif
 	}
-
+#if EFPGA_DEBUG
 	sprintf(message,"ram_adr->w[0]= 0x%0x\r\n",ram_adr->w[0]);
 	dbg_str(message);
+#endif
 	if(ram_adr->w[0] != 0xdeadbeef) err++;
 	memset(&ram_adr->w[0],0x0, 1);
 
+#if EFPGA_DEBUG
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 	dbg_str("writing 32bit and reading 16bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
 
 	*ram_ctl = 0x111;
 	ram_adr->w[0] = 0xdeadbeef;
+#if EFPGA_DEBUG
 	sprintf(message,"ram_adr->w[0]= 0x%0x\r\n",ram_adr->w[0]);
 	dbg_str(message);
-
+#endif
 	for (i = 0; i < 2; i++) {
 		//rdbuff_hw[i] = efpga->m0_oper0.hw[i];
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->hw[%d]= 0x%0x\r\n",i, ram_adr->hw[i]);
 		dbg_str(message);
+#endif
 		if(ram_adr->hw[i] != rdbuff_hw[i]) err++;
 	}
 	memset(&ram_adr->w[0],0x0, 1);
 
+#if EFPGA_DEBUG
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 	dbg_str("writing 16bit and reading 32bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
 	*ram_ctl = 0x444;
 	for (i = 0; i < 2; i++) {
 		ram_adr->hw[i] = rdbuff_hw[i];
+
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->hw[%d]= 0x%0x\r\n",i, ram_adr->hw[i]);
 		dbg_str(message);
+#endif
 	}
-
+#if EFPGA_DEBUG
 	sprintf(message,"ram_adr->w[0]= 0x%0x\r\n",ram_adr->w[0]);
 	dbg_str(message);
+#endif
 	if(ram_adr->w[0] != 0xdeadbeef) err++;
 	memset(&ram_adr->w[0],0x0, 1);
-
+#if EFPGA_DEBUG
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 	dbg_str("writing 8bit and reading 16bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
 	*ram_ctl = 0x999;
 	for (i = 0; i < 4; i++) {
 		ram_adr->b[i] = rdbuff_b[i];
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->b[%d]= 0x%0x\r\n",i, ram_adr->b[i]);
 		dbg_str(message);
+#endif
 	}
 	for (i = 0; i < 2; i++) {
 		//rdbuff_hw[i] = efpga->m0_oper0.hw[i];
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->hw[%d]= 0x%0x\r\n",i, ram_adr->hw[i]);
 		dbg_str(message);
+#endif
 		if(ram_adr->hw[i] != rdbuff_hw[i]) err++;
 	}
 	memset(&ram_adr->w[0],0x0, 1);
-
+#if EFPGA_DEBUG
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 	dbg_str("writing 16bit and reading 8bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
 	*ram_ctl = 0x666;
 	for (i = 0; i < 2; i++) {
 		ram_adr->hw[i] = rdbuff_hw[i];
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->hw[%d]= 0x%0x\r\n",i, ram_adr->hw[i]);
 		dbg_str(message);
+#endif
 	}
 
 	for (i = 0; i < 4; i++) {
+#if EFPGA_DEBUG
 		sprintf(message,"ram_adr->b[%d]= 0x%0x\r\n",i, ram_adr->b[i]);
 		dbg_str(message);
+#endif
 		if(ram_adr->b[i] != rdbuff_b[i]) err++;
 	}
 	memset(&ram_adr->w[0],0x0, 1);
@@ -160,11 +221,11 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 		unsigned int i;
 		unsigned int test_no;
 		volatile unsigned int *ram_ctrl;
-		soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
+		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
-		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 		test_no = 1;
 		do {
 		switch(test_no) {
@@ -172,9 +233,9 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 			ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
 			ram_addr = (ram_word *)&(efpga->m0_oper0);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) {
-				dbg_str("m0_oper0_6_rw_test: **Failed**\n\r\r\r");
+				dbg_str("m0_oper0_6_rw_test: <<FAILED>>\n\r\r\r");
 			} else {
-				dbg_str("m0_oper0_6_rw_test: ##Passed##\n\r\r\r");
+				dbg_str("m0_oper0_6_rw_test: <<PASSED>>\n\r\r\r");
 			}
 
 			break;
@@ -183,9 +244,9 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 			ram_addr = (ram_word *)&(efpga->m0_oper1);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) {
-				dbg_str("m0_oper1_6_rw_test: **Failed**\n\r\r\r");
+				dbg_str("m0_oper1_6_rw_test: <<FAILED>>\n\r\r\r");
 			} else {
-				dbg_str("m0_oper1_6_rw_test: ##Passed##\n\r\r\r");
+				dbg_str("m0_oper1_6_rw_test: <<PASSED>>\n\r\r\r");
 			}
 
 			break;
@@ -194,9 +255,9 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 			ram_addr = (ram_word *)&(efpga->m0_coef);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) {
-				dbg_str("m0_coef_6_rw_tests: **Failed**\n\r\r\r");
+				dbg_str("m0_coef_6_rw_tests: <<FAILED>>\n\r\r\r");
 			} else {
-				dbg_str("m0_coef_6_rw_tests: ##Passed##\n\r\r\r");
+				dbg_str("m0_coef_6_rw_tests: <<PASSED>>\n\r\r\r");
 			}
 			break;
 		case 4:
@@ -205,9 +266,9 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 			ram_rw_test(ram_addr,ram_ctrl);
 
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) {
-				dbg_str("m1_oper0_6_rw_tests: **Failed**\n\r\r\r");
+				dbg_str("m1_oper0_6_rw_tests: <<FAILED>>\n\r\r\r");
 			} else {
-				dbg_str("m1_oper0_6_rw_tests: ##Passed##\n\r\r\r");
+				dbg_str("m1_oper0_6_rw_tests: <<PASSED>>\n\r\r\r");
 			}
 			break;
 		case 5:
@@ -215,9 +276,9 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 			ram_addr = (ram_word *)&(efpga->m1_oper1);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) {
-				dbg_str("m1_oper1_6_rw_tests: **Failed**\n\r\r\r");
+				dbg_str("m1_oper1_6_rw_tests: <<FAILED>>\n\r\r\r");
 			} else {
-				dbg_str("m1_oper1_6_rw_tests: ##Passed##\n\r\r\r");
+				dbg_str("m1_oper1_6_rw_tests: <<PASSED>>\n\r\r\r");
 			}
 			break;
 		case 6:
@@ -225,9 +286,9 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 			ram_addr = (ram_word *)&(efpga->m1_coef);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) {
-				dbg_str("m1_coef_6_rw_tests: **Failed**\n\r\r\r");
+				dbg_str("m1_coef_6_rw_tests: <<FAILED>>\n\r\r\r");
 			} else {
-				dbg_str("m1_coef_6_rw_tests: ##Passed##\n\r\r\r");
+				dbg_str("m1_coef_6_rw_tests: <<PASSED>>\n\r\r\r");
 			}
 			break;
 		default:
@@ -240,48 +301,212 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 	vPortFree(message);
 }
 
-static void dev_test(const struct cli_cmd_entry *pEntry)
+
+
+
+static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ctl *mctl)
 {
-	(void)pEntry;
+
+		char *message;
+		unsigned int errors = 0;
+		unsigned int i, test_type, exp_data_out, data_out;
+		unsigned int mlt_type;
+		message  = pvPortMalloc(80);
+		test_type = 1;
+	do{
+		switch(test_type) {
+		case 1:
+			mlt_type = 0;
+			do {
+				*mctl->m_ctl = 0x80000000;
+				*mctl->m_ctl = 0x0;
+				errors = 0;
+
+				*mctl->m_odata = 0x2;
+				*mctl->m_cdata = 0x3;
+				*mctl->m_ctl = (0x40000 | ((mlt_type & 0x3) << 12));
+				exp_data_out = (*mctl->m_odata) * (*mctl->m_cdata);
+				if ((*mctl->m_data_out) != 0x0) errors ++;
+				*mctl->m_clken = 0xf;
+				data_out = (*mctl->m_data_out);
+				if(data_out != exp_data_out) errors ++;
+#if EFPGA_DEBUG
+				sprintf(message,"mctl->m_data_out = %08x\r\n",data_out);
+				dbg_str(message);
+#endif
+				for (i = 0 ; i < 3; i++) {
+					*mctl->m_clken = 0xf;
+					data_out = data_out + exp_data_out;
+					if((*mctl->m_data_out) !=  data_out) errors ++;
+#if EFPGA_DEBUG
+					sprintf(message,"mctl->m_data_out = %08x\r\n",*mctl->m_data_out);
+					dbg_str(message);
+#endif
+				}
+#if EFPGA_DEBUG
+				(errors)? dbg_str("*** Test: failed***\n"): dbg_str("###Test: passed###\n");
+#endif
+				mlt_type ++;
+			}while(mlt_type < 4);
+			break;
+		case 2:
+			mlt_type = 0;
+			do {
+				*mctl->m_ctl = 0x80000000;
+				*mctl->m_ctl = 0x0;
+				errors = 0;
+
+				ram_adr1->w[0] = 0x4;
+				ram_adr2->w[0] = 0x5;
+				*mctl->m_ctl = (0x4c000 | ((mlt_type & 0x3) << 12));
+				exp_data_out = (ram_adr1->w[0]) * (ram_adr2->w[0]);
+				if ((*mctl->m_data_out) != 0x0) errors ++;
+				*mctl->m_clken = 0xf;
+				data_out = *mctl->m_data_out;
+				if(data_out != exp_data_out) errors ++;
+#if EFPGA_DEBUG
+				sprintf(message,"mctl->m_data_out = %08x\r\n",data_out);
+				dbg_str(message);
+#endif
+
+				for (i = 0 ; i < 3; i++) {
+					*mctl->m_clken = 0xf;
+					data_out = data_out + exp_data_out;
+					if((*mctl->m_data_out) !=  data_out) errors ++;
+#if EFPGA_DEBUG
+					sprintf(message,"mctl->m_data_out = %08x\r\n",*mctl->m_data_out);
+					dbg_str(message);
+#endif
+				}
+#if EFPGA_DEBUG
+			(errors)? dbg_str("*** Test: failed***\n"): dbg_str("###Test: passed###\n");
+#endif
+			mlt_type ++;
+			}while(mlt_type < 4);
+			break;
+		default:
+			break;
+		}
+		test_type ++;
+	}while(test_type <= 2 );
+
+	vPortFree(message);
+	return errors;
+}
+static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
+{
+
+	    (void)pEntry;
 	    // Add functionality here
 		char *message;
-		uint32_t offset;
 		apb_soc_ctrl_typedef *soc_ctrl;
 		efpga_typedef *efpga;
-		int errors = 0;
-		unsigned int i, data1, data2;
-		soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
+		ram_word *ram_addr1, *ram_addr2;
+		mlti_ctl *mt_ctl;
+		unsigned int test_no;
+
+		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
-		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 		efpga->m0_ram_ctl = 0x0; //32b w, 8b r
-		efpga->m0_m0_odata = 0x11111111;
-		efpga->m0_oper0.w[0] = 0x87654321;
-		efpga->m0_coef.w[0] = 5;
-		efpga->m0_cdata = 0x87654321 ;
-		data1 = efpga->m0_m0_odata;
-		data2 = efpga->m0_cdata;
+		test_no = 1;
+		do {
+		switch(test_no) {
+		case 1:
+#if EFPGA_DEBUG
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+			dbg_str("M0_M0_Multiplier Test\n\r\r\r");
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
+			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m0_m0_ctl;
+			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m0_m0_clken;
+			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m0_m0_odata;
+			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m0_m0_cdata;
+			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m0_data_out;
+			ram_addr1 = (ram_word *)&(efpga->m0_oper0);
+			ram_addr2 = (ram_word *)&(efpga->m0_coef);
+			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) {
+				dbg_str("m0_m0_ctl_operation: <<FAILED>>\n\r\r\r");
+			} else {
+				dbg_str("m0_m0_ctl_operation: <<PASSED>>\n\r\r\r");
+			}
 
-		efpga->m0_m0_ctl = 0x80000000;
-		efpga->m0_m0_ctl = 0x0;
-		sprintf(message,"data1 = 0x%0x\r\ndata2 = 0x%0x\r\n",data1, data2);
-		dbg_str(message);
-		sprintf(message,"epga->m0_m0_data_out = %08x\r\n",efpga->m0_m0_data_out);
-		dbg_str(message);
-		for (i = 0 ; i < 40; i++) {
-			efpga->m0_m0_clken = 0xf;
-			sprintf(message,"epga->m0_m0_data_out = %08d\r\n",efpga->m0_m0_data_out);
-			dbg_str(message);
+			break;
+		case 2:
+#if EFPGA_DEBUG
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+			dbg_str("M0_M1_Multiplier Test\n\r\r\r");
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
+			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m0_m1_ctl;
+			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m0_m1_clken;
+			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m0_m1_odata;
+			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m0_m1_cdata;
+			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m1_data_out;
+			ram_addr1 = (ram_word *)&(efpga->m0_oper1);
+			ram_addr2 = (ram_word *)&(efpga->m0_coef);
+			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) {
+				dbg_str("m0_m1_ctl_operation: <<FAILED>>\n\r\r\r");
+			} else {
+				dbg_str("m0_m1_ctl_operation: <<PASSED>>\n\r\r\r");
+			}
+			break;
+
+		case 3:
+#if EFPGA_DEBUG
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+			dbg_str("M1_M0_Multiplier Test\n\r\r\r");
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
+			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m1_m0_ctl;
+			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m1_m0_clken;
+			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m1_m0_odata;
+			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m1_m0_cdata;
+			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m1_m0_data_out;
+			ram_addr1 = (ram_word *)&(efpga->m1_oper0);
+			ram_addr2 = (ram_word *)&(efpga->m1_coef);
+			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) {
+				dbg_str("m1_m0_ctl_operation: <<FAILED>>\n\r\r\r");
+			} else {
+				dbg_str("m1_m0_ctl_operation: <<PASSED>>\n\r\r\r");
+			}
+			break;
+
+		case 4:
+#if EFPGA_DEBUG
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+			dbg_str("M1_M1_Multiplier Test\n\r\r\r");
+			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
+#endif
+			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m1_m1_ctl;
+			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m1_m1_clken;
+			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m1_m1_odata;
+			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m1_m1_cdata;
+			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m1_m1_data_out;
+			ram_addr1 = (ram_word *)&(efpga->m1_oper1);
+			ram_addr2 = (ram_word *)&(efpga->m1_coef);
+			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) {
+				dbg_str("m1_m1_ctl_operation: <<FAILED>>\n\r\r\r");
+			} else {
+				dbg_str("m1_m1_ctl_operation: <<PASSED>>\n\r\r\r");
+			}
+						break;
+
+			break;
+
+		default:
+			break;
 		}
-		efpga->m0_m0_ctl = 0x80000000;
-		efpga->m0_m0_ctl = 0x00003000;
-		for (i = 0 ; i < 40; i++) {
-			efpga->m0_m0_clken = 0xf;
-			sprintf(message,"epga->m0_m0_data_out = %08x\r\n",efpga->m0_m0_data_out);
-			dbg_str(message);
-		}
+		test_no ++;
+	}while(test_no < 5);
+
+	//dbg_str(message);
+	vPortFree(message);
 }
+
+
 static void ram_test(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
@@ -292,11 +517,11 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		efpga_typedef *efpga;
 		int errors = 0;
 		int i;
-		soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
+		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
-		efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 		// Init all rams to 0
 		sprintf(message,"Initializing 6 RAMs");
 		dbg_str(message);
@@ -317,7 +542,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			if (efpga->m1_coef.w[i] != 0xffffffff) errors++;
 		}
 		if (errors == 0)
-			sprintf(message," PASSED!\r\n");
+			sprintf(message," <<PASSED>>\r\n");
 		else
 			sprintf(message," *** %d Test Failures\r\n",errors);
 		errors = 0;
@@ -337,7 +562,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			}
 		}
 		if (errors == 0)
-			sprintf(message," PASSED!\r\n");
+			sprintf(message," <<PASSED>>\r\n");
 		else
 			sprintf(message," *** %d Test Failures\r\n",errors);
 		dbg_str(message);
@@ -356,7 +581,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			}
 		}
 		if (errors == 0)
-			sprintf(message," PASSED!\r\n");
+			sprintf(message," <<PASSED>>\r\n");
 		else
 			sprintf(message," *** %d Test Failures\r\n",errors);
 		dbg_str(message);
@@ -370,7 +595,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			if (efpga->m0_coef.w[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
-			sprintf(message," PASSED!\r\n");
+			sprintf(message," <<PASSED>>\r\n");
 		else
 			sprintf(message," *** %d Test Failures\r\n",errors);
 		dbg_str(message);
@@ -384,7 +609,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			if (efpga->m1_oper0.w[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
-			sprintf(message," PASSED!\r\n");
+			sprintf(message," <<PASSED>>\r\n");
 		else
 			sprintf(message," *** %d Test Failures\r\n",errors);
 		dbg_str(message);
@@ -398,7 +623,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			if (efpga->m1_oper1.w[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
-			sprintf(message," PASSED!\r\n");
+			sprintf(message," <<PASSED>>\r\n");
 		else
 			sprintf(message," *** %d Test Failures\r\n",errors);
 		dbg_str(message);
@@ -412,7 +637,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 			if (efpga->m1_coef.w[i+512] != ~i) errors++;
 		}
 		if (errors == 0)
-			sprintf(message," PASSED!\r\n");
+			sprintf(message," <<PASSED>>\r\n");
 		else
 			sprintf(message," *** %d Test Failures\r\n",errors);
 		errors = 0;
@@ -432,9 +657,9 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	efpga_typedef *efpga;
 	message  = pvPortMalloc(80);
 	scratch = pvPortMalloc(256);
-	efpga = (efpga_typedef*)0x1a300000;  // base address of efpga
+	efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 	offset = (unsigned int)scratch & 0xFFFFF;
-	soc_ctrl = (apb_soc_ctrl_typedef*)0x1a104000;
+	soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 	soc_ctrl->rst_efpga = 0xf;
 	soc_ctrl->ena_efpga = 0x7f;
 
@@ -501,7 +726,7 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 			}
 		}
 		if (errors == 0)
-			sprintf(message,"PASSED!\r\n");
+			sprintf(message,"<<PASSED>>\r\n");
 		else
 			sprintf(message,"*** %d Test Failures\r\n",errors);
 		dbg_str(message);
