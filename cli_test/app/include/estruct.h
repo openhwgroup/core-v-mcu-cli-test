@@ -22,6 +22,7 @@
  *
  *=========================================================*/
 
+
 #define EFPGA_DEBUG 1
 #define APB_SOC_CTRL_BASE_ADDR 0x1A104000
 #define EFPGA_BASE_ADDR 0x1A300000
