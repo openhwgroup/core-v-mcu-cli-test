@@ -143,6 +143,6 @@ void CLI_task( void *pParameter )
 void CLI_start_task(const struct cli_cmd_entry *pMainMenu)
 {
     CLI_init( pMainMenu );
-    xTaskCreate ( CLI_task, "CLI", 14 * CLI_TASK_STACKSIZE, NULL, (UBaseType_t)(tskIDLE_PRIORITY+2), &xHandleTestCli);
+    xTaskCreate ( CLI_task, "CLI", 14 * CLI_TASK_STACKSIZE, NULL, (UBaseType_t)(tskIDLE_PRIORITY+1), &xHandleTestCli);
     configASSERT( xHandleTestCli );
 }

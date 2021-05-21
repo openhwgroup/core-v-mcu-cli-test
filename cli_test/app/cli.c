@@ -86,7 +86,7 @@ static void i2cm_readbyte(const struct cli_cmd_entry *pEntry);
 static void i2cm_writebyte(const struct cli_cmd_entry *pEntry);
 static void i2cm_reset(const struct cli_cmd_entry *pEntry);
 static void i2c_temp(const struct cli_cmd_entry *pEntry);
-static void i2c_read_dev_id(const struct cli_cmd_entry *pEntry);
+
 // I2CM tests
 static void i2cm_singlebyte_test(const struct cli_cmd_entry *pEntry);
 
@@ -184,8 +184,7 @@ const struct cli_cmd_entry i2cm0_tests[] =
 const struct cli_cmd_entry i2cm1_functions[] =
 {
 		CLI_CMD_WITH_ARG( "readbyte", i2cm_readbyte,	1, "i2c_addr reg_addr 	-- read register" ),
-		CLI_CMD_SIMPLE ( "temp", i2c_temp,				   "read on board temperature"),
-		CLI_CMD_SIMPLE ( "dev_id", i2c_read_dev_id,		    "read i2c device id"),
+		CLI_CMD_SIMPLE ( "temp", i2c_temp,					"read on board temperature"),
 		CLI_CMD_TERMINATE()
 };
 
@@ -531,29 +530,10 @@ static void i2c_temp (const struct cli_cmd_entry *pEntry)
 	int temp;
 	message  = pvPortMalloc(80);
 	configASSERT (message);
-	udma_i2cm_read(1, 0x96, 0x00, 2, i2c_buffer, false);
+	udma_i2cm_read(1, 0x96, 0, 2, i2c_buffer, false);
 	temp = (i2c_buffer[0] << 8) + i2c_buffer[1];
 	temp = ((temp *625) / 44000) + 32;
 	sprintf(message," Board temp = %d F\r\n", temp);
 	dbg_str(message);
-	vPortFree(message);
-}
-
-static void i2c_read_dev_id(const struct cli_cmd_entry *pEntry)
-{
-	char *message = 0;
-	int temp;
-	message  = pvPortMalloc(80);
-	configASSERT (message);
-	udma_i2cm_read(1, 0x96, 0x0B, 1, i2c_buffer, false);
-
-	sprintf(message," i2c_dev_id:= 0x%x \r\n", i2c_buffer[0]);
-	dbg_str(message);
-	if(i2c_buffer[0] == 0xCB) {
-		dbg_str("Dev Id Test: <<PASSED>>\r\n");
-	}
-	else {
-		dbg_str("Dev Id Test: <<FAILED>>\r\n");
-	}
 	vPortFree(message);
 }

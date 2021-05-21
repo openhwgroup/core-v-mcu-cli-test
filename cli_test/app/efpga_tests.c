@@ -14,6 +14,15 @@
  * limitations under the License.
  *==========================================================*/
 
+/*==========================================================
+ *
+ *    File   : efpga_tests.c
+ *    Purpose: To test efpga block
+ *    Author: gregmartin
+ *
+ *=========================================================*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,22 +31,16 @@
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
 #include "include/estruct.h"
-#include "FreeRTOS.h"
-#include "task.h"
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
 static void m_mltiply_test(const struct cli_cmd_entry *pEntry);
-static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry);
-static void tcdm_task_start(const struct cli_cmd_entry *pEntry);
-static void tcdm_task_stop(const struct cli_cmd_entry *pEntry);
 
+static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry);
 // EFPGA menu
 const struct cli_cmd_entry efpga_cli_tests[] =
 {
-  CLI_CMD_SIMPLE( "tcdm", tcdm_test, "Tcdm0-4 r/w tests" ),
-  CLI_CMD_SIMPLE( "tcdm_st", tcdm_task_start, "Tcdm start task" ),
-  CLI_CMD_SIMPLE( "tcdm_sp", tcdm_task_stop, "Tcdm delete task" ),
+  CLI_CMD_SIMPLE( "tcdm", tcdm_test, "Tcdm 0-4 read/write tests" ),
   CLI_CMD_SIMPLE( "ram", ram_test, "32 bit ram tests" ),
   CLI_CMD_SIMPLE ( "mlt", m_mltiply_test ,"mltiply_test"),
   CLI_CMD_SIMPLE( "rw", ram_32bit_16bit_8bit_test, "ram_rw_tests" ),
@@ -57,8 +60,6 @@ typedef struct {
 	volatile unsigned int *m_cdata;
 	volatile unsigned int *m_data_out;
 }mlti_ctl;
-
-xTaskHandle xHandleTcmdTest = NULL;
 
 static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl) {
 
@@ -328,9 +329,7 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				if ((*mctl->m_data_out) != 0x0) errors ++;
 				*mctl->m_clken = 0xf;
 				data_out = (*mctl->m_data_out);
-				if (mlt_type != 3) {
-					if(data_out != exp_data_out) errors ++;
-				}
+				if(data_out != exp_data_out) errors ++;
 #if EFPGA_DEBUG
 				sprintf(message,"mctl->m_data_out = %08x\r\n",data_out);
 				dbg_str(message);
@@ -338,9 +337,7 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				for (i = 0 ; i < 3; i++) {
 					*mctl->m_clken = 0xf;
 					data_out = data_out + exp_data_out;
-					if (mlt_type != 3) {
-						if((*mctl->m_data_out) !=  data_out) errors ++;
-					}
+					if((*mctl->m_data_out) !=  data_out) errors ++;
 #if EFPGA_DEBUG
 					sprintf(message,"mctl->m_data_out = %08x\r\n",*mctl->m_data_out);
 					dbg_str(message);
@@ -366,9 +363,7 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				if ((*mctl->m_data_out) != 0x0) errors ++;
 				*mctl->m_clken = 0xf;
 				data_out = *mctl->m_data_out;
-				if (mlt_type != 3) {
-					if(data_out != exp_data_out) errors ++;
-				}
+				if(data_out != exp_data_out) errors ++;
 #if EFPGA_DEBUG
 				sprintf(message,"mctl->m_data_out = %08x\r\n",data_out);
 				dbg_str(message);
@@ -377,10 +372,7 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				for (i = 0 ; i < 3; i++) {
 					*mctl->m_clken = 0xf;
 					data_out = data_out + exp_data_out;
-					if (mlt_type != 3) {
-						if((*mctl->m_data_out) !=  data_out) errors ++;
-
-					}
+					if((*mctl->m_data_out) !=  data_out) errors ++;
 #if EFPGA_DEBUG
 					sprintf(message,"mctl->m_data_out = %08x\r\n",*mctl->m_data_out);
 					dbg_str(message);
@@ -673,126 +665,15 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 
 	efpga->m0_ram_ctl = 0;
 	efpga->m1_ram_ctl = 0;
-#if EFPGA_DEBUG
+
 	sprintf(message,"TCDM test - Scratch offset = %x\r\n", offset);
 	dbg_str(message);
-#endif
 	{
 		unsigned int i, j;
 		int errors = 0;
 		i = efpga->test_read;
-#if EFPGA_DEBUG
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
-#endif
-		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x00000000 | offset;
-		efpga->tcdm1_ctl = 0x00000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x00000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x00000000 | (offset+0xC0);
-// Initialize eFPGA RAMs
-		for (i = 0; i < 0x40; i = i + 1) {
-			scratch[i] = 0;
-			efpga->m0_oper0.w[i] = i;
-			efpga->m0_oper1.w[i] = i+0x10;
-			efpga->m1_oper0.w[i] = i+0x20;
-			efpga->m1_oper1.w[i] = i+0x30;
-		}
-		soc_ctrl->control_in = 0x10000f;
-		vTaskDelay(10);
-		for (i = 0;i < 0x40;i = i+1) {
-			efpga->m0_oper0.w[i] = 0;
-			efpga->m0_oper1.w[i] = 0;
-			efpga->m1_oper0.w[i] = 0;
-			efpga->m1_oper1.w[i] = 0;
-			j = scratch[i];
-			scratch[i] = i;
-
-			if (j != i) {
-				errors++;
-
-#if EFPGA_DEBUG
-				sprintf(message,"scratch  = %x expected %x \r\n", j, i);
-				dbg_str(message);
-#endif
-			}
-		}
-		if (errors == 0)
-			dbg_str("eFPGA RAM Write Test: <<PASSED>>\r\n");
-		else {
-			dbg_str("eFPGA RAM Write Test: <<FAILED>>\r\n");
-		}
-		errors = 0;
-		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x80000000 | offset;
-		efpga->tcdm1_ctl = 0x80000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x80000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x80000000 | (offset+0xC0);
-		soc_ctrl->control_in = 0x10000f;
-		vTaskDelay(10);
-		for (i = 0;i < 0x40;i = i+1) {
-			if(i < 0x10)
-			j = efpga->m0_oper0.w[i];
-			else if (i < 0x20)
-			j = efpga->m0_oper1.w[i-0x10];
-			else if (i < 0x30)
-			j = efpga->m1_oper0.w[i-0x20];
-			else
-			j = efpga->m1_oper1.w[i-0x30];
-			if (j != i) {
-				errors++;
-#if EFPGA_DEBUG
-				sprintf(message,"mX_operY  = %x expected %x \r\n", j, i);
-				dbg_str(message);
-#endif
-			}
-		}
-		if (errors == 0)
-			dbg_str("eFPGA RAM Read Test: <<PASSED>>\r\n");
-		else {
-#if EFPGA_DEBUG
-			sprintf(message,"*** %d Test Failures\r\n",errors);
-			dbg_str(message);
-#endif
-			dbg_str("eFPGA RAM Read Test: FAILED\r\n");
-		}
-	}
-	vPortFree(scratch);
-	vPortFree(message);
-}
-
-void tcdm_task( void *pParameter )
-{
-
-    (void)pParameter;
-    // Add functionality here
-	uint32_t *scratch;
-	char *message;
-	uint32_t offset;
-	apb_soc_ctrl_typedef *soc_ctrl;
-	efpga_typedef *efpga;
-	message  = pvPortMalloc(80);
-	scratch = pvPortMalloc(256);
-	efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
-	offset = (unsigned int)scratch & 0xFFFFF;
-	soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
-	soc_ctrl->rst_efpga = 0xf;
-	soc_ctrl->ena_efpga = 0x7f;
-
-#if EFPGA_DEBUG
-	sprintf(message,"TCDM test - Scratch offset = %x\r\n", offset);
-	dbg_str(message);
-#endif
-	for(;;){
-		efpga->m0_ram_ctl = 0;
-		efpga->m1_ram_ctl = 0;
-		unsigned int i, j;
-		int errors = 0;
-		i = efpga->test_read;
-#if EFPGA_DEBUG
-		sprintf(message,"eFPGA access test read = %x \r\n", i);
-		dbg_str(message);
-#endif
 		soc_ctrl->control_in = 0x100000;
 		efpga->tcdm0_ctl = 0x00000000 | offset;
 		efpga->tcdm1_ctl = 0x00000000 | (offset+0x40);
@@ -818,18 +699,10 @@ void tcdm_task( void *pParameter )
 
 			if (j != i) {
 				errors++;
-#if EFPGA_DEBUG
 				sprintf(message,"scratch  = %x expected %x \r\n", j, i);
 				dbg_str(message);
-#endif
 			}
 		}
-		if (errors == 0)
-			dbg_str("eFPGA RAM Write Test: <<PASSED>>\r\n");
-		else {
-			dbg_str("eFPGA RAM Write Test: <<FAILED>>\r\n");
-		}
-		errors = 0;
 		soc_ctrl->control_in = 0x100000;
 		efpga->tcdm0_ctl = 0x80000000 | offset;
 		efpga->tcdm1_ctl = 0x80000000 | (offset+0x40);
@@ -848,48 +721,16 @@ void tcdm_task( void *pParameter )
 			j = efpga->m1_oper1.w[i-0x30];
 			if (j != i) {
 				errors++;
-#if EFPGA_DEBUG
-				sprintf(message,"mX_operY  = %x expected %x \r\n", j, i);
+        sprintf(message,"mX_operY  = %x expected %x \r\n", j, i);
 				dbg_str(message);
-#endif
 			}
 		}
 		if (errors == 0)
-			dbg_str("eFPGA RAM Read Test: <<PASSED>>\r\n");
-		else {
-#if EFPGA_DEBUG
+			sprintf(message,"<<PASSED>>\r\n");
+		else
 			sprintf(message,"*** %d Test Failures\r\n",errors);
-			dbg_str(message);
-#endif
-			dbg_str("eFPGA RAM Read Test: <<FAILED>>\r\n");
-		}
-		vTaskDelay(1000);
+		dbg_str(message);
 	}
 	vPortFree(scratch);
 	vPortFree(message);
 	}
-
-
-static void tcdm_task_start(const struct cli_cmd_entry *pEntry)
-{
-	(void)pEntry;
-	xTaskCreate ( tcdm_task, "tcdm_task", 1000, NULL, (UBaseType_t)(tskIDLE_PRIORITY+1), &xHandleTcmdTest);
-	configASSERT( xHandleTcmdTest );
-
-}
-
-
-static void tcdm_task_stop(const struct cli_cmd_entry *pEntry)
-{
-	(void)pEntry;
-	if(xHandleTcmdTest != NULL) {
-		vTaskDelete(xHandleTcmdTest);
-		dbg_str("<<TCDM TASK DELETED>>\r\n");
-	}
-	else {
-		dbg_str("<<NO TCDM TASK STARTED>>\r\n");
-		xHandleTcmdTest = NULL;
-
-	}
-
-}
