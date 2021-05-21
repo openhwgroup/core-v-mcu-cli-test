@@ -13,14 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *==========================================================*/
+#ifndef INC_EFPGA_H
+#define INC_EFPGA_H
 
-/*==========================================================
- *
- *    File   : estruct.h
- *    Purpose: To test efpga block
- *    Author: gregmartin
- *
- *=========================================================*/
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define EFPGA_DEBUG 0
 #define APB_SOC_CTRL_BASE_ADDR 0x1A104000
@@ -146,3 +144,9 @@ typedef struct {
 	volatile unsigned int reservedf0[0xb8];
 	volatile unsigned int padmux[64];
 } apb_soc_ctrl_typedef;
+
+#ifdef __cplusplus
+}
+#endif
+#endif /* INC_EFPGA_H */
+
