@@ -57,7 +57,7 @@ void hal_read_gpio_status(uint8_t gpio_num, uint8_t* input_value, uint8_t* outpu
 	unsigned int value = 0xff;
 
 	while ((value & 0xff) != gpio_num) {
-		papbgpio->setsel_b.gpio_num = gpio_num;		// Set address for following reads
+		papbgpio->setsel= gpio_num;		// Set address for following reads
 		value = papbgpio->rdstat;
 	}
 	*input_value = (uint8_t)((value >> 12) & 1); //

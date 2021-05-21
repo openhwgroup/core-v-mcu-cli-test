@@ -26,7 +26,10 @@
 #include "hal/include/hal_udma_cam_reg_defs.h"
 
 typedef enum {
-		kCamReset
+		kCamReset,
+		kCamID,
+		kCamInit,
+		kCamFrame
 } udma_cam_control_type_t;
 
 typedef enum {

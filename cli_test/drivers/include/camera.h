@@ -5,11 +5,6 @@
 #include <queue.h>
 #include "../../app/include/himax.h"
 
-#ifdef __CAMERA_C__
-#define EXTERN
-#else
-#define EXTERN extern
-#endif
 
 typedef struct {
 	volatile uint32_t *rx_saddr; // 0x00
@@ -34,7 +29,7 @@ typedef struct {
 	uint8_t data;
 }reg_cfg_t;
 
-#ifdef __CAMERA_C__
+
 reg_cfg_t himaxRegInit[] = {
     {BLC_TGT, 0x08},            //  BLC target :8  at 8 bit mode
     {BLC2_TGT, 0x08},           //  BLI target :8  at 8 bit mode
@@ -127,7 +122,7 @@ reg_cfg_t himaxRegInit[] = {
     {IMG_ORIENTATION, 0x01}, // change the orientation
     {0x0104, 0x01},
     {0x0100, 0x01},
+	{0x0602, 0x11}
 };
-#endif
-void himaxBoot(uint8_t cam) ;
+
 #endif
