@@ -107,7 +107,7 @@ extern const struct cli_cmd_entry my_main_menu[];
 
 int main(void)
 {
-	prvSetupHardware();
+    prvSetupHardware();
 
 	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
 	of this file. */

@@ -51,6 +51,7 @@ const struct cli_cmd_entry i2cm0_functions[];
 const struct cli_cmd_entry i2cm0_tests[];
 const struct cli_cmd_entry i2cm1_functions[];
 extern const struct cli_cmd_entry efpga_cli_tests[];
+extern const struct cli_cmd_entry qspi_cli_tests[];
 
 // MISC functions
 static void misc_info(const struct cli_cmd_entry *pEntry);
@@ -101,6 +102,7 @@ const struct cli_cmd_entry my_main_menu[] = {
 		CLI_CMD_SUBMENU( "i2cm0", 	i2cm0_functions, 	"commands for i2cm0" ),
 		CLI_CMD_SUBMENU( "i2cm1", 	i2cm1_functions, 	"commands for i2cm1" ),
 		CLI_CMD_SUBMENU( "efpga", 	efpga_cli_tests,    "commands for efpga connectivity"),
+		CLI_CMD_SUBMENU( "qspi", qspi_cli_tests, "commands for efpga tests"),
 		CLI_CMD_TERMINATE()
 
 };

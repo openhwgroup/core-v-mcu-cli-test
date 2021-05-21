@@ -54,3 +54,4 @@ void _udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint16_t read_len, uint8_
 void _udma_i2cm_send_stop(uint8_t i2c_id);
 
 #endif /* DRIVERS_INCLUDE_UDMA_I2CM_DRIVER_H_ */
+
