@@ -60,14 +60,10 @@ void hal_read_gpio_status(uint8_t gpio_num, uint8_t* input_value, uint8_t* outpu
 		papbgpio->setsel_b.gpio_num = gpio_num;		// Set address for following reads
 		value = papbgpio->rdstat;
 	}
-	*input_value = (uint8_t)((value >> 12) & 1); //
-	papbgpio->rdstat_b.input;
-	*output_value = (uint8_t)((value >> 8) & 1); //
-	papbgpio->rdstat_b.output;
-	*interrupt_type = (uint8_t)((value >> 16) & 7); //
-	papbgpio->rdstat_b.inttype;
-	*gpio_mode = (uint8_t)((value >> 24) & 3); //
-	papbgpio->rdstat_b.mode;
+	*input_value = (uint8_t)((value >> 12) & 1); //papbgpio->rdstat_b.input;
+	*output_value = (uint8_t)((value >> 8) & 1); //papbgpio->rdstat_b.output;
+	*interrupt_type = (uint8_t)((value >> 17) & 7); //papbgpio->rdstat_b.inttype;
+	*gpio_mode = (uint8_t)((value >> 24) & 3); //papbgpio->rdstat_b.mode;
 }
 
 void hal_read_gpio_status_raw(uint8_t gpio_num, uint32_t* register_value){
@@ -91,6 +87,37 @@ void hal_set_gpio_mode(uint8_t gpio_num, uint8_t gpio_mode){
 	papbgpio->setmode = value;
 }
 
-void hal_set_gpio_interrupt(uint8_t gpio_num, uint8_t interrupt_type, uint8_t interrupt_enable){}
-void hal_enable_gpio_interrupt(uint8_t gpio_num){}
-void hal_disable_gpio_interrupt(uint8_t gpio_num){}
+void hal_set_gpio_interrupt(uint8_t gpio_num, uint8_t interrupt_type, uint8_t interrupt_enable){
+	unsigned int regval;
+	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
+	regval = papbgpio->setint;
+	regval = regval & 0xFFF0FF00;
+
+	regval = regval | (((interrupt_type & REG_SETINT_INTTYPE_MASK) << REG_SETINT_INTTYPE_LSB ) |
+			 ((interrupt_enable & REG_SETINT_INTENABLE_MASK) << REG_SETINT_INTENABLE_LSB) |
+			 ((gpio_num & REG_SETINT_gpio_num_MASK ) << REG_SETINT_gpio_num_LSB));
+
+	papbgpio->setint = regval;
+}
+
+void hal_enable_gpio_interrupt(uint8_t gpio_num){
+	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
+	unsigned int regval = papbgpio->setint;
+	regval = regval & (~(REG_SETINT_gpio_num_MASK << REG_SETINT_gpio_num_LSB));
+	regval = regval & (~(REG_SETINT_INTENABLE_MASK << REG_SETINT_INTENABLE_LSB));
+	regval = regval | (((0x1 & REG_SETINT_INTENABLE_MASK) << REG_SETINT_INTENABLE_LSB) |
+			 ((gpio_num & REG_SETINT_gpio_num_MASK ) << REG_SETINT_gpio_num_LSB));
+
+	papbgpio->setint = regval;
+}
+
+void hal_disable_gpio_interrupt(uint8_t gpio_num) {
+
+	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
+	unsigned int regval = papbgpio->setint;
+	regval = regval & (~(REG_SETINT_gpio_num_MASK << REG_SETINT_gpio_num_LSB));
+	regval = regval & (~(REG_SETINT_INTENABLE_MASK << REG_SETINT_INTENABLE_LSB));
+	regval = regval | ((gpio_num & REG_SETINT_gpio_num_MASK ) << REG_SETINT_gpio_num_LSB);
+
+	papbgpio->setint = regval;
+}
