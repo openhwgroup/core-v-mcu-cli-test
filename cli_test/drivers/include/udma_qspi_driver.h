@@ -51,8 +51,10 @@ uint16_t udma_qspim_close (uint8_t qspim_id);
 uint16_t udma_qspim_control(uint8_t qspim_id, udma_qspim_control_type_t control_type, void* pparam);
 void udma_qspim_write(uint8_t qspim_id, uint8_t cs, uint16_t write_len, uint8_t* write_data);
 void udma_qspim_read(uint8_t qspim_id,  uint8_t cs, uint16_t read_len, uint8_t* read_buffer);
-
-
+uint8_t udma_flash_erase(uint8_t qspim_id, uint8_t cs, uint32_t addr, uint8_t cmd);
+uint32_t udma_flash_readid(uint8_t qspim_id, uint8_t cs);
+void udma_flash_read(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,uint8_t *l2addr,uint16_t read_len ) ;
+void udma_flash_write(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,uint8_t *l2addr,uint16_t write_len ) ;
 
 // helper functions
 

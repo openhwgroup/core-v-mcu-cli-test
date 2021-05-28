@@ -14,6 +14,7 @@
 #include "drivers/include/udma_cam_driver.h"
 #include "hal/include/hal_pinmux.h"
 #include "include/estruct.h"
+#include "hal/include/hal_fc_event.h"
 
 
 static int open(const struct cli_cmd_entry *pEntry);
@@ -63,6 +64,9 @@ static int set_clock(const struct cli_cmd_entry *pEntry) {
 	return retval;
 }
 
+static void gpioISR() {
+
+}
 static int open(const struct cli_cmd_entry *pEntry) {
 
 // Add functionality here
@@ -70,27 +74,19 @@ char *message;
 int errors = 0;
 int i, length;
 message  = pvPortMalloc(80);
-hal_setpinmux(13, 1);
-hal_setpinmux(14, 1);
-hal_setpinmux(21, 1);
-hal_setpinmux(22, 1);
-hal_setpinmux(25, 3); //gpio28 -- timer0_ch0
-hal_setpinmux(26, 3); // cam v-sync
-hal_setpinmux(27, 3); // cam h-sync
-hal_setpinmux(28, 3); // cam clk
-hal_setpinmux(32, 3); // cam data0
-hal_setpinmux(33, 3); // cam data1
-hal_setpinmux(34, 3); // cam data2
-hal_setpinmux(35, 3); // cam data3
-hal_setpinmux(36, 3); // cam data4
-hal_setpinmux(37, 3); // cam data5
-hal_setpinmux(38, 3); // cam data6
-hal_setpinmux(39, 3); // cam data7
-cam_open(0);
+hal_setpinmux(9,2);
+hal_set_gpio_mode(2,1);
+hal_set_gpio_interrupt(2,1,1);
+pi_fc_event_handler_set(130, gpioISR, NULL);
+/* Enable SOC events propagation to FC. */
+hal_soc_eu_set_fc_mask(130);
+hal_toggle_gpio(2);
+hal_toggle_gpio(2);
+//cam_open(0);
 sprintf(message,"Himax opened--ID = ");
 dbg_str(message);
-sprintf(message,"%04x\r\n",udma_cam_control(kCamID, NULL));
-dbg_str(message);
-udma_cam_control(kCamInit, NULL);
+//sprintf(message,"%04x\r\n",udma_cam_control(kCamID, NULL));
+//dbg_str(message);
+//udma_cam_control(kCamInit, NULL);
 vPortFree(message);
 }

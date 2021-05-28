@@ -69,7 +69,7 @@ void cam_open (uint8_t cam_id) {
 	cam = 0x48; // Himax address
 	udma_cam_control(kCamReset, NULL);
 
-	return 0;
+	return;
 }
 uint16_t udma_cam_control(udma_cam_control_type_t control_type, void* pparam) {
 	short retval = 0;

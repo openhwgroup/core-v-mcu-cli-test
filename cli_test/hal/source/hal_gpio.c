@@ -91,6 +91,13 @@ void hal_set_gpio_mode(uint8_t gpio_num, uint8_t gpio_mode){
 	papbgpio->setmode = value;
 }
 
-void hal_set_gpio_interrupt(uint8_t gpio_num, uint8_t interrupt_type, uint8_t interrupt_enable){}
+void hal_set_gpio_interrupt(uint8_t gpio_num, uint8_t interrupt_type, uint8_t interrupt_enable){
+	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
+	unsigned int value = gpio_num;
+	value = (value & 0xfff8ffff) | (interrupt_type << 17) | (interrupt_enable << 16);
+	//papbgpio->setmode_b.gpio_num = gpio_num;  //ToDo: is there a race here -- do we need to write both at same time?
+	//papbgpio->setmode_b.mode = gpio_mode;
+	papbgpio->setint = value;
+}
 void hal_enable_gpio_interrupt(uint8_t gpio_num){}
 void hal_disable_gpio_interrupt(uint8_t gpio_num){}
