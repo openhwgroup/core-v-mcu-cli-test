@@ -19,13 +19,22 @@
 #ifndef HAL_INCLUDE_HAL_GPIO_H_
 #define HAL_INCLUDE_HAL_GPIO_H_
 
+typedef struct {
+	uint8_t		mode;
+	uint32_t	int_type;
+	uint8_t		in_val;
+	uint8_t		out_val;
+	uint32_t	int_en;
+	uint32_t	number;
+}gpio_hal_typedef;
+
 void hal_write_gpio(uint8_t gpio_num, uint8_t value);
 void hal_set_gpio(uint8_t gpio_num);
 void hal_clr_gpio(uint8_t gpio_num);
 void hal_toggle_gpio(uint8_t gpio_num);
 
 void hal_set_gpio_num(uint8_t gpio_num);
-void hal_read_gpio_status(uint8_t gpio_num, uint8_t* input_value, uint8_t* output_value, uint8_t* interrupt_type, uint8_t* gpio_mode);
+void hal_read_gpio_status(gpio_hal_typedef *hgpio);
 void hal_read_gpio_status_raw(uint8_t gpio_num, uint32_t* register_value);
 void hal_set_gpio_mode(uint8_t gpio_num, uint8_t gpio_mode);
 void hal_set_gpio_interrupt(uint8_t gpio_num, uint8_t interrupt_type, uint8_t interrupt_enable);

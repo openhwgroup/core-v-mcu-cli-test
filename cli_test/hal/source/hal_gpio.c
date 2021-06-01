@@ -52,18 +52,21 @@ void hal_toggle_gpio(uint8_t gpio_num) {
 
 void hal_set_gpio_num(uint8_t gpio_num){}
 
-void hal_read_gpio_status(uint8_t gpio_num, uint8_t* input_value, uint8_t* output_value, uint8_t* interrupt_type, uint8_t* gpio_mode){
+void hal_read_gpio_status(gpio_hal_typedef *hgpio){
 	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
 	unsigned int value = 0xff;
 
-	while ((value & 0xff) != gpio_num) {
-		papbgpio->setsel_b.gpio_num = gpio_num;		// Set address for following reads
+	while ((value & 0xff) != hgpio->number) {
+		papbgpio->setsel_b.gpio_num = hgpio->number;		// Set address for following reads
 		value = papbgpio->rdstat;
 	}
-	*input_value = (uint8_t)((value >> 12) & 1); //papbgpio->rdstat_b.input;
-	*output_value = (uint8_t)((value >> 8) & 1); //papbgpio->rdstat_b.output;
-	*interrupt_type = (uint8_t)((value >> 17) & 7); //papbgpio->rdstat_b.inttype;
-	*gpio_mode = (uint8_t)((value >> 24) & 3); //papbgpio->rdstat_b.mode;
+	hgpio->mode = (uint8_t)((value >> 24) & 0x3); //papbgpio->rdstat_b.mode;
+	hgpio->int_type = (uint8_t)((value >> 17) & 0x7); //papbgpio->rdstat_b.inttype;
+	hgpio->int_en = (uint8_t)((value >> 16) & 0x1); //papbgpio->rdstat_b.inten;
+	hgpio->in_val = (uint8_t)((value >> 12) & 0x1); //papbgpio->rdstat_b.input;
+	hgpio->out_val = (uint8_t)((value >> 8) & 0x1); //papbgpio->rdstat_b.output;
+	hgpio->number = (uint8_t)((value >> 0) & 0xFF); //papbgpio->rdstat_b.number;
+
 }
 
 void hal_read_gpio_status_raw(uint8_t gpio_num, uint32_t* register_value){
