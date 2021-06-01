@@ -19,6 +19,12 @@
 #ifndef HAL_INCLUDE_HAL_GPIO_H_
 #define HAL_INCLUDE_HAL_GPIO_H_
 
+typedef enum {
+	CLEAR,
+	SET,
+	TOGGLE
+}efpgaio_enum_typedef;
+
 typedef struct {
 	uint8_t		mode;
 	uint32_t	int_type;
@@ -40,5 +46,10 @@ void hal_set_gpio_mode(uint8_t gpio_num, uint8_t gpio_mode);
 void hal_set_gpio_interrupt(uint8_t gpio_num, uint8_t interrupt_type, uint8_t interrupt_enable);
 void hal_enable_gpio_interrupt(uint8_t gpio_num);
 void hal_disable_gpio_interrupt(uint8_t gpio_num);
+
+void hal_efpgaio_output(uint8_t gpio_num, efpgaio_enum_typedef value);
+void hal_efpgaio_outen(uint8_t gpio_num, efpgaio_enum_typedef value);
+void hal_efpgaio_event(uint8_t gpio_num, efpgaio_enum_typedef value);
+void hal_efpgaio_status(gpio_hal_typedef *efpgaio);
 
 #endif /* HAL_INCLUDE_HAL_GPIO_H_ */
