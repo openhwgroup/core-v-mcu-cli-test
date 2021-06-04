@@ -740,6 +740,7 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 	offset = (unsigned int)scratch & 0xFFFFF;
 	soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
+	soc_ctrl->control_in = 0;
 	soc_ctrl->rst_efpga = 0xf;
 	soc_ctrl->ena_efpga = 0x7f;
 
@@ -778,16 +779,17 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 			efpga->m0_oper1.w[i] = 0;
 			efpga->m1_oper0.w[i] = 0;
 			efpga->m1_oper1.w[i] = 0;
-			j = scratch[i];
+			j = (volatile)scratch[i];
 			scratch[i] = i;
 
 			if (j != i) {
 				errors++;
 
-#if EFPGA_DEBUG
+//#if EFPGA_DEBUG
 				sprintf(message,"scratch  = %x expected %x \r\n", j, i);
 				dbg_str(message);
-#endif
+
+//efpga tcdm				#endif
 			}
 		}
 		global_err += errors;

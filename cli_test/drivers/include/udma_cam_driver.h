@@ -16,17 +16,21 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef DRIVERS_INCLUDE_UDMA_QSPIM_DRIVER_H_
-#define DRIVERS_INCLUDE_UDMA_QSPIM_DRIVER_H_
+#ifndef DRIVERS_INCLUDE_UDMA_CAM_DRIVER_H_
+#define DRIVERS_INCLUDE_UDMA_CAM_DRIVER_H_
 
 #include <stdint.h>
 #include <stdbool.h>
 
 #include "hal/include/hal_udma_ctrl_reg_defs.h"
+#include "hal/include/hal_udma_cam_reg_defs.h"
 
 typedef enum {
-		kQSPImReset
-} udma_qspim_control_type_t;
+		kCamReset,
+		kCamID,
+		kCamInit,
+		kCamFrame
+} udma_cam_control_type_t;
 
 typedef enum {
 	kSPIm_Cfg 	    = (0x0 << 28),
@@ -44,19 +48,14 @@ typedef enum {
 	kSPIm_UCA 		= (0xd << 28),
 	kSPIm_UCS 		= (0xe << 28)
 
-} spim_cmd_t;
+} cam_cmd_t;
 
-uint16_t udma_qspim_open (uint8_t qspim_id, uint32_t spi_clk_freq);
-uint16_t udma_qspim_close (uint8_t qspim_id);
-uint16_t udma_qspim_control(uint8_t qspim_id, udma_qspim_control_type_t control_type, void* pparam);
-void udma_qspim_write(uint8_t qspim_id, uint8_t cs, uint16_t write_len, uint8_t* write_data);
-void udma_qspim_read(uint8_t qspim_id,  uint8_t cs, uint16_t read_len, uint8_t* read_buffer);
-uint8_t udma_flash_erase(uint8_t qspim_id, uint8_t cs, uint32_t addr, uint8_t cmd);
-uint32_t udma_flash_readid(uint8_t qspim_id, uint8_t cs);
-void udma_flash_read(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,uint8_t *l2addr,uint16_t read_len ) ;
-void udma_flash_write(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,uint8_t *l2addr,uint16_t write_len ) ;
+
+uint16_t udma_cam_control(udma_cam_control_type_t control_type, void* pparam);
+void cam_open (uint8_t cam_id);
+
 
 // helper functions
+void _himaxRegWrite(unsigned int addr, unsigned char value);
 
-
-#endif /* DRIVERS_INCLUDE_UDMA_QSPIM_DRIVER_H_ */
+#endif /* DRIVERS_INCLUDE_UDMA_CAM_DRIVER_H_ */

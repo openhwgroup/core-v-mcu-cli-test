@@ -158,7 +158,7 @@ void hal_set_gpio_num(uint8_t gpio_num){
 	unsigned int value = 0xff;
 
 	while ((value & 0xff) != gpio_num) {
-		papbgpio->setsel_b.gpio_num = gpio_num;		// Set address for following reads
+		papbgpio->setsel= gpio_num;		// Set address for following reads
 		value = papbgpio->rdstat;
 	}
 }

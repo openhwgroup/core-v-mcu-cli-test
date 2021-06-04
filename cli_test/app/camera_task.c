@@ -1,5 +1,5 @@
 
-#include <app/include/camera.h>
+#include <drivers/include/camera.h>
 #include "hal/include/hal_fc_event.h"
 
 static TaskHandle_t xTasktoNotify;

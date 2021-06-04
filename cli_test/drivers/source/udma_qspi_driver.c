@@ -23,11 +23,9 @@
 #include "semphr.h"
 
 #include "target/core-v-mcu/include/core-v-mcu-config.h"
-
 #include "hal/include/hal_fc_event.h"
 #include "hal/include/hal_udma_ctrl_reg_defs.h"
 #include "hal/include/hal_udma_qspi_reg_defs.h"
-
 #include <drivers/include/udma_qspi_driver.h>
 
 
@@ -211,4 +209,256 @@ void udma_qspim_write (uint8_t qspim_id, uint8_t cs, uint16_t write_len, uint8_t
 		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
 		configASSERT( xSemaphoreGive( shSemaphoreHandle ) == pdTRUE );
 }
+uint32_t udma_flash_readid(uint8_t qspim_id, uint8_t cs) {
+	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
+	uint32_t*	pcmd = auccmd;
+	uint32_t result;
 
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT | cs;
+		*pcmd++ = kSPIm_SendCmd | (0x7009e); // readid command
+		*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+		pqspim_regs->rx_saddr = &result;
+		pqspim_regs->rx_size = 4;
+		pqspim_regs->rx_cfg_b.en = 1;
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+
+		while (pqspim_regs->rx_size != 0) {}
+		return result;
+}
+
+uint8_t udma_flash_erase(uint8_t qspim_id, uint8_t cs, uint32_t addr, uint8_t cmd) {
+	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
+	uint32_t*	pcmd = auccmd;
+	union { uint32_t w; uint8_t b[4]; } result;
+	SemaphoreHandle_t shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+    switch (cmd) {
+    case 0: cmd = 0x20;break;  // subsector (4k erase)
+    case 1: cmd = 0xd8;break; // sector erase (64K)
+    case 2: cmd == 0xc7;break; // bulk erase
+    default: configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+    	return 0xff;
+
+    }
+
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT | cs;
+		*pcmd++ = kSPIm_SendCmd | (0x70006) ; // write enable command
+//		*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+//		pqspim_regs->rx_saddr = &result.w;
+//		pqspim_regs->rx_size = 0;
+//		pqspim_regs->rx_cfg_b.en = 1;
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+		pcmd = auccmd;
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT | cs;
+		*pcmd++ = kSPIm_SendCmd | (0x70000) | cmd; // write enable command
+		*pcmd++ = kSPIm_SendCmd | (0xf0000) | ((addr >> 8) & 0xffff);
+		*pcmd++ = kSPIm_SendCmd | (0x70000) | (addr && 0xff);
+//		*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+		result.b[0] = 0;
+		while ((result.b[0] & 0x80) == 0x0) {
+
+			pqspim_regs->rx_cfg_b.en = 0;
+			pqspim_regs->tx_cfg_b.en = 0;
+			pqspim_regs->cmd_cfg_b.en = 0;
+			pcmd = auccmd;
+			*pcmd++ = kSPIm_Cfg | aucclkdiv;
+			*pcmd++ = kSPIm_SOT | cs;
+			*pcmd++ = kSPIm_SendCmd | (0x70070); // read flag register
+			*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved
+			*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+			pqspim_regs->rx_saddr = &result.w;
+			pqspim_regs->rx_size = 4;
+			pqspim_regs->rx_cfg_b.en = 1;
+
+			pqspim_regs->cmd_saddr = auccmd;
+			pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+			pqspim_regs->cmd_cfg_b.en = 1;
+			configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+		}
+		configASSERT( xSemaphoreGive( shSemaphoreHandle ) == pdTRUE );
+
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+		pcmd = auccmd;
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT | cs;
+		*pcmd++ = kSPIm_SendCmd | (0x70004); // write disable
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+		return result.b[0];
+}
+
+void udma_flash_read(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,uint8_t *l2addr,uint16_t read_len ) {
+	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
+	uint32_t*	pcmd = auccmd;
+
+	SemaphoreHandle_t shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	shSemaphoreHandle = qspim_semaphores_rx[qspim_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT;
+		*pcmd++ = kSPIm_SendCmd | (0x70003);  // read command
+		*pcmd++ = kSPIm_SendCmd | (0xf0000) | ((flash_addr >> 8) & 0xffff);
+		*pcmd++ = kSPIm_SendCmd | (0x70000) | (flash_addr & 0xff);
+		*pcmd++ = kSPIm_RxData | (0x00470000 | (read_len-1)) ; // 4 words recieved
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+		pqspim_regs->rx_saddr = l2addr;
+		pqspim_regs->rx_size = read_len;
+		pqspim_regs->rx_cfg_b.en = 1;
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+
+		shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+		configASSERT( xSemaphoreGive( shSemaphoreHandle) == pdTRUE );
+		shSemaphoreHandle = qspim_semaphores_rx[qspim_id];
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+		configASSERT( xSemaphoreGive( shSemaphoreHandle) == pdTRUE );
+
+}
+void udma_flash_write(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,
+		uint8_t *l2addr, uint16_t write_len ) {
+	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
+	uint32_t*	pcmd = auccmd;
+
+	SemaphoreHandle_t shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+	shSemaphoreHandle = qspim_semaphores_tx[qspim_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+	pqspim_regs->rx_cfg_b.en = 0;
+	pqspim_regs->tx_cfg_b.en = 0;
+	pqspim_regs->cmd_cfg_b.en = 0;
+
+	*pcmd++ = kSPIm_Cfg | aucclkdiv;
+	*pcmd++ = kSPIm_SOT | cs;
+	*pcmd++ = kSPIm_SendCmd | (0x70006) ; // write enable command
+	*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+	pqspim_regs->cmd_saddr = auccmd;
+	pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+	pqspim_regs->cmd_cfg_b.en = 1;
+
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+
+		pcmd = auccmd;
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT;
+		*pcmd++ = kSPIm_SendCmd | (0x70002);  // program command
+		*pcmd++ = kSPIm_SendCmd | (0xf0000) | ((flash_addr >> 8) & 0xffff);
+		*pcmd++ = kSPIm_SendCmd | (0x70000) | (flash_addr & 0xff);
+		*pcmd++ = kSPIm_TxData | (0x00470000 | (write_len-1)) ; // 4 words recieved
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+		pqspim_regs->tx_saddr = l2addr;
+		pqspim_regs->tx_size = write_len-1;
+		pqspim_regs->tx_cfg_b.en = 1;
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+
+
+		shSemaphoreHandle = qspim_semaphores_tx[qspim_id];
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+		configASSERT( xSemaphoreGive( shSemaphoreHandle) == pdTRUE );
+		shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+uint8_t test;
+		test = 1;
+				while ((test & 0x1) == 0x1) {
+
+					pqspim_regs->rx_cfg_b.en = 0;
+					pqspim_regs->tx_cfg_b.en = 0;
+					pqspim_regs->cmd_cfg_b.en = 0;
+					pcmd = auccmd;
+					*pcmd++ = kSPIm_Cfg | aucclkdiv;
+					*pcmd++ = kSPIm_SOT | cs;
+					*pcmd++ = kSPIm_SendCmd | (0x70005); // read status register
+					*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved
+					*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+					pqspim_regs->rx_saddr = l2addr;
+					pqspim_regs->rx_size = 4;
+					pqspim_regs->rx_cfg_b.en = 1;
+
+					pqspim_regs->cmd_saddr = auccmd;
+					pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+					pqspim_regs->cmd_cfg_b.en = 1;
+					configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+					test = l2addr[0] & 0xff;
+				}
+
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+
+		pcmd = auccmd;
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT | cs;
+		*pcmd++ = kSPIm_SendCmd | (0x70004) ; // write disable command
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+
+		shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+		configASSERT( xSemaphoreGive( shSemaphoreHandle) == pdTRUE );
+}
