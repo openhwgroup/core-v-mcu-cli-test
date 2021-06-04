@@ -24,6 +24,109 @@
  #include "hal/include/hal_apb_gpio_reg_defs.h"
  #include "hal/include/hal_gpio.h"
 
+void hal_efpgaio_output(uint8_t gpio_num, efpgaio_enum_typedef value) {
+
+unsigned int *reg = (unsigned int*)(EFPGAIO_START_ADDR + 0x40);
+unsigned int regval = *reg;
+
+switch(value) {
+	case CLEAR:
+		regval |=  (regval >> gpio_num) & (value & 0x1);
+		*reg = regval;
+		break;
+	case SET:
+		regval |=  (regval >> gpio_num) | (value & 0x1);
+		*reg = regval;
+		break;
+	case TOGGLE:
+		regval |=  (regval >> gpio_num) ^ (value & 0x1);
+		*reg = regval;
+		break;
+
+	default:
+		break;
+ }
+}
+
+void hal_efpgaio_outen(uint8_t gpio_num, efpgaio_enum_typedef value) {
+
+unsigned int *reg = (unsigned int*)(EFPGAIO_START_ADDR + 0x50);
+unsigned int regval = *reg;
+
+switch(value) {
+	case CLEAR:
+		regval |= (regval >> gpio_num) & (value & 0x1);
+		*reg = regval;
+		break;
+	case SET:
+		regval |=  (regval >> gpio_num) | (value & 0x1);
+		*reg = regval;
+		break;
+	default:
+		break;
+ }
+}
+
+void hal_efpgaio_input(uint8_t gpio_num, efpgaio_enum_typedef value) {
+
+unsigned int *reg = (EFPGAIO_START_ADDR + 0x60);
+unsigned int regval = *reg;
+switch(value) {
+	case CLEAR:
+		regval |=  (regval >> gpio_num) & (value & 0x1);
+		*reg = regval;
+		break;
+	case SET:
+		regval |=  (regval >> gpio_num) | (value & 0x1);
+		*reg = regval;
+		break;
+	case TOGGLE:
+		regval |=  (regval >> gpio_num) ^ (value & 0x1);
+		*reg = regval;
+		break;
+
+	default:
+		break;
+ }
+}
+
+void hal_efpgaio_event(uint8_t gpio_num, efpgaio_enum_typedef value) {
+
+unsigned int *reg_addr = (unsigned int*)EFPGAIO_START_ADDR + 0x6C;
+unsigned int regval = *reg_addr;
+
+switch(value) {
+	case CLEAR:
+		regval |=  ((regval & 0xFF) >> gpio_num) & (value & 0x1);
+		*reg_addr = regval;
+		break;
+	case SET:
+		regval |=  ((regval & 0xFF) >> gpio_num) | (value & 0x1);
+		*reg_addr = regval;
+		break;
+	default:
+		break;
+ }
+}
+
+void hal_efpgaio_status(gpio_hal_typedef *hgpio){
+
+	unsigned int value = 0xff;
+	unsigned int *reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x40);
+	unsigned int regval = *reg_addr;
+	hgpio->out_val = (uint8_t)((regval >> hgpio->number) & 0x1);
+	reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x50);
+	regval = *reg_addr;
+	hgpio->mode = (uint8_t)((regval >> hgpio->number) & 0x1);
+	reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x60);
+	regval = *reg_addr;
+	hgpio->in_val = (uint8_t)((regval >> hgpio->number) & 0x1);
+	reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x6C);
+	regval = *reg_addr;
+	hgpio->int_en = (uint8_t)((regval >> hgpio->number) & 0x1);
+}
+
+
 void hal_write_gpio(uint8_t gpio_num, uint8_t value) {
 	if (value) {
 		hal_set_gpio(gpio_num);
@@ -50,9 +153,7 @@ void hal_toggle_gpio(uint8_t gpio_num) {
 	papbgpio->toggpio_b.gpio_num = gpio_num;
 }
 
-void hal_set_gpio_num(uint8_t gpio_num){}
-
-void hal_read_gpio_status(uint8_t gpio_num, uint8_t* input_value, uint8_t* output_value, uint8_t* interrupt_type, uint8_t* gpio_mode){
+void hal_set_gpio_num(uint8_t gpio_num){
 	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
 	unsigned int value = 0xff;
 
@@ -60,10 +161,23 @@ void hal_read_gpio_status(uint8_t gpio_num, uint8_t* input_value, uint8_t* outpu
 		papbgpio->setsel= gpio_num;		// Set address for following reads
 		value = papbgpio->rdstat;
 	}
-	*input_value = (uint8_t)((value >> 12) & 1); //papbgpio->rdstat_b.input;
-	*output_value = (uint8_t)((value >> 8) & 1); //papbgpio->rdstat_b.output;
-	*interrupt_type = (uint8_t)((value >> 17) & 7); //papbgpio->rdstat_b.inttype;
-	*gpio_mode = (uint8_t)((value >> 24) & 3); //papbgpio->rdstat_b.mode;
+}
+
+void hal_read_gpio_status(gpio_hal_typedef *hgpio){
+	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
+	unsigned int value = 0xff;
+
+	while ((value & 0xff) != hgpio->number) {
+		papbgpio->setsel_b.gpio_num = hgpio->number;		// Set address for following reads
+		value = papbgpio->rdstat;
+	}
+	hgpio->mode = (uint8_t)((value >> 24) & 0x3); //papbgpio->rdstat_b.mode;
+	hgpio->int_type = (uint8_t)((value >> 17) & 0x7); //papbgpio->rdstat_b.inttype;
+	hgpio->int_en = (uint8_t)((value >> 16) & 0x1); //papbgpio->rdstat_b.inten;
+	hgpio->in_val = (uint8_t)((value >> 12) & 0x1); //papbgpio->rdstat_b.input;
+	hgpio->out_val = (uint8_t)((value >> 8) & 0x1); //papbgpio->rdstat_b.output;
+	hgpio->number = (uint8_t)((value >> 0) & 0xFF); //papbgpio->rdstat_b.number;
+
 }
 
 void hal_read_gpio_status_raw(uint8_t gpio_num, uint32_t* register_value){
