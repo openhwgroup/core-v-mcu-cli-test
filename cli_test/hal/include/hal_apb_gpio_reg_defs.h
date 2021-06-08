@@ -176,6 +176,13 @@ typedef struct {
       __IO uint32_t  inttype    :  3;
     } setint_b;
   };
+  union {
+     __IO uint32_t intack;
+     struct {
+       __IO uint32_t  gpio_num   :  8;
+       __IO uint32_t             :  24;
+     } intack_b;
+  };
 } ApbGpio_t;
 
 

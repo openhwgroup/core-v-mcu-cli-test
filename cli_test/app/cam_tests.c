@@ -13,7 +13,8 @@
 #include "libs/utils/include/dbg_uart.h"
 #include "drivers/include/udma_cam_driver.h"
 #include "hal/include/hal_pinmux.h"
-#include "include/estruct.h"
+//#include "include/estruct.h"
+#include "hal/include/adv_timer_unit_reg_defs.h"
 #include "hal/include/hal_fc_event.h"
 
 
@@ -50,15 +51,15 @@ static int getframe(const struct cli_cmd_entry *pEntry) {
 }
 
 static int set_clock(const struct cli_cmd_entry *pEntry) {
-	apb_adv_timer_typedef *adv_timer;
+	AdvTimerUnit_t *adv_timer;
 	unsigned int retval;
-	adv_timer = (apb_adv_timer_typedef*) APB_ADV_TIMER_BASE_ADDR;
-	adv_timer->T0_CMD = 0x8; // reset
-	adv_timer->T0_CONFIG = 0; // FLL, up/done no prescaler
-	adv_timer->T0_THRESHOLD = 0x20000;
-	adv_timer->T0_TH_CH0 = 0x30001;
-	adv_timer->CG = 0x1; // enable clock for timer0
-	adv_timer->T0_CMD = 1; //start
+	adv_timer = (AdvTimerUnit_t*) ADV_TIMER_START_ADDR;
+	adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
+	adv_timer->timer_0_config_register = 0; // FLL, up/done no prescaler
+	adv_timer->timer_0_threshold_register = 0x20000;
+	adv_timer->timer_0_threshold_channel_0_reg = 0x30001;
+	adv_timer->adv_timer_cfg_register = 0x1; // enable clock for timer0
+	adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_START_COMMAND_LSB; //start
 
 
 	return retval;

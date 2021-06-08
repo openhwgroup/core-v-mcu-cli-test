@@ -21,26 +21,39 @@
  #include "kernel/include/task.h"		// Needed for configASSERT
 
  #include "target/core-v-mcu/include/core-v-mcu-config.h"
+ #include "hal/include/efpga_template_reg_defs.h"
  #include "hal/include/hal_apb_gpio_reg_defs.h"
  #include "hal/include/hal_gpio.h"
 
-void hal_efpgaio_output(uint8_t gpio_num, efpgaio_enum_typedef value) {
 
-unsigned int *reg = (unsigned int*)(EFPGAIO_START_ADDR + 0x40);
-unsigned int regval = *reg;
+void hal_efpgaio_output(uint8_t efpgaio_num, efpgaio_enum_typedef value) {
+
+Efpga_t *efpga = (Efpga_t*)EFPGAIO_START_ADDR;
 
 switch(value) {
 	case CLEAR:
-		regval |=  (regval >> gpio_num) & (value & 0x1);
-		*reg = regval;
+		if (efpgaio_num < 32)
+			efpga->fpgaio_out31_00 &= ~(1 << efpgaio_num) ;
+		else if (efpgaio_num < 64)
+			efpga->fpgaio_out63_32 &= ~(1 << (efpgaio_num-32)) ;
+		else if (efpgaio_num < 80)
+			efpga->fpgaio_out79_64 &= ~(1 << (efpgaio_num-64)) ;
 		break;
 	case SET:
-		regval |=  (regval >> gpio_num) | (value & 0x1);
-		*reg = regval;
+		if (efpgaio_num < 32)
+			efpga->fpgaio_out31_00 |= (1 << efpgaio_num) ;
+		else if (efpgaio_num < 64)
+			efpga->fpgaio_out63_32 |= (1 << (efpgaio_num-32)) ;
+		else if (efpgaio_num < 80)
+			efpga->fpgaio_out79_64 |= (1 << (efpgaio_num-64)) ;
 		break;
 	case TOGGLE:
-		regval |=  (regval >> gpio_num) ^ (value & 0x1);
-		*reg = regval;
+		if (efpgaio_num < 32)
+			efpga->fpgaio_out31_00 ^= (1 << efpgaio_num) ;
+		else if (efpgaio_num < 64)
+			efpga->fpgaio_out63_32 ^= (1 << (efpgaio_num-32)) ;
+		else if (efpgaio_num < 80)
+			efpga->fpgaio_out79_64 ^= (1 << (efpgaio_num-64)) ;
 		break;
 
 	default:
@@ -48,82 +61,66 @@ switch(value) {
  }
 }
 
-void hal_efpgaio_outen(uint8_t gpio_num, efpgaio_enum_typedef value) {
+void hal_efpgaio_outen(uint8_t efpgaio_num, efpgaio_enum_typedef value) {
 
-unsigned int *reg = (unsigned int*)(EFPGAIO_START_ADDR + 0x50);
-unsigned int regval = *reg;
+	Efpga_t *efpga = (Efpga_t*)EFPGAIO_START_ADDR;
 
-switch(value) {
-	case CLEAR:
-		regval |= (regval >> gpio_num) & (value & 0x1);
-		*reg = regval;
-		break;
-	case SET:
-		regval |=  (regval >> gpio_num) | (value & 0x1);
-		*reg = regval;
-		break;
-	default:
-		break;
+	switch(value) {
+		case CLEAR:
+			if (efpgaio_num < 32)
+				efpga->fpgaio_oe31_00 &= ~(1 << efpgaio_num) ;
+			else if (efpgaio_num < 64)
+				efpga->fpgaio_oe63_32 &= ~(1 << (efpgaio_num-32)) ;
+			else if (efpgaio_num < 80)
+				efpga->fpgaio_oe79_64 &= ~(1 << (efpgaio_num-64)) ;
+			break;
+		case SET:
+			if (efpgaio_num < 32)
+				efpga->fpgaio_oe31_00 |= (1 << efpgaio_num) ;
+			else if (efpgaio_num < 64)
+				efpga->fpgaio_oe63_32 |= (1 << (efpgaio_num-32)) ;
+			else if (efpgaio_num < 80)
+				efpga->fpgaio_oe79_64 |= (1 << (efpgaio_num-64)) ;
+			break;
+		default:
+			break;
  }
 }
 
-void hal_efpgaio_input(uint8_t gpio_num, efpgaio_enum_typedef value) {
-
-unsigned int *reg = (EFPGAIO_START_ADDR + 0x60);
-unsigned int regval = *reg;
-switch(value) {
-	case CLEAR:
-		regval |=  (regval >> gpio_num) & (value & 0x1);
-		*reg = regval;
-		break;
-	case SET:
-		regval |=  (regval >> gpio_num) | (value & 0x1);
-		*reg = regval;
-		break;
-	case TOGGLE:
-		regval |=  (regval >> gpio_num) ^ (value & 0x1);
-		*reg = regval;
-		break;
-
-	default:
-		break;
- }
+int hal_efpgaio_input(uint8_t efpgaio_num) {
+ int retval=-1;
+	Efpga_t *efpga = (Efpga_t*)EFPGAIO_START_ADDR;
+	if (efpgaio_num < 32)
+		retval = (efpga->fpgaio_in31_00 >> efpgaio_num) & 0x1 ;
+	else if (efpgaio_num < 64)
+		retval = (efpga->fpgaio_in63_32 >> (efpgaio_num-32)) & 0x1 ;
+	else if (efpgaio_num < 80)
+		retval = (efpga->fpgaio_in79_64 >> (efpgaio_num-64)) & 0x1 ;
 }
 
-void hal_efpgaio_event(uint8_t gpio_num, efpgaio_enum_typedef value) {
+void hal_efpgaio_event(uint8_t event_num) {
 
-unsigned int *reg_addr = (unsigned int*)EFPGAIO_START_ADDR + 0x6C;
-unsigned int regval = *reg_addr;
+	Efpga_t *efpga = (Efpga_t*)EFPGAIO_START_ADDR;
+	efpga->fpga_event15_00 |= (1 << event_num);
+	efpga->fpga_event15_00 &= ~(1 << event_num);
 
-switch(value) {
-	case CLEAR:
-		regval |=  ((regval & 0xFF) >> gpio_num) & (value & 0x1);
-		*reg_addr = regval;
-		break;
-	case SET:
-		regval |=  ((regval & 0xFF) >> gpio_num) | (value & 0x1);
-		*reg_addr = regval;
-		break;
-	default:
-		break;
- }
 }
 
 void hal_efpgaio_status(gpio_hal_typedef *hgpio){
-
-	unsigned int value = 0xff;
-	unsigned int *reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x40);
-	unsigned int regval = *reg_addr;
-	hgpio->out_val = (uint8_t)((regval >> hgpio->number) & 0x1);
-	reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x50);
-	regval = *reg_addr;
-	hgpio->mode = (uint8_t)((regval >> hgpio->number) & 0x1);
-	reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x60);
-	regval = *reg_addr;
-	hgpio->in_val = (uint8_t)((regval >> hgpio->number) & 0x1);
-	reg_addr = (unsigned int*)(EFPGAIO_START_ADDR + 0x6C);
-	regval = *reg_addr;
-	hgpio->int_en = (uint8_t)((regval >> hgpio->number) & 0x1);
+	Efpga_t *efpga = (Efpga_t*)EFPGAIO_START_ADDR;
+	if (hgpio->number < 32) {
+		hgpio->out_val  = (efpga->fpgaio_out31_00 >> hgpio->number) & 0x1;
+		hgpio->in_val   = (efpga->fpgaio_in31_00  >> hgpio->number) & 0x1;
+		hgpio->mode = (efpga->fpgaio_oe31_00  >> hgpio->number) & 0x1;
+	} else if (hgpio->number < 64) {
+		hgpio->out_val  = (efpga->fpgaio_out63_32 >> (hgpio->number - 32)) & 0x1;
+		hgpio->in_val   = (efpga->fpgaio_in63_32  >> (hgpio->number - 32)) & 0x1;
+		hgpio->mode = (efpga->fpgaio_oe63_32  >> (hgpio->number - 32)) & 0x1;
+	} else if (hgpio->number < 64) {
+		hgpio->out_val  = (efpga->fpgaio_out79_64 >> (hgpio->number - 64)) & 0x1;
+		hgpio->in_val   = (efpga->fpgaio_in79_64  >> (hgpio->number - 64)) & 0x1;
+		hgpio->mode = (efpga->fpgaio_oe79_64  >> (hgpio->number - 64)) & 0x1;
+	}
 }
 
 
@@ -190,6 +187,11 @@ void hal_read_gpio_status_raw(uint8_t gpio_num, uint32_t* register_value){
 	}
 
 	*register_value = value;
+}
+
+void hal_gpio_int_ack (uint8_t gpio_num) {
+	ApbGpio_t*	papbgpio = (ApbGpio_t*)GPIO_START_ADDR;
+	papbgpio->intack = gpio_num;
 }
 
 void hal_set_gpio_mode(uint8_t gpio_num, uint8_t gpio_mode){

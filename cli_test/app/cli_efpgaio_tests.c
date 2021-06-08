@@ -34,7 +34,7 @@
 // EFPGAIO functions
 static void efpgaio_set(const struct cli_cmd_entry *pEntry);
 static void efpgaio_clr(const struct cli_cmd_entry *pEntry);
-static void efpgaio_toggle(const struct cli_cmd_entry *pEntry);
+static void efpgaio_mode(const struct cli_cmd_entry *pEntry);
 static void efpgaio_get_status(const struct cli_cmd_entry *pEntry);
 //static void gpio_event_test(const struct cli_cmd_entry *pEntry);
 //static void apb_gpio_tests(const struct cli_cmd_entry *pEntry);
@@ -44,9 +44,9 @@ static void efpgaio_get_status(const struct cli_cmd_entry *pEntry);
 // EPGPAIO menu
 const struct cli_cmd_entry efpgaio_functions[] =
 {
-		CLI_CMD_SIMPLE( "set", 	efpgaio_set,         		"gpio_num	-- set to one" ),
-		CLI_CMD_SIMPLE( "clr", 	efpgaio_clr,         		"gpio_num	-- clear to zero" ),
-		CLI_CMD_SIMPLE( "toggle",	efpgaio_toggle,        "gpio_num	-- toggle state of gpio" ),
+		CLI_CMD_SIMPLE( "set", 	efpgaio_set,         		"fpgaio_num	-- set to one" ),
+		CLI_CMD_SIMPLE( "clr", 	efpgaio_clr,         		"fpgaio_num	-- clear to zero" ),
+		CLI_CMD_SIMPLE( "mode",	efpgaio_mode,        "gpio_num	-- toggle state of gpio" ),
 		CLI_CMD_SIMPLE( "status",	efpgaio_get_status,   "gpio_num	-- read status of gpio: in, out, interrupt type and mode" ),
 		//CLI_CMD_SIMPLE( "event",	gpio_event_test,       "io_num, mux_sel, gpio_num, gpio_int_type	-- set interrupt of gpio" ),
 		//CLI_CMD_SIMPLE( "evnt",	efpga_io_events,        "None	-- All events of gpio" ),
@@ -79,14 +79,15 @@ static void efpgaio_clr(const struct cli_cmd_entry *pEntry)
 	dbg_str("<<DONE>>");
 }
 
-static void efpgaio_toggle(const struct cli_cmd_entry *pEntry)
+static void efpgaio_mode(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
-	uint32_t	efpgaio_num;
+	uint32_t	efpgaio_num, efpgaio_mode;
 
 	CLI_uint32_required( "efgpaio_num", &efpgaio_num );
-	hal_efpgaio_output((uint8_t)efpgaio_num,TOGGLE);
+	CLI_uint32_required( "mode", &efpgaio_mode );
+	hal_efpgaio_outen((uint8_t)efpgaio_num,efpgaio_mode ? SET : CLEAR);
 	dbg_str("<<DONE>>");
 }
 
@@ -107,6 +108,5 @@ static void efpgaio_get_status(const struct cli_cmd_entry *pEntry)
 	dbg_str_hex8("input", (uint32_t)efpgaio.in_val);
 	dbg_str_hex8("output", (uint32_t)efpgaio.out_val);
 	dbg_str_hex8("output_en ", (uint32_t)efpgaio.mode);
-	dbg_str_hex8("event ", (uint32_t)efpgaio.int_en);
 	dbg_str("<<DONE>>");
 }
