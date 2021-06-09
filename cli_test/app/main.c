@@ -96,7 +96,7 @@ static void prvSetupHardware( void );
 
 /*-----------------------------------------------------------*/
 #include <app/include/i2c_task.h>
-#include <app/include/estruct.h>
+#include <app/include/efpga_tests.h>
 
 #include "libs/cli/include/cli.h"
 #include "hal/include/hal_udma_i2c_reg_defs.h"
