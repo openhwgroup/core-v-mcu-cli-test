@@ -24,7 +24,64 @@ extern "C" {
 #define EFPGA_ERROR 0
 #define APB_SOC_CTRL_BASE_ADDR 0x1A104000
 #define EFPGA_BASE_ADDR 0x1A300000
+#define APB_ADV_TIMER_BASE_ADDR 0x1A105000
 
+typedef struct {
+	volatile unsigned int T0_CMD;
+	volatile unsigned int T0_CONFIG;
+	volatile unsigned int T0_THRESHOLD;
+	volatile unsigned int T0_TH_CH0;
+	volatile unsigned int T0_TH_CH1;
+	volatile unsigned int T0_TH_CH2;
+	volatile unsigned int T0_TH_CH3;
+	volatile unsigned int T0_TH_CH0_LUT;
+	volatile unsigned int T0_TH_CH1_LUT;
+	volatile unsigned int T0_TH_CH2_LUT;
+	volatile unsigned int T0_TH_CH3_LUT;
+	volatile unsigned int T0_COUNTER;
+	volatile unsigned int reserved30[4];
+	volatile unsigned int T1_CMD;
+	volatile unsigned int T1_CONFIG;
+	volatile unsigned int T1_THRESHOLD;
+	volatile unsigned int T1_TH_CH0;
+	volatile unsigned int T1_TH_CH1;
+	volatile unsigned int T1_TH_CH2;
+	volatile unsigned int T1_TH_CH3;
+	volatile unsigned int T1_TH_CH0_LUT;
+	volatile unsigned int T1_TH_CH1_LUT;
+	volatile unsigned int T1_TH_CH2_LUT;
+	volatile unsigned int T1_TH_CH3_LUT;
+	volatile unsigned int T1_COUNTER;
+	volatile unsigned int reserved70[4];
+	volatile unsigned int T2_CMD;
+	volatile unsigned int T2_CONFIG;
+	volatile unsigned int T2_THRESHOLD;
+	volatile unsigned int T2_TH_CH0;
+	volatile unsigned int T2_TH_CH1;
+	volatile unsigned int T2_TH_CH2;
+	volatile unsigned int T2_TH_CH3;
+	volatile unsigned int T2_TH_CH0_LUT;
+	volatile unsigned int T2_TH_CH1_LUT;
+	volatile unsigned int T2_TH_CH2_LUT;
+	volatile unsigned int T2_TH_CH3_LUT;
+	volatile unsigned int T2_COUNTER;
+	volatile unsigned int reservedB0[4];
+	volatile unsigned int T3_CMD;
+	volatile unsigned int T3_CONFIG;
+	volatile unsigned int T3_THRESHOLD;
+	volatile unsigned int T3_TH_CH0;
+	volatile unsigned int T3_TH_CH1;
+	volatile unsigned int T3_TH_CH2;
+	volatile unsigned int T3_TH_CH3;
+	volatile unsigned int T3_TH_CH0_LUT;
+	volatile unsigned int T3_TH_CH1_LUT;
+	volatile unsigned int T3_TH_CH2_LUT;
+	volatile unsigned int T3_TH_CH3_LUT;
+	volatile unsigned int T3_COUNTER;
+	volatile unsigned int reservedF0[4];
+	volatile unsigned int EVENT_CFG;
+	volatile unsigned int CG;
+} apb_adv_timer_typedef;
 
 typedef struct {
 	volatile unsigned int CFG_REG_LO; //         6'h0
@@ -51,6 +108,7 @@ typedef struct {
 	volatile unsigned int ACK_CLEAR;//			0x20
 	volatile unsigned int FIFO;//			0x24
 } apb_interrupt_ctl_typedef;
+
 typedef struct {
 	volatile unsigned int tcdm0_ctl;
 	volatile unsigned int tcdm1_ctl;

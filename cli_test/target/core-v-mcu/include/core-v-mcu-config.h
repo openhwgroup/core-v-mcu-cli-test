@@ -117,6 +117,9 @@
 //  GPIO configuration information
 #define GPIO_START_ADDR 0x1A101000
 
+//  GPIO configuration information
+#define EFPGAIO_START_ADDR 0x1A300000
+
 //  Timer configuration information
 #define SOC_CTRL_START_ADDR 0x1A104000
 

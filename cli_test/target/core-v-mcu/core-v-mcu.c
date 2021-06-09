@@ -35,6 +35,7 @@
 
 #include "drivers/include/udma_uart_driver.h"
 #include "drivers/include/udma_i2cm_driver.h"
+#include "drivers/include/udma_qspi_driver.h"
 
 /* test some assumptions we make about compiler settings */
 static_assert(sizeof(uintptr_t) == 4,
@@ -106,7 +107,7 @@ for (int i = 0 ; i < 32 ; i ++) isr_table[i] = undefined_handler;
 	for (uint8_t id = 0; id != N_I2CM; id++) {
 		udma_i2cm_open(id, 200000);  //200000
 	}
-
+	udma_qspim_open(0,5000000);
 }
 
 void system_core_clock_update(void)

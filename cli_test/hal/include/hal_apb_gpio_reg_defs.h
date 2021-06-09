@@ -144,13 +144,14 @@ typedef struct {
   union {
     __IO uint32_t rdstat;
     struct {
-      __IO uint32_t             :  8;
+      __IO uint32_t  gpio_sel   :  8;
       __IO uint32_t  output     :  1;
       __IO uint32_t             :  3;
       __IO uint32_t  input      :  1;
       __IO uint32_t             :  3;
+      __IO uint32_t  inten      :  1;
       __IO uint32_t  inttype    :  3;
-      __IO uint32_t             :  5;
+      __IO uint32_t             :  4;
       __IO uint32_t  mode       :  2;
     } rdstat_b;
   };
@@ -174,6 +175,13 @@ typedef struct {
       __IO uint32_t  intenable  :  1;
       __IO uint32_t  inttype    :  3;
     } setint_b;
+  };
+  union {
+     __IO uint32_t intack;
+     struct {
+       __IO uint32_t  gpio_num   :  8;
+       __IO uint32_t             :  24;
+     } intack_b;
   };
 } ApbGpio_t;
 

@@ -3,7 +3,7 @@
 
 #include <FreeRTOS.h>
 #include <queue.h>
-#include <app/include/camera.h>
+#include <drivers/include/camera.h>
 #include <app/include/i2c_task.h>
 
 
