@@ -24,6 +24,7 @@
 #include "include/efpga_tests.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "include/efpga_reg_defs.h"
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
@@ -233,8 +234,10 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 		do {
 		switch(test_no) {
 		case 1:
-			ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m0_oper0);
+			//ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
+			ram_ctrl = (volatile unsigned int *)( EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+			//ram_addr = (ram_word *)&(efpga->m0_oper0);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER0);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0){
@@ -245,8 +248,10 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 2:
-			ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m0_oper1);
+			//ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+			//ram_addr = (ram_word *)&(efpga->m0_oper1);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER1);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
@@ -258,8 +263,10 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 3:
-			ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m0_coef);
+			//ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+			//ram_addr = (ram_word *)&(efpga->m0_coef);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
@@ -271,8 +278,10 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 4:
-			ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m1_oper0);
+			//ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL);
+			//ram_addr = (ram_word *)&(efpga->m1_oper0);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER0);
 			ram_rw_test(ram_addr,ram_ctrl);
 
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
@@ -285,8 +294,10 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 5:
-			ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m1_oper1);
+			//ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL);
+			//ram_addr = (ram_word *)&(efpga->m1_oper1);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER1);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0)errors++;
 #if EFPGA_ERROR
@@ -298,8 +309,10 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 6:
-			ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m1_coef);
+			//ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL);
+			//ram_addr = (ram_word *)&(efpga->m1_coef);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
