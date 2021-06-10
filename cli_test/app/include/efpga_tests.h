@@ -20,6 +20,7 @@
 extern "C" {
 #endif
 
+
 #define EFPGA_DEBUG 0
 #define EFPGA_ERROR 0
 #define APB_SOC_CTRL_BASE_ADDR 0x1A104000
@@ -203,6 +204,22 @@ typedef struct {
 	volatile unsigned int reservedf0[0xb8];
 	volatile unsigned int padmux[64];
 } apb_soc_ctrl_typedef;
+
+typedef enum {
+	BIT_32,
+	BIT_16,
+	BIT_8,
+	BIT_MAX
+} fpga_ram_rw_mode_enum;
+
+typedef struct {
+	fpga_ram_rw_mode_enum coef_write;
+	fpga_ram_rw_mode_enum coef_read;
+	fpga_ram_rw_mode_enum operand1_write;
+	fpga_ram_rw_mode_enum operand1_read;
+	fpga_ram_rw_mode_enum operand0_write;
+	fpga_ram_rw_mode_enum operand0_read;
+} fpga_ram_mode_typedef;
 
 #ifdef __cplusplus
 }
