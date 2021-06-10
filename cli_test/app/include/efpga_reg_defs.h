@@ -1400,13 +1400,15 @@ typedef struct {
 
 #ifndef __REGFIELD_OPS_
 #define __REGFIELD_OPS_
-static inline uint32_t regfield_read(uint32_t reg, uint32_t mask, uint32_t lsb) {
-  return (reg >> lsb) & mask;
+static inline uint32_t regfield_read(uint32_t *reg, uint32_t mask, uint32_t lsb) {
+  volatile unsigned int reg_val = *reg;
+  return (reg_val >> lsb) & mask;
 }
-static inline uint32_t regfield_write(uint32_t reg, uint32_t mask, uint32_t lsb, uint32_t value) {
-  reg &= ~(mask << lsb);
-  reg |= (value & mask) << lsb;
-  return reg;
+static inline void regfield_write(uint32_t *reg, uint32_t mask, uint32_t lsb, uint32_t value) {
+  volatile unsigned int reg_val = *reg;
+  reg_val &= ~(mask << lsb);
+  reg_val |= (value & mask) << lsb;
+  *reg = reg_val;
 }
 #endif  // __REGFIELD_OPS_
 
