@@ -825,6 +825,8 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	uint32_t offset;
 	apb_soc_ctrl_typedef *soc_ctrl;
 	efpga_typedef *efpga;
+	volatile unsigned int *m0_ctl, *m1_ctl, *tcdm_ctl[4];
+	ram_word *ram_addr[4];
 	message  = pvPortMalloc(80);
 	scratch = pvPortMalloc(256);
 	efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
@@ -834,14 +836,16 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	soc_ctrl->rst_efpga = 0xf;
 	soc_ctrl->ena_efpga = 0x7f;
 
-	efpga->m0_ram_ctl = 0;
-	efpga->m1_ram_ctl = 0;
+	m0_ctl = EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL;
+	m1_ctl = EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL;
+	*m0_ctl = 0x0;
+	*m1_ctl = 0x0;
 #if EFPGA_DEBUG
 	sprintf(message,"TCDM test - Scratch offset = %x\r\n", offset);
 	dbg_str(message);
 #endif
 	{
-		unsigned int i, j;
+		unsigned int i, j, k;
 		unsigned int errors = 0;
 		unsigned int global_err = 0;
 		i = efpga->test_read;
@@ -849,27 +853,33 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
 #endif
+		for(i = 0; i < 4; i++) {
+			tcdm_ctl[i] = EFPGA_BASE_ADDR + (i*REG_TCDM_CTL_P1);
+		}
+		for(i = 0; i < 2; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+1)* REG_M0_OPER0);
+		}
+		for(i = 2; i < 4; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+2)* REG_M0_OPER0);
+		}
+
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x00000000 | offset;
-		efpga->tcdm1_ctl = 0x00000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x00000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x00000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x00000000 | (offset +i*0x40);
+		}
 // Initialize eFPGA RAMs
 		for (i = 0; i < 0x40; i = i + 1) {
 			scratch[i] = 0;
-			efpga->m0_oper0.w[i] = i;
-			efpga->m0_oper1.w[i] = i+0x10;
-			efpga->m1_oper0.w[i] = i+0x20;
-			efpga->m1_oper1.w[i] = i+0x30;
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = i + (k*0x10);
+			}
 		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(10);
 		for (i = 0;i < 0x40;i = i+1) {
-			efpga->m0_oper0.w[i] = 0;
-			efpga->m0_oper1.w[i] = 0;
-			efpga->m1_oper0.w[i] = 0;
-			efpga->m1_oper1.w[i] = 0;
-
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = 0;
+			}
 			j = scratch[i];
 			j = (volatile)scratch[i];
 			scratch[i] = i;
@@ -894,21 +904,20 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 #endif
 		errors = 0;
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x80000000 | offset;
-		efpga->tcdm1_ctl = 0x80000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x80000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x80000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x80000000 | (offset +i*0x40);
+		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(10);
 		for (i = 0;i < 0x40;i = i+1) {
 			if(i < 0x10)
-			j = efpga->m0_oper0.w[i];
+			j = ram_addr[0]->w[i];
 			else if (i < 0x20)
-			j = efpga->m0_oper1.w[i-0x10];
+			j = ram_addr[1]->w[i-0x10];
 			else if (i < 0x30)
-			j = efpga->m1_oper0.w[i-0x20];
+			j = ram_addr[2]->w[i-0x20];
 			else
-			j = efpga->m1_oper1.w[i-0x30];
+			j = ram_addr[3]->w[i-0x30];
 			if (j != i) {
 				errors++;
 #if EFPGA_DEBUG
@@ -945,6 +954,8 @@ void tcdm_task( void *pParameter )
 	uint32_t offset;
 	apb_soc_ctrl_typedef *soc_ctrl;
 	efpga_typedef *efpga;
+	volatile unsigned int *m0_ctl, *m1_ctl, *tcdm_ctl[4];
+	ram_word *ram_addr[4];
 	message  = pvPortMalloc(80);
 	scratch = pvPortMalloc(256);
 	efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
@@ -958,35 +969,43 @@ void tcdm_task( void *pParameter )
 	dbg_str(message);
 #endif
 	for(;;){
-		efpga->m0_ram_ctl = 0;
-		efpga->m1_ram_ctl = 0;
-		unsigned int i, j;
+		m0_ctl = EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL;
+		m1_ctl = EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL;
+		*m0_ctl = 0x0;
+		*m1_ctl = 0x0;
+		unsigned int i, j, k;
 		int errors = 0;
 		i = efpga->test_read;
 #if EFPGA_DEBUG
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
 #endif
+		for(i = 0; i < 4; i++) {
+			tcdm_ctl[i] = EFPGA_BASE_ADDR + (i*REG_TCDM_CTL_P1);
+		}
+		for(i = 0; i < 2; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+1)* REG_M0_OPER0);
+		}
+		for(i = 2; i < 4; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+2)* REG_M0_OPER0);
+		}
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x00000000 | offset;
-		efpga->tcdm1_ctl = 0x00000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x00000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x00000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x00000000 | (offset +i*0x40);
+		}
 // Initialize eFPGA RAMs
 		for (i = 0; i < 0x40; i = i + 1) {
 			scratch[i] = 0;
-			efpga->m0_oper0.w[i] = i;
-			efpga->m0_oper1.w[i] = i+0x10;
-			efpga->m1_oper0.w[i] = i+0x20;
-			efpga->m1_oper1.w[i] = i+0x30;
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = i + (k*0x10);
+			}
 		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
-			efpga->m0_oper0.w[i] = 0;
-			efpga->m0_oper1.w[i] = 0;
-			efpga->m1_oper0.w[i] = 0;
-			efpga->m1_oper1.w[i] = 0;
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = 0;
+			}
 			j = scratch[i];
 			scratch[i] = i;
 
@@ -1005,21 +1024,20 @@ void tcdm_task( void *pParameter )
 		}
 		errors = 0;
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x80000000 | offset;
-		efpga->tcdm1_ctl = 0x80000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x80000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x80000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x80000000 | (offset +i*0x40);
+		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
 			if(i < 0x10)
-			j = efpga->m0_oper0.w[i];
+			j = ram_addr[0]->w[i];
 			else if (i < 0x20)
-			j = efpga->m0_oper1.w[i-0x10];
+			j = ram_addr[1]->w[i-0x10];
 			else if (i < 0x30)
-			j = efpga->m1_oper0.w[i-0x20];
+			j = ram_addr[2]->w[i-0x20];
 			else
-			j = efpga->m1_oper1.w[i-0x30];
+			j = ram_addr[3]->w[i-0x30];
 			if (j != i) {
 				errors++;
 #if EFPGA_DEBUG
