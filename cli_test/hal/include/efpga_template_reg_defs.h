@@ -186,7 +186,39 @@ typedef struct {
       __IO uint32_t  m1_coef_wdsel :  1;
     } m1_ram_control_b;
   };
-  __I uint32_t    unused0[6];
+  __I uint32_t    unused0[2];
+
+  // Offset = 0x0030
+  union {
+    __IO uint32_t m0_m0_clken;
+    struct {
+      __IO uint32_t  m0_m0_clken :  1;
+    } m0_m0_clken_b;
+  };
+
+  // Offset = 0x0034
+  union {
+    __IO uint32_t m0_m1_clken;
+    struct {
+      __IO uint32_t  m0_m1_clken :  1;
+    } m0_m1_clken_b;
+  };
+
+  // Offset = 0x0038
+  union {
+    __IO uint32_t m1_m0_clken;
+    struct {
+      __IO uint32_t  m1_m0_clken :  1;
+    } m1_m0_clken_b;
+  };
+
+  // Offset = 0x003c
+  union {
+    __IO uint32_t m1_m1_clken;
+    struct {
+      __IO uint32_t  m1_m1_clken :  1;
+    } m1_m1_clken_b;
+  };
 
   // Offset = 0x0040
   union {
@@ -428,7 +460,7 @@ typedef struct {
       __IO uint32_t  fpgaio_i_29 :  1;
       __IO uint32_t  fpgaio_i_30 :  1;
       __IO uint32_t  fpgaio_i_31 :  1;
-    } fpgaio_i31_00_b;
+    } fpgaio_in31_00_b;
   };
 
   // Offset = 0x0064
@@ -467,7 +499,7 @@ typedef struct {
       __IO uint32_t  fpgaio_i_61 :  1;
       __IO uint32_t  fpgaio_i_62 :  1;
       __IO uint32_t  fpgaio_i_63 :  1;
-    } fpgaio_i63_32_b;
+    } fpgaio_in63_32_b;
   };
 
   // Offset = 0x0068
@@ -490,7 +522,7 @@ typedef struct {
       __IO uint32_t  fpgaio_i_77 :  1;
       __IO uint32_t  fpgaio_i_78 :  1;
       __IO uint32_t  fpgaio_i_79 :  1;
-    } fpgaio_i79_64_b;
+    } fpgaio_in79_64_b;
   };
 
   // Offset = 0x006c
@@ -573,7 +605,7 @@ typedef struct {
     } m0_m0_cdata_b;
   };
 
-  // Offset = 0x009C
+  // Offset = 0x009c
   union {
     __IO uint32_t m0_m1_cdata;
     struct {
@@ -605,7 +637,6 @@ typedef struct {
     } m1_m0_cdata_b;
   };
 
-
   // Offset = 0x00ac
   union {
     __IO uint32_t m1_m1_cdata;
@@ -613,39 +644,72 @@ typedef struct {
       __IO uint32_t  cdata      : 32;
     } m1_m1_cdata_b;
   };
-  __I uint32_t    unused7[3028];
+  __I uint32_t    unused4[20];
+
+  // Offset = 0x0100
+  union {
+    __IO uint32_t m0_m0_multout;
+    struct {
+      __IO uint32_t  multout    : 32;
+    } m0_m0_multout_b;
+  };
+
+  // Offset = 0x0104
+  union {
+    __IO uint32_t m0_m1_multout;
+    struct {
+      __IO uint32_t  multout    : 32;
+    } m0_m1_multout_b;
+  };
+
+  // Offset = 0x0108
+  union {
+    __IO uint32_t m1_m0_multout;
+    struct {
+      __IO uint32_t  multout    : 32;
+    } m1_m0_multout_b;
+  };
+
+  // Offset = 0x010c
+  union {
+    __IO uint32_t m1_m01multout;
+    struct {
+      __IO uint32_t  multout    : 32;
+    } m1_m01multout_b;
+  };
+  __I uint32_t    unused5[956];
+
+  // Offset = 0x1000
+  union {
+    __IO uint32_t m0_oper0[0x400];
+  };
+  __I uint32_t    unused6[1023];
+
+  // Offset = 0x2000
+  union {
+    __IO uint32_t m0_oper1[0x400];
+  };
+  __I uint32_t    unused7[1023];
 
   // Offset = 0x3000
   union {
-    __IO uint32_t m0_oper0[0x400];
+    __IO uint32_t m0_coef[0x400];
   };
   __I uint32_t    unused8[1023];
 
   // Offset = 0x4000
   union {
-    __IO uint32_t m0_oper1[0x400];
+    __IO uint32_t m1_oper0[0x400];
   };
   __I uint32_t    unused9[1023];
 
   // Offset = 0x5000
   union {
-    __IO uint32_t m0_coef[0x400];
+    __IO uint32_t m1_oper1[0x400];
   };
   __I uint32_t    unused10[1023];
 
   // Offset = 0x6000
-  union {
-    __IO uint32_t m1_oper0[0x400];
-  };
-  __I uint32_t    unused11[1023];
-
-  // Offset = 0x7000
-  union {
-    __IO uint32_t m1_oper1[0x400];
-  };
-  __I uint32_t    unused12[1023];
-
-  // Offset = 0x8000
   union {
     __IO uint32_t m1_coef[0x400];
   };
@@ -786,6 +850,18 @@ typedef struct {
 #define   REG_M1_RAM_CONTROL_m1_oper0_wmode_MASK   0x3
 #define   REG_M1_RAM_CONTROL_m1_oper0_rmode_LSB    0
 #define   REG_M1_RAM_CONTROL_m1_oper0_rmode_MASK   0x3
+#define REG_M0_M0_CLKEN                0x30
+#define   REG_M0_M0_CLKEN_m0_m0_clken_LSB          0
+#define   REG_M0_M0_CLKEN_m0_m0_clken_MASK         0x1
+#define REG_M0_M1_CLKEN                0x34
+#define   REG_M0_M1_CLKEN_m0_m1_clken_LSB          0
+#define   REG_M0_M1_CLKEN_m0_m1_clken_MASK         0x1
+#define REG_M1_M0_CLKEN                0x38
+#define   REG_M1_M0_CLKEN_m1_m0_clken_LSB          0
+#define   REG_M1_M0_CLKEN_m1_m0_clken_MASK         0x1
+#define REG_M1_M1_CLKEN                0x3C
+#define   REG_M1_M1_CLKEN_m1_m1_clken_LSB          0
+#define   REG_M1_M1_CLKEN_m1_m1_clken_MASK         0x1
 #define REG_FPGAIO_OUT31_00            0x40
 #define   REG_FPGAIO_OUT31_00_fpgaio_o_31_LSB      31
 #define   REG_FPGAIO_OUT31_00_fpgaio_o_31_MASK     0x1
@@ -1112,169 +1188,169 @@ typedef struct {
 #define   REG_FPGAIO_OE79_64_fpgaio_oe_65_MASK     0x1
 #define   REG_FPGAIO_OE79_64_fpgaio_oe_64_LSB      0
 #define   REG_FPGAIO_OE79_64_fpgaio_oe_64_MASK     0x1
-#define REG_FPGAIO_I31_00              0x60
-#define   REG_FPGAIO_I31_00_fpgaio_i_31_LSB        31
-#define   REG_FPGAIO_I31_00_fpgaio_i_31_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_30_LSB        30
-#define   REG_FPGAIO_I31_00_fpgaio_i_30_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_29_LSB        29
-#define   REG_FPGAIO_I31_00_fpgaio_i_29_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_28_LSB        28
-#define   REG_FPGAIO_I31_00_fpgaio_i_28_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_27_LSB        27
-#define   REG_FPGAIO_I31_00_fpgaio_i_27_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_26_LSB        26
-#define   REG_FPGAIO_I31_00_fpgaio_i_26_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_25_LSB        25
-#define   REG_FPGAIO_I31_00_fpgaio_i_25_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_24_LSB        24
-#define   REG_FPGAIO_I31_00_fpgaio_i_24_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_23_LSB        23
-#define   REG_FPGAIO_I31_00_fpgaio_i_23_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_22_LSB        22
-#define   REG_FPGAIO_I31_00_fpgaio_i_22_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_21_LSB        21
-#define   REG_FPGAIO_I31_00_fpgaio_i_21_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_20_LSB        20
-#define   REG_FPGAIO_I31_00_fpgaio_i_20_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_19_LSB        19
-#define   REG_FPGAIO_I31_00_fpgaio_i_19_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_18_LSB        18
-#define   REG_FPGAIO_I31_00_fpgaio_i_18_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_17_LSB        17
-#define   REG_FPGAIO_I31_00_fpgaio_i_17_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_16_LSB        16
-#define   REG_FPGAIO_I31_00_fpgaio_i_16_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_15_LSB        15
-#define   REG_FPGAIO_I31_00_fpgaio_i_15_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_14_LSB        14
-#define   REG_FPGAIO_I31_00_fpgaio_i_14_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_13_LSB        13
-#define   REG_FPGAIO_I31_00_fpgaio_i_13_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_12_LSB        12
-#define   REG_FPGAIO_I31_00_fpgaio_i_12_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_11_LSB        11
-#define   REG_FPGAIO_I31_00_fpgaio_i_11_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_10_LSB        10
-#define   REG_FPGAIO_I31_00_fpgaio_i_10_MASK       0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_9_LSB         9
-#define   REG_FPGAIO_I31_00_fpgaio_i_9_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_8_LSB         8
-#define   REG_FPGAIO_I31_00_fpgaio_i_8_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_7_LSB         7
-#define   REG_FPGAIO_I31_00_fpgaio_i_7_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_6_LSB         6
-#define   REG_FPGAIO_I31_00_fpgaio_i_6_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_5_LSB         5
-#define   REG_FPGAIO_I31_00_fpgaio_i_5_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_4_LSB         4
-#define   REG_FPGAIO_I31_00_fpgaio_i_4_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_3_LSB         3
-#define   REG_FPGAIO_I31_00_fpgaio_i_3_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_2_LSB         2
-#define   REG_FPGAIO_I31_00_fpgaio_i_2_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_1_LSB         1
-#define   REG_FPGAIO_I31_00_fpgaio_i_1_MASK        0x1
-#define   REG_FPGAIO_I31_00_fpgaio_i_0_LSB         0
-#define   REG_FPGAIO_I31_00_fpgaio_i_0_MASK        0x1
-#define REG_FPGAIO_I63_32              0x64
-#define   REG_FPGAIO_I63_32_fpgaio_i_63_LSB        31
-#define   REG_FPGAIO_I63_32_fpgaio_i_63_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_62_LSB        30
-#define   REG_FPGAIO_I63_32_fpgaio_i_62_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_61_LSB        29
-#define   REG_FPGAIO_I63_32_fpgaio_i_61_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_60_LSB        28
-#define   REG_FPGAIO_I63_32_fpgaio_i_60_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_59_LSB        27
-#define   REG_FPGAIO_I63_32_fpgaio_i_59_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_58_LSB        26
-#define   REG_FPGAIO_I63_32_fpgaio_i_58_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_57_LSB        25
-#define   REG_FPGAIO_I63_32_fpgaio_i_57_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_56_LSB        24
-#define   REG_FPGAIO_I63_32_fpgaio_i_56_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_55_LSB        23
-#define   REG_FPGAIO_I63_32_fpgaio_i_55_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_54_LSB        22
-#define   REG_FPGAIO_I63_32_fpgaio_i_54_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_53_LSB        21
-#define   REG_FPGAIO_I63_32_fpgaio_i_53_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_52_LSB        20
-#define   REG_FPGAIO_I63_32_fpgaio_i_52_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_51_LSB        19
-#define   REG_FPGAIO_I63_32_fpgaio_i_51_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_50_LSB        18
-#define   REG_FPGAIO_I63_32_fpgaio_i_50_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_49_LSB        17
-#define   REG_FPGAIO_I63_32_fpgaio_i_49_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_48_LSB        16
-#define   REG_FPGAIO_I63_32_fpgaio_i_48_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_47_LSB        15
-#define   REG_FPGAIO_I63_32_fpgaio_i_47_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_46_LSB        14
-#define   REG_FPGAIO_I63_32_fpgaio_i_46_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_45_LSB        13
-#define   REG_FPGAIO_I63_32_fpgaio_i_45_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_44_LSB        12
-#define   REG_FPGAIO_I63_32_fpgaio_i_44_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_43_LSB        11
-#define   REG_FPGAIO_I63_32_fpgaio_i_43_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_42_LSB        10
-#define   REG_FPGAIO_I63_32_fpgaio_i_42_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_41_LSB        9
-#define   REG_FPGAIO_I63_32_fpgaio_i_41_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_40_LSB        8
-#define   REG_FPGAIO_I63_32_fpgaio_i_40_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_39_LSB        7
-#define   REG_FPGAIO_I63_32_fpgaio_i_39_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_38_LSB        6
-#define   REG_FPGAIO_I63_32_fpgaio_i_38_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_37_LSB        5
-#define   REG_FPGAIO_I63_32_fpgaio_i_37_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_36_LSB        4
-#define   REG_FPGAIO_I63_32_fpgaio_i_36_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_35_LSB        3
-#define   REG_FPGAIO_I63_32_fpgaio_i_35_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_34_LSB        2
-#define   REG_FPGAIO_I63_32_fpgaio_i_34_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_33_LSB        1
-#define   REG_FPGAIO_I63_32_fpgaio_i_33_MASK       0x1
-#define   REG_FPGAIO_I63_32_fpgaio_i_32_LSB        0
-#define   REG_FPGAIO_I63_32_fpgaio_i_32_MASK       0x1
-#define REG_FPGAIO_I79_64              0x68
-#define   REG_FPGAIO_I79_64_fpgaio_i_79_LSB        15
-#define   REG_FPGAIO_I79_64_fpgaio_i_79_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_78_LSB        14
-#define   REG_FPGAIO_I79_64_fpgaio_i_78_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_77_LSB        13
-#define   REG_FPGAIO_I79_64_fpgaio_i_77_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_76_LSB        12
-#define   REG_FPGAIO_I79_64_fpgaio_i_76_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_75_LSB        11
-#define   REG_FPGAIO_I79_64_fpgaio_i_75_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_74_LSB        10
-#define   REG_FPGAIO_I79_64_fpgaio_i_74_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_73_LSB        9
-#define   REG_FPGAIO_I79_64_fpgaio_i_73_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_72_LSB        8
-#define   REG_FPGAIO_I79_64_fpgaio_i_72_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_71_LSB        7
-#define   REG_FPGAIO_I79_64_fpgaio_i_71_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_70_LSB        6
-#define   REG_FPGAIO_I79_64_fpgaio_i_70_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_69_LSB        5
-#define   REG_FPGAIO_I79_64_fpgaio_i_69_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_68_LSB        4
-#define   REG_FPGAIO_I79_64_fpgaio_i_68_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_67_LSB        3
-#define   REG_FPGAIO_I79_64_fpgaio_i_67_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_66_LSB        2
-#define   REG_FPGAIO_I79_64_fpgaio_i_66_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_65_LSB        1
-#define   REG_FPGAIO_I79_64_fpgaio_i_65_MASK       0x1
-#define   REG_FPGAIO_I79_64_fpgaio_i_64_LSB        0
-#define   REG_FPGAIO_I79_64_fpgaio_i_64_MASK       0x1
+#define REG_FPGAIO_IN31_00             0x60
+#define   REG_FPGAIO_IN31_00_fpgaio_i_31_LSB       31
+#define   REG_FPGAIO_IN31_00_fpgaio_i_31_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_30_LSB       30
+#define   REG_FPGAIO_IN31_00_fpgaio_i_30_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_29_LSB       29
+#define   REG_FPGAIO_IN31_00_fpgaio_i_29_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_28_LSB       28
+#define   REG_FPGAIO_IN31_00_fpgaio_i_28_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_27_LSB       27
+#define   REG_FPGAIO_IN31_00_fpgaio_i_27_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_26_LSB       26
+#define   REG_FPGAIO_IN31_00_fpgaio_i_26_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_25_LSB       25
+#define   REG_FPGAIO_IN31_00_fpgaio_i_25_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_24_LSB       24
+#define   REG_FPGAIO_IN31_00_fpgaio_i_24_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_23_LSB       23
+#define   REG_FPGAIO_IN31_00_fpgaio_i_23_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_22_LSB       22
+#define   REG_FPGAIO_IN31_00_fpgaio_i_22_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_21_LSB       21
+#define   REG_FPGAIO_IN31_00_fpgaio_i_21_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_20_LSB       20
+#define   REG_FPGAIO_IN31_00_fpgaio_i_20_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_19_LSB       19
+#define   REG_FPGAIO_IN31_00_fpgaio_i_19_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_18_LSB       18
+#define   REG_FPGAIO_IN31_00_fpgaio_i_18_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_17_LSB       17
+#define   REG_FPGAIO_IN31_00_fpgaio_i_17_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_16_LSB       16
+#define   REG_FPGAIO_IN31_00_fpgaio_i_16_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_15_LSB       15
+#define   REG_FPGAIO_IN31_00_fpgaio_i_15_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_14_LSB       14
+#define   REG_FPGAIO_IN31_00_fpgaio_i_14_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_13_LSB       13
+#define   REG_FPGAIO_IN31_00_fpgaio_i_13_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_12_LSB       12
+#define   REG_FPGAIO_IN31_00_fpgaio_i_12_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_11_LSB       11
+#define   REG_FPGAIO_IN31_00_fpgaio_i_11_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_10_LSB       10
+#define   REG_FPGAIO_IN31_00_fpgaio_i_10_MASK      0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_9_LSB        9
+#define   REG_FPGAIO_IN31_00_fpgaio_i_9_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_8_LSB        8
+#define   REG_FPGAIO_IN31_00_fpgaio_i_8_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_7_LSB        7
+#define   REG_FPGAIO_IN31_00_fpgaio_i_7_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_6_LSB        6
+#define   REG_FPGAIO_IN31_00_fpgaio_i_6_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_5_LSB        5
+#define   REG_FPGAIO_IN31_00_fpgaio_i_5_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_4_LSB        4
+#define   REG_FPGAIO_IN31_00_fpgaio_i_4_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_3_LSB        3
+#define   REG_FPGAIO_IN31_00_fpgaio_i_3_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_2_LSB        2
+#define   REG_FPGAIO_IN31_00_fpgaio_i_2_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_1_LSB        1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_1_MASK       0x1
+#define   REG_FPGAIO_IN31_00_fpgaio_i_0_LSB        0
+#define   REG_FPGAIO_IN31_00_fpgaio_i_0_MASK       0x1
+#define REG_FPGAIO_IN63_32             0x64
+#define   REG_FPGAIO_IN63_32_fpgaio_i_63_LSB       31
+#define   REG_FPGAIO_IN63_32_fpgaio_i_63_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_62_LSB       30
+#define   REG_FPGAIO_IN63_32_fpgaio_i_62_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_61_LSB       29
+#define   REG_FPGAIO_IN63_32_fpgaio_i_61_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_60_LSB       28
+#define   REG_FPGAIO_IN63_32_fpgaio_i_60_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_59_LSB       27
+#define   REG_FPGAIO_IN63_32_fpgaio_i_59_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_58_LSB       26
+#define   REG_FPGAIO_IN63_32_fpgaio_i_58_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_57_LSB       25
+#define   REG_FPGAIO_IN63_32_fpgaio_i_57_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_56_LSB       24
+#define   REG_FPGAIO_IN63_32_fpgaio_i_56_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_55_LSB       23
+#define   REG_FPGAIO_IN63_32_fpgaio_i_55_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_54_LSB       22
+#define   REG_FPGAIO_IN63_32_fpgaio_i_54_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_53_LSB       21
+#define   REG_FPGAIO_IN63_32_fpgaio_i_53_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_52_LSB       20
+#define   REG_FPGAIO_IN63_32_fpgaio_i_52_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_51_LSB       19
+#define   REG_FPGAIO_IN63_32_fpgaio_i_51_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_50_LSB       18
+#define   REG_FPGAIO_IN63_32_fpgaio_i_50_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_49_LSB       17
+#define   REG_FPGAIO_IN63_32_fpgaio_i_49_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_48_LSB       16
+#define   REG_FPGAIO_IN63_32_fpgaio_i_48_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_47_LSB       15
+#define   REG_FPGAIO_IN63_32_fpgaio_i_47_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_46_LSB       14
+#define   REG_FPGAIO_IN63_32_fpgaio_i_46_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_45_LSB       13
+#define   REG_FPGAIO_IN63_32_fpgaio_i_45_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_44_LSB       12
+#define   REG_FPGAIO_IN63_32_fpgaio_i_44_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_43_LSB       11
+#define   REG_FPGAIO_IN63_32_fpgaio_i_43_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_42_LSB       10
+#define   REG_FPGAIO_IN63_32_fpgaio_i_42_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_41_LSB       9
+#define   REG_FPGAIO_IN63_32_fpgaio_i_41_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_40_LSB       8
+#define   REG_FPGAIO_IN63_32_fpgaio_i_40_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_39_LSB       7
+#define   REG_FPGAIO_IN63_32_fpgaio_i_39_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_38_LSB       6
+#define   REG_FPGAIO_IN63_32_fpgaio_i_38_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_37_LSB       5
+#define   REG_FPGAIO_IN63_32_fpgaio_i_37_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_36_LSB       4
+#define   REG_FPGAIO_IN63_32_fpgaio_i_36_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_35_LSB       3
+#define   REG_FPGAIO_IN63_32_fpgaio_i_35_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_34_LSB       2
+#define   REG_FPGAIO_IN63_32_fpgaio_i_34_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_33_LSB       1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_33_MASK      0x1
+#define   REG_FPGAIO_IN63_32_fpgaio_i_32_LSB       0
+#define   REG_FPGAIO_IN63_32_fpgaio_i_32_MASK      0x1
+#define REG_FPGAIO_IN79_64             0x68
+#define   REG_FPGAIO_IN79_64_fpgaio_i_79_LSB       15
+#define   REG_FPGAIO_IN79_64_fpgaio_i_79_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_78_LSB       14
+#define   REG_FPGAIO_IN79_64_fpgaio_i_78_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_77_LSB       13
+#define   REG_FPGAIO_IN79_64_fpgaio_i_77_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_76_LSB       12
+#define   REG_FPGAIO_IN79_64_fpgaio_i_76_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_75_LSB       11
+#define   REG_FPGAIO_IN79_64_fpgaio_i_75_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_74_LSB       10
+#define   REG_FPGAIO_IN79_64_fpgaio_i_74_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_73_LSB       9
+#define   REG_FPGAIO_IN79_64_fpgaio_i_73_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_72_LSB       8
+#define   REG_FPGAIO_IN79_64_fpgaio_i_72_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_71_LSB       7
+#define   REG_FPGAIO_IN79_64_fpgaio_i_71_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_70_LSB       6
+#define   REG_FPGAIO_IN79_64_fpgaio_i_70_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_69_LSB       5
+#define   REG_FPGAIO_IN79_64_fpgaio_i_69_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_68_LSB       4
+#define   REG_FPGAIO_IN79_64_fpgaio_i_68_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_67_LSB       3
+#define   REG_FPGAIO_IN79_64_fpgaio_i_67_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_66_LSB       2
+#define   REG_FPGAIO_IN79_64_fpgaio_i_66_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_65_LSB       1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_65_MASK      0x1
+#define   REG_FPGAIO_IN79_64_fpgaio_i_64_LSB       0
+#define   REG_FPGAIO_IN79_64_fpgaio_i_64_MASK      0x1
 #define REG_FPGA_EVENT15_00            0x6C
 #define   REG_FPGA_EVENT15_00_Event_15_LSB         15
 #define   REG_FPGA_EVENT15_00_Event_15_MASK        0x1
@@ -1329,7 +1405,7 @@ typedef struct {
 #define REG_M0_M0_CDATA                0x98
 #define   REG_M0_M0_CDATA_cdata_LSB                0
 #define   REG_M0_M0_CDATA_cdata_MASK               0xffffffff
-#define REG_M0_M1_CDATA                0x98
+#define REG_M0_M1_CDATA                0x9C
 #define   REG_M0_M1_CDATA_cdata_LSB                0
 #define   REG_M0_M1_CDATA_cdata_MASK               0xffffffff
 #define REG_M1_M0_ODATA                0xA0
@@ -1341,15 +1417,27 @@ typedef struct {
 #define REG_M1_M0_CDATA                0xA8
 #define   REG_M1_M0_CDATA_cdata_LSB                0
 #define   REG_M1_M0_CDATA_cdata_MASK               0xffffffff
-#define REG_M1_M1_CDATA                0xA8
+#define REG_M1_M1_CDATA                0xAC
 #define   REG_M1_M1_CDATA_cdata_LSB                0
 #define   REG_M1_M1_CDATA_cdata_MASK               0xffffffff
-#define REG_M0_OPER0                   0x3000
-#define REG_M0_OPER1                   0x4000
-#define REG_M0_COEF                    0x5000
-#define REG_M1_OPER0                   0x6000
-#define REG_M1_OPER1                   0x7000
-#define REG_M1_COEF                    0x8000
+#define REG_M0_M0_MULTOUT              0x100
+#define   REG_M0_M0_MULTOUT_multout_LSB            0
+#define   REG_M0_M0_MULTOUT_multout_MASK           0xffffffff
+#define REG_M0_M1_MULTOUT              0x104
+#define   REG_M0_M1_MULTOUT_multout_LSB            0
+#define   REG_M0_M1_MULTOUT_multout_MASK           0xffffffff
+#define REG_M1_M0_MULTOUT              0x108
+#define   REG_M1_M0_MULTOUT_multout_LSB            0
+#define   REG_M1_M0_MULTOUT_multout_MASK           0xffffffff
+#define REG_M1_M01MULTOUT              0x10C
+#define   REG_M1_M01MULTOUT_multout_LSB            0
+#define   REG_M1_M01MULTOUT_multout_MASK           0xffffffff
+#define REG_M0_OPER0                   0x1000
+#define REG_M0_OPER1                   0x2000
+#define REG_M0_COEF                    0x3000
+#define REG_M1_OPER0                   0x4000
+#define REG_M1_OPER1                   0x5000
+#define REG_M1_COEF                    0x6000
 
 #ifndef __REGFIELD_OPS_
 #define __REGFIELD_OPS_

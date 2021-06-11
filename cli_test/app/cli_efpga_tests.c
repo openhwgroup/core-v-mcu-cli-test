@@ -518,7 +518,7 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 		apb_soc_ctrl_typedef *soc_ctrl;
 		efpga_typedef *efpga;
 		ram_word *ram_addr1, *ram_addr2;
-		mlti_ctl *mt_ctl;
+		mlti_ctl mt_ctl;
 		unsigned int test_no;
 		unsigned int errors = 0;
 		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
@@ -536,15 +536,15 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M0_M0_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m0_m0_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m0_m0_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m0_m0_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m0_m0_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m0_data_out;
+			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m0_m0_ctl;
+			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m0_m0_clken;
+			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m0_m0_odata;
+			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m0_m0_cdata;
+			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m0_m0_data_out;
 			ram_addr1 = (ram_word *)&(efpga->m0_oper0);
 			ram_addr2 = (ram_word *)&(efpga->m0_coef);
 
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0) {
 				dbg_str("m0_m0_ctl_operation: <<FAILED>>\n\r\r\r");
@@ -559,16 +559,16 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M0_M1_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m0_m1_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m0_m1_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m0_m1_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m0_m1_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m1_data_out;
+			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m0_m1_ctl;
+			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m0_m1_clken;
+			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m0_m1_odata;
+			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m0_m1_cdata;
+			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m0_m1_data_out;
 			ram_addr1 = (ram_word *)&(efpga->m0_oper1);
 			ram_addr2 = (ram_word *)&(efpga->m0_coef);
 
 
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0){
 				dbg_str("m0_m1_ctl_operation: <<FAILED>>\n\r\r\r");
@@ -584,14 +584,14 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M1_M0_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m1_m0_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m1_m0_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m1_m0_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m1_m0_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m1_m0_data_out;
+			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m1_m0_ctl;
+			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m1_m0_clken;
+			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m1_m0_odata;
+			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m1_m0_cdata;
+			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m1_m0_data_out;
 			ram_addr1 = (ram_word *)&(efpga->m1_oper0);
 			ram_addr2 = (ram_word *)&(efpga->m1_coef);
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0) {
 				dbg_str("m1_m0_ctl_operation: <<FAILED>>\n\r\r\r");
@@ -607,14 +607,14 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M1_M1_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m1_m1_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m1_m1_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m1_m1_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m1_m1_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m1_m1_data_out;
+			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m1_m1_ctl;
+			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m1_m1_clken;
+			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m1_m1_odata;
+			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m1_m1_cdata;
+			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m1_m1_data_out;
 			ram_addr1 = (ram_word *)&(efpga->m1_oper1);
 			ram_addr2 = (ram_word *)&(efpga->m1_coef);
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0)  {
 				dbg_str("m1_m1_ctl_operation: <<FAILED>>\n\r\r\r");
