@@ -543,6 +543,7 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m0_data_out;
 			ram_addr1 = (ram_word *)&(efpga->m0_oper0);
 			ram_addr2 = (ram_word *)&(efpga->m0_coef);
+
 			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0) {
@@ -565,6 +566,8 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m1_data_out;
 			ram_addr1 = (ram_word *)&(efpga->m0_oper1);
 			ram_addr2 = (ram_word *)&(efpga->m0_coef);
+
+
 			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0){
@@ -642,34 +645,33 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		uint32_t offset;
 		apb_soc_ctrl_typedef *soc_ctrl;
 		efpga_typedef *efpga;
+		ram_word *ram_addr[6];
 		unsigned int errors = 0;
 		unsigned int global_err = 0;
-		int i;
+		int i, j,k;
 		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
 		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 		// Init all rams to 0
+		for(k = 0; k < 6; k++) {
+			ram_addr[k] = (EFPGA_BASE_ADDR + (k+1)* REG_M0_OPER0);
+		}
+
 #if EFPGA_ERROR
 		sprintf(message,"Testing 6RAMs :");
 		dbg_str(message);
 #endif
 		for (i = 0; i < 512; i++) {
-			efpga->m0_oper0.w[i] = 0;
-			efpga->m0_oper1.w[i] = 0;
-			efpga->m0_coef.w[i] = 0;
-			efpga->m1_oper0.w[i] = 0;
-			efpga->m1_oper1.w[i] = 0;
-			efpga->m1_coef.w[i] = 0;
+			for(j = 0; j < 6; j++ ){
+				ram_addr[j]->w[i] = 0;
+			}
 		}
 		for (i = 512; i < 1024; i++) { // expect 0xffffffff in next 512 locations
-			if (efpga->m0_oper0.w[i] != 0xffffffff) errors++;
-			if (efpga->m0_oper1.w[i] != 0xffffffff) errors++;
-			if (efpga->m0_coef.w[i] != 0xffffffff) errors++;
-			if (efpga->m1_oper0.w[i] != 0xffffffff) errors++;
-			if (efpga->m1_oper1.w[i] != 0xffffffff) errors++;
-			if (efpga->m1_coef.w[i] != 0xffffffff) errors++;
+			for(j = 0; j < 6; j++ ){
+				if(ram_addr[j]->w[i] != 0xffffffff) errors++;
+			}
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -685,10 +687,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0; i < 512; i++) {
-			efpga->m0_oper0.w[i] = i;
+			ram_addr[0]->w[i] = i;
 		}
 		for (i = 0; i < 512; i++) {
-			if (efpga->m0_oper0.w[i+512] != ~i) {
+			if (ram_addr[0]->w[i+512] != ~i) {
 				if (errors++ < 10) {
 #if EFPGA_DEBUG
 					sprintf(message,"m0_oper0[%d] = %x\r\n",i,efpga->m0_oper0.w[i]);
@@ -712,10 +714,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m0_oper1.w[i] = i;
+			ram_addr[1]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m0_oper1.w[i+512] != ~i)
+			if (ram_addr[1]->w[i+512] != ~i)
 			if (errors++ < 10) {
 #if EFPGA_DEBUG
 				sprintf(message,"m0_oper1[%d] = %x\r\n",i,efpga->m0_oper0.w[i]);
@@ -738,10 +740,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m0_coef.w[i] = i;
+			ram_addr[2]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m0_coef.w[i+512] != ~i) errors++;
+			if (ram_addr[2]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -757,10 +759,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_oper0.w[i] = i;
+			ram_addr[3]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_oper0.w[i+512] != ~i) errors++;
+			if (ram_addr[3]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -776,10 +778,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_oper1.w[i] = i;
+			ram_addr[4]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_oper1.w[i+512] != ~i) errors++;
+			if (ram_addr[4]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -795,10 +797,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_coef.w[i] = i;
+			ram_addr[5]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_coef.w[i+512] != ~i) errors++;
+			if (ram_addr[5]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
