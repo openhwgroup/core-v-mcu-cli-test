@@ -1429,7 +1429,7 @@ typedef struct {
 #define REG_M1_M0_MULTOUT              0x108
 #define   REG_M1_M0_MULTOUT_multout_LSB            0
 #define   REG_M1_M0_MULTOUT_multout_MASK           0xffffffff
-#define REG_M1_M01MULTOUT              0x10C
+#define REG_M1_M1_MULTOUT              0x10C
 #define   REG_M1_M01MULTOUT_multout_LSB            0
 #define   REG_M1_M01MULTOUT_multout_MASK           0xffffffff
 #define REG_M0_OPER0                   0x1000

@@ -24,7 +24,7 @@
 #include "include/efpga_tests.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "include/efpga_reg_defs.h"
+#include "hal/include/efpga_template_reg_defs.h"
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
@@ -67,13 +67,13 @@ xTaskHandle xHandleTcmdTest = NULL;
 static void efpga_ram_set_mode(volatile unsigned int* ram_ctl, fpga_ram_mode_typedef mode) {
 	volatile unsigned int reg_val = *ram_ctl;
 	if((ram_ctl && 0xFF) == REG_M0_RAM_CONTROL) {
-	reg_val &= ~((REG_M0_RAM_CONTROL_m0_coef_wmode_MASK << REG_M0_RAM_CONTROL_m0_coef_wmode_LSB ) |
+		reg_val &= ~((REG_M0_RAM_CONTROL_m0_coef_wmode_MASK << REG_M0_RAM_CONTROL_m0_coef_wmode_LSB ) |
 			(REG_M0_RAM_CONTROL_m0_coef_rmode_MASK << REG_M0_RAM_CONTROL_m0_coef_rmode_LSB) |
 			(REG_M0_RAM_CONTROL_m0_oper1_wmode_MASK << REG_M0_RAM_CONTROL_m0_oper1_wmode_LSB) |
 			(REG_M0_RAM_CONTROL_m0_oper1_rmode_MASK << REG_M0_RAM_CONTROL_m0_oper1_rmode_LSB) |
 			(REG_M0_RAM_CONTROL_m0_oper0_wmode_MASK << REG_M0_RAM_CONTROL_m0_oper0_wmode_LSB) |
 			(REG_M0_RAM_CONTROL_m0_oper0_rmode_MASK << REG_M0_RAM_CONTROL_m0_oper0_rmode_LSB));
-	reg_val |= (((mode.coef_write & REG_M0_RAM_CONTROL_m0_coef_wmode_MASK) << REG_M0_RAM_CONTROL_m0_coef_wmode_LSB) |
+		reg_val |= (((mode.coef_write & REG_M0_RAM_CONTROL_m0_coef_wmode_MASK) << REG_M0_RAM_CONTROL_m0_coef_wmode_LSB) |
 			((mode.coef_read & REG_M0_RAM_CONTROL_m0_coef_rmode_MASK) << REG_M0_RAM_CONTROL_m0_coef_rmode_LSB) |
 			((mode.operand1_write & REG_M0_RAM_CONTROL_m0_oper1_wmode_MASK) << REG_M0_RAM_CONTROL_m0_oper1_wmode_LSB) |
 		    ((mode.operand1_read & REG_M0_RAM_CONTROL_m0_oper1_rmode_MASK) << REG_M0_RAM_CONTROL_m0_oper1_rmode_LSB) |
@@ -86,7 +86,7 @@ static void efpga_ram_set_mode(volatile unsigned int* ram_ctl, fpga_ram_mode_typ
 					(REG_M1_RAM_CONTROL_m1_oper1_rmode_MASK << REG_M1_RAM_CONTROL_m1_oper1_rmode_LSB) |
 					(REG_M1_RAM_CONTROL_m1_oper0_wmode_MASK << REG_M1_RAM_CONTROL_m1_oper0_wmode_LSB) |
 					(REG_M1_RAM_CONTROL_m1_oper0_rmode_MASK << REG_M1_RAM_CONTROL_m1_oper0_rmode_LSB));
-			reg_val |= (((mode.coef_write & REG_M1_RAM_CONTROL_m1_coef_wmode_MASK) << REG_M1_RAM_CONTROL_m1_coef_wmode_LSB) |
+		reg_val |= (((mode.coef_write & REG_M1_RAM_CONTROL_m1_coef_wmode_MASK) << REG_M1_RAM_CONTROL_m1_coef_wmode_LSB) |
 					((mode.coef_read & REG_M1_RAM_CONTROL_m1_coef_rmode_MASK) << REG_M1_RAM_CONTROL_m1_coef_rmode_LSB) |
 					((mode.operand1_write & REG_M1_RAM_CONTROL_m1_oper1_wmode_MASK) << REG_M1_RAM_CONTROL_m1_oper1_wmode_LSB) |
 				    ((mode.operand1_read & REG_M1_RAM_CONTROL_m1_oper1_rmode_MASK) << REG_M1_RAM_CONTROL_m1_oper1_rmode_LSB) |
@@ -520,13 +520,15 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 		ram_word *ram_addr1, *ram_addr2;
 		mlti_ctl mt_ctl;
 		unsigned int test_no;
+		volatile unsigned int *ram_m0_ctl;
 		unsigned int errors = 0;
 		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
-		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
-		efpga->m0_ram_ctl = 0x0; //32b w, 8b r
+
+		ram_m0_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+		*ram_m0_ctl = 0x0;
 		test_no = 1;
 		do {
 		switch(test_no) {
@@ -536,13 +538,14 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M0_M0_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m0_m0_ctl;
-			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m0_m0_clken;
-			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m0_m0_odata;
-			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m0_m0_cdata;
-			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m0_m0_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m0_oper0);
-			ram_addr2 = (ram_word *)&(efpga->m0_coef);
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER0);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
+
 
 			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
@@ -559,14 +562,13 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M0_M1_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m0_m1_ctl;
-			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m0_m1_clken;
-			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m0_m1_odata;
-			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m0_m1_cdata;
-			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m0_m1_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m0_oper1);
-			ram_addr2 = (ram_word *)&(efpga->m0_coef);
-
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER1);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
 
 			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
@@ -584,13 +586,14 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M1_M0_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m1_m0_ctl;
-			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m1_m0_clken;
-			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m1_m0_odata;
-			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m1_m0_cdata;
-			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m1_m0_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m1_oper0);
-			ram_addr2 = (ram_word *)&(efpga->m1_coef);
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER0);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
+
 			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0) {
@@ -607,13 +610,14 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M1_M1_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl.m_ctl = (volatile unsigned int *)&efpga->m1_m1_ctl;
-			mt_ctl.m_clken = (volatile unsigned int *)&efpga->m1_m1_clken;
-			mt_ctl.m_odata = (volatile unsigned int *)&efpga->m1_m1_odata;
-			mt_ctl.m_cdata = (volatile unsigned int *)&efpga->m1_m1_cdata;
-			mt_ctl.m_data_out = (volatile unsigned int *)&efpga->m1_m1_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m1_oper1);
-			ram_addr2 = (ram_word *)&(efpga->m1_coef);
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER1);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
+
 			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0)  {
