@@ -37,6 +37,7 @@
 // IO functions
 static void io_setmux(const struct cli_cmd_entry *pEntry);
 static void io_getmux(const struct cli_cmd_entry *pEntry);
+static void io_pullup(const struct cli_cmd_entry *pEntry);
 
 // GPIO functions
 static void gpio_set(const struct cli_cmd_entry *pEntry);
@@ -109,6 +110,7 @@ const struct cli_cmd_entry io_functions[] =
 {
 		CLI_CMD_SIMPLE( "setmux", io_setmux,         	"ionum mux_sel 	-- set mux_sel for ionum " ),
 		CLI_CMD_SIMPLE( "getmux", io_getmux,         	"ionum  		-- get mux_sel for ionum" ),
+		CLI_CMD_SIMPLE( "pullup", io_pullup,            "ionum	on      -- 1 = pullup, 0 = no pullup" ),
 		CLI_CMD_TERMINATE()
 };
 
@@ -129,6 +131,19 @@ const struct cli_cmd_entry gpio_functions[] =
 
 
 // IO functions
+static void io_pullup(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint32_t	on;
+	uint32_t	ionum;
+
+	CLI_uint32_required( "ionum", &ionum );
+	CLI_uint32_required( "on", &on);
+	hal_setpullup(ionum, on);
+	dbg_str("<<DONE>>");
+}
+
 static void io_setmux(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;

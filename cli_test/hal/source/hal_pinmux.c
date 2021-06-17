@@ -23,6 +23,13 @@
  #include "target/core-v-mcu/include/core-v-mcu-config.h"
  #include "hal/include/hal_apb_soc_ctrl_regs.h"
  #include "hal/include/hal_pinmux.h"
+
+ void hal_setpullup(uint8_t io_num, uint8_t on) {
+ 	SocCtrl_t*		psoc_ctrl = SOC_CTRL_START_ADDR;
+
+ 	configASSERT (io_num < N_IO);
+	psoc_ctrl->io_ctrl_b[io_num].cfg = on;
+ }
  
  void hal_setpinmux(uint8_t io_num, uint8_t mux_sel) {
  	SocCtrl_t*		psoc_ctrl = SOC_CTRL_START_ADDR;

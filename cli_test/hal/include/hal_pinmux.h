@@ -21,6 +21,7 @@
 #ifndef HAL_INCLUDE_HAL_PINMUX_H_
 #define HAL_INCLUDE_HAL_PINMUX_H_
 
+void hal_setpullup(uint8_t io_num, uint8_t on);
 void hal_setpinmux(uint8_t io_num, uint8_t mux_sel);
 uint8_t hal_getpinmux(uint8_t io_num);
 

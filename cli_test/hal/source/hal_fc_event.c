@@ -57,7 +57,7 @@ void pi_fc_event_handler_init(uint32_t fc_event_irq)
 		pi_fc_event_handler_clear(i);
 	}
 	/* NVIC_SetVector(fc_event_irq, (uint32_t)__handler_wrapper_light_fc_event_handler);*/
-	irqn_enable(fc_event_irq);
+//	irqn_enable(fc_event_irq);
 }
 
 void pi_fc_event_handler_set(uint32_t event_id,
@@ -85,7 +85,10 @@ __attribute__((section(".text"))) void fc_soc_event_handler(void)
 	/* Pop one event element from the FIFO */
 	/* TODO: don't use it like this */
 	__asm volatile( "csrs mie, %0" :: "r"(0x800) );
-	uint32_t event_id = NVIC->FIFO;
+
+	uint32_t event_id = *(uint32_t*)(0x1a106090);
+//	event_id = NVIC->FIFO;
+
 
 event_id &= 0xFF;
 

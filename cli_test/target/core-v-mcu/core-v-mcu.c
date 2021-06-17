@@ -78,7 +78,7 @@ void system_init(void)
 	}
 
 	/* make sure irq (itc) is a good state */
-	irq_init();
+//	irq_init();
 
 	/* Hook up isr table. This table is temporary until we figure out how to
 	 * do proper vectored interrupts.
@@ -148,7 +148,7 @@ void vPortSetupTimerInterrupt(void)
 	timer_irq_init(ARCHI_FPGA_FREQUENCY / configTICK_RATE_HZ);
 	/* TODO: allow setting interrupt priority (to super high(?)) */
 	//irq_enable(IRQ_FC_EVT_TIMER0_HI); // not needed as timer comes in irq7
-	irq_enable (IRQ_FC_EVT_SW7);  // enable MTIME
+//	irq_enable (IRQ_FC_EVT_SW7);  // enable MTIME
 }
 
 void vSystemIrqHandler(uint32_t mcause)
