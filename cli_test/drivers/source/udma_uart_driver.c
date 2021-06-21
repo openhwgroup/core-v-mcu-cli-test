@@ -67,8 +67,10 @@ uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	puart->uart_setup_b.div = (uint16_t)(5000000/xbaudrate);
 	puart->uart_setup_b.bits = 3; // 8-bits
 	puart->uart_setup_b.rx_polling_en = 1;
+	puart->uart_setup_b.rx_clean_fifo = 1;
 	puart->uart_setup_b.en_tx = 1;
 	puart->uart_setup_b.en_rx = 1;
+	puart->uart_setup_b.rx_clean_fifo = 0;
 	
 	return 0;
 }
@@ -123,7 +125,7 @@ uint16_t udma_uart_readraw(uint8_t uart_id, uint16_t read_len, uint8_t* read_buf
 	return ret--;
 }
 
-uint16_t udma_uart_getchar(uint8_t uart_id) {
+uint8_t udma_uart_getchar(uint8_t uart_id) {
 	UdmaUart_t*				puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
 
 	while (puart->valid_b.rx_data_valid == 0) {
