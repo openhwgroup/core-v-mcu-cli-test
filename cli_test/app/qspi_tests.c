@@ -59,12 +59,14 @@ char*  pzArg = NULL;
 			udma_uart_writeraw(1,2,"\r\n");
 			type = 0;
 			while (type != 'z') {
-				type = udma_uart_getchar(1);
+				type = uart_getchar(1);
 				for (i = 0; i < 4; i++)
-					sdata.d8[i]= udma_uart_getchar(1);
+					sdata.d8[i]= uart_getchar(1);
 				if (type == 'C') {
 					udma_flash_write(0, 0, fl_addr, &sdata.d32, 4);
 					count += 4;
+					if ((count & 0x3ff) == 0)
+						dbg_str(".");
 					fl_addr += 4;
 				}
 				else if (type == 's') {
@@ -79,16 +81,16 @@ char*  pzArg = NULL;
 							sdata.d32 -= 0x1000;
 						dbg_str("Erasing 4k page at ");
 						dbg_hex32(erase_addr);
-						dbg_str("\r\n");
+						dbg_str("\r");
 						udma_flash_erase(0, 0, erase_addr, 0); // 4k Sector erase
 						erase_addr += 0x1000;
 					}
+					dbg_str("\r\n");
 				}
 				if (type != 'z')
 					udma_uart_writeraw(1,1,"c");
 			}
-			dbg_hex32(count);
-			dbg_str(" Bytes received\r\n");
+			dbg_str_hex32("\r\nReceived Bytes",count);
 	}
 }
 

@@ -24,6 +24,8 @@
 /* Events offsets. */
 #define UDMA_EVENT_OFFSET_RX            (0U)
 #define UDMA_EVENT_OFFSET_TX            (1U)
+#define EVENT_UART_RX            (2U)
+#define EVENT_UART_ERR            (3U)
 
 #define UDMA_EVENT_OFFSET_SPI_CMD       (2)
 #define UDMA_EVENT_OFFSET_SPI_EOT       (3)
@@ -56,7 +58,7 @@
  * internal fifos can overflow and we get this error interrupt
  */
 #define FC_EVENT_FC_QUEUE_ERROR         (29)
-#define FC_EVENT_HP0                    (30)
+#define FC_EVENT_HP0                runn     (30)
 #define FC_EVENT_HP1                    (31)
 
 /*! @name SoC events  */
@@ -75,6 +77,8 @@
 /* UART */
 #define SOC_EVENT_UDMA_UART_RX(id)      ((UDMA_UART_ID(id) << UDMA_CHANNEL_NB_EVENTS_LOG2) + UDMA_EVENT_OFFSET_RX)
 #define SOC_EVENT_UDMA_UART_TX(id)      ((UDMA_UART_ID(id) << UDMA_CHANNEL_NB_EVENTS_LOG2) + UDMA_EVENT_OFFSET_TX)
+#define SOC_EVENT_UART_RX(id)           ((UDMA_UART_ID(id) << UDMA_CHANNEL_NB_EVENTS_LOG2) + EVENT_UART_RX)
+#define SOC_EVENT_UART_ERR(id)           ((UDMA_UART_ID(id) << UDMA_CHANNEL_NB_EVENTS_LOG2) + EVENT_UART_ERR)
 /* I2C */
 #define SOC_EVENT_UDMA_I2C_RX(id)       ((UDMA_I2CM_ID(id) << UDMA_CHANNEL_NB_EVENTS_LOG2) + UDMA_EVENT_OFFSET_RX)
 #define SOC_EVENT_UDMA_I2C_TX(id)       ((UDMA_I2CM_ID(id) << UDMA_CHANNEL_NB_EVENTS_LOG2) + UDMA_EVENT_OFFSET_TX)

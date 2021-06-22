@@ -105,7 +105,7 @@ for (int i = 0 ; i < 32 ; i ++) isr_table[i] = undefined_handler;
 		udma_uart_open(id, 115200);
 	}
 	for (uint8_t id = 0; id != N_I2CM; id++) {
-		udma_i2cm_open(id, 200000);  //200000
+		udma_i2cm_open(id, 400000);  //200000
 	}
 	udma_qspim_open(0,5000000);
 }
