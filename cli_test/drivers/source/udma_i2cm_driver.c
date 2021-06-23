@@ -261,7 +261,7 @@ void _udma_i2cm_read(uint8_t i2cm_id, uint8_t i2cm_addr, uint16_t read_len, uint
 }
 
 static uint8_t auci2cm_stop_seq[] = {
-		kI2cmCmdStop,	kI2cmCmdWait, 0xff
+		kI2cmCmdStop,	kI2cmCmdWait, 0x0
 };
 
 void _udma_i2cm_send_stop(uint8_t i2cm_id) {

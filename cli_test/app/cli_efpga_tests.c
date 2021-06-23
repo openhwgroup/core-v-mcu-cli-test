@@ -24,6 +24,7 @@
 #include "include/efpga_tests.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "hal/include/efpga_template_reg_defs.h"
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
@@ -63,9 +64,43 @@ typedef struct {
 
 xTaskHandle xHandleTcmdTest = NULL;
 
+static void efpga_ram_set_mode(volatile unsigned int* ram_ctl, fpga_ram_mode_typedef mode) {
+	volatile unsigned int reg_val = *ram_ctl;
+	if((ram_ctl && 0xFF) == REG_M0_RAM_CONTROL) {
+		reg_val &= ~((REG_M0_RAM_CONTROL_m0_coef_wmode_MASK << REG_M0_RAM_CONTROL_m0_coef_wmode_LSB ) |
+			(REG_M0_RAM_CONTROL_m0_coef_rmode_MASK << REG_M0_RAM_CONTROL_m0_coef_rmode_LSB) |
+			(REG_M0_RAM_CONTROL_m0_oper1_wmode_MASK << REG_M0_RAM_CONTROL_m0_oper1_wmode_LSB) |
+			(REG_M0_RAM_CONTROL_m0_oper1_rmode_MASK << REG_M0_RAM_CONTROL_m0_oper1_rmode_LSB) |
+			(REG_M0_RAM_CONTROL_m0_oper0_wmode_MASK << REG_M0_RAM_CONTROL_m0_oper0_wmode_LSB) |
+			(REG_M0_RAM_CONTROL_m0_oper0_rmode_MASK << REG_M0_RAM_CONTROL_m0_oper0_rmode_LSB));
+		reg_val |= (((mode.coef_write & REG_M0_RAM_CONTROL_m0_coef_wmode_MASK) << REG_M0_RAM_CONTROL_m0_coef_wmode_LSB) |
+			((mode.coef_read & REG_M0_RAM_CONTROL_m0_coef_rmode_MASK) << REG_M0_RAM_CONTROL_m0_coef_rmode_LSB) |
+			((mode.operand1_write & REG_M0_RAM_CONTROL_m0_oper1_wmode_MASK) << REG_M0_RAM_CONTROL_m0_oper1_wmode_LSB) |
+		    ((mode.operand1_read & REG_M0_RAM_CONTROL_m0_oper1_rmode_MASK) << REG_M0_RAM_CONTROL_m0_oper1_rmode_LSB) |
+			((mode.operand0_write & REG_M0_RAM_CONTROL_m0_oper0_wmode_MASK) << REG_M0_RAM_CONTROL_m0_oper0_wmode_LSB) |
+			((mode.operand0_write & REG_M0_RAM_CONTROL_m0_oper0_rmode_MASK) << REG_M0_RAM_CONTROL_m0_oper0_rmode_LSB));
+	} else {
+		reg_val &= ~((REG_M1_RAM_CONTROL_m1_coef_wmode_MASK << REG_M1_RAM_CONTROL_m1_coef_wmode_LSB ) |
+					(REG_M1_RAM_CONTROL_m1_coef_rmode_MASK << REG_M1_RAM_CONTROL_m1_coef_rmode_LSB) |
+					(REG_M1_RAM_CONTROL_m1_oper1_wmode_MASK << REG_M1_RAM_CONTROL_m1_oper1_wmode_LSB) |
+					(REG_M1_RAM_CONTROL_m1_oper1_rmode_MASK << REG_M1_RAM_CONTROL_m1_oper1_rmode_LSB) |
+					(REG_M1_RAM_CONTROL_m1_oper0_wmode_MASK << REG_M1_RAM_CONTROL_m1_oper0_wmode_LSB) |
+					(REG_M1_RAM_CONTROL_m1_oper0_rmode_MASK << REG_M1_RAM_CONTROL_m1_oper0_rmode_LSB));
+		reg_val |= (((mode.coef_write & REG_M1_RAM_CONTROL_m1_coef_wmode_MASK) << REG_M1_RAM_CONTROL_m1_coef_wmode_LSB) |
+					((mode.coef_read & REG_M1_RAM_CONTROL_m1_coef_rmode_MASK) << REG_M1_RAM_CONTROL_m1_coef_rmode_LSB) |
+					((mode.operand1_write & REG_M1_RAM_CONTROL_m1_oper1_wmode_MASK) << REG_M1_RAM_CONTROL_m1_oper1_wmode_LSB) |
+				    ((mode.operand1_read & REG_M1_RAM_CONTROL_m1_oper1_rmode_MASK) << REG_M1_RAM_CONTROL_m1_oper1_rmode_LSB) |
+					((mode.operand0_write & REG_M1_RAM_CONTROL_m1_oper0_wmode_MASK) << REG_M1_RAM_CONTROL_m1_oper0_wmode_LSB) |
+					((mode.operand0_write & REG_M1_RAM_CONTROL_m1_oper0_rmode_MASK) << REG_M1_RAM_CONTROL_m1_oper0_rmode_LSB));
+
+    }
+	*ram_ctl = reg_val;
+}
+
 static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl) {
 
 	unsigned int i,err;
+	fpga_ram_mode_typedef ram_mode;
 	char *message = pvPortMalloc(80);
 	err = 0;
 	unsigned char rdbuff_b[4] = { 0xef,0xbe,0xad,0xde };
@@ -76,7 +111,15 @@ static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl
 	dbg_str("writing 32bit and reading 8bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-	*ram_ctl = 0x222;
+	ram_mode.coef_write = BIT_32;
+	ram_mode.coef_read = BIT_8;
+	ram_mode.operand1_write = BIT_32;
+	ram_mode.operand1_read = BIT_8;
+	ram_mode.operand0_write = BIT_32;
+	ram_mode.operand0_read = BIT_8;
+
+	efpga_ram_set_mode(ram_ctl, ram_mode);
+	//*ram_ctl = 0x222;
 	ram_adr->w[0] = 0xdeadbeef;
 
 #if EFPGA_DEBUG
@@ -98,8 +141,14 @@ static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl
 	dbg_str("writing 8bit and reading 32bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-
-	*ram_ctl = 0x888;
+	ram_mode.coef_write = BIT_8;
+	ram_mode.coef_read = BIT_32;
+	ram_mode.operand1_write = BIT_8;
+	ram_mode.operand1_read = BIT_32;
+	ram_mode.operand0_write = BIT_8;
+	ram_mode.operand0_read = BIT_32;
+	//*ram_ctl = 0x888;
+	efpga_ram_set_mode(ram_ctl, ram_mode);
 	for (i = 0; i < 4; i++) {
 		ram_adr->b[i] = rdbuff_b[i];
 #if EFPGA_DEBUG
@@ -119,8 +168,14 @@ static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl
 	dbg_str("writing 32bit and reading 16bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-
-	*ram_ctl = 0x111;
+	ram_mode.coef_write = BIT_32;
+	ram_mode.coef_read = BIT_16;
+	ram_mode.operand1_write = BIT_32;
+	ram_mode.operand1_read = BIT_16;
+	ram_mode.operand0_write = BIT_32;
+	ram_mode.operand0_read = BIT_16;
+	//*ram_ctl = 0x111;
+	efpga_ram_set_mode(ram_ctl, ram_mode);
 	ram_adr->w[0] = 0xdeadbeef;
 #if EFPGA_DEBUG
 	sprintf(message,"ram_adr->w[0]= 0x%0x\r\n",ram_adr->w[0]);
@@ -141,7 +196,14 @@ static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl
 	dbg_str("writing 16bit and reading 32bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-	*ram_ctl = 0x444;
+	ram_mode.coef_write = BIT_16;
+	ram_mode.coef_read = BIT_32;
+	ram_mode.operand1_write = BIT_16;
+	ram_mode.operand1_read = BIT_32;
+	ram_mode.operand0_write = BIT_16;
+	ram_mode.operand0_read = BIT_32;
+	//*ram_ctl = 0x444;
+	efpga_ram_set_mode(ram_ctl, ram_mode);
 	for (i = 0; i < 2; i++) {
 		ram_adr->hw[i] = rdbuff_hw[i];
 
@@ -161,7 +223,14 @@ static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl
 	dbg_str("writing 8bit and reading 16bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-	*ram_ctl = 0x999;
+	ram_mode.coef_write = BIT_8;
+	ram_mode.coef_read = BIT_16;
+	ram_mode.operand1_write = BIT_8;
+	ram_mode.operand1_read = BIT_16;
+	ram_mode.operand0_write = BIT_8;
+	ram_mode.operand0_read = BIT_16;
+	//*ram_ctl = 0x999;
+	efpga_ram_set_mode(ram_ctl, ram_mode);
 	for (i = 0; i < 4; i++) {
 		ram_adr->b[i] = rdbuff_b[i];
 #if EFPGA_DEBUG
@@ -183,7 +252,14 @@ static unsigned int ram_rw_test(ram_word *ram_adr,volatile unsigned int *ram_ctl
 	dbg_str("writing 16bit and reading 8bit Test\n\r\r\r");
 	dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-	*ram_ctl = 0x666;
+	ram_mode.coef_write = BIT_16;
+	ram_mode.coef_read = BIT_8;
+	ram_mode.operand1_write = BIT_16;
+	ram_mode.operand1_read = BIT_8;
+	ram_mode.operand0_write = BIT_16;
+	ram_mode.operand0_read = BIT_8;
+	//*ram_ctl = 0x666;
+	efpga_ram_set_mode(ram_ctl, ram_mode);
 	for (i = 0; i < 2; i++) {
 		ram_adr->hw[i] = rdbuff_hw[i];
 #if EFPGA_DEBUG
@@ -218,7 +294,6 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 	    // Add functionality here
 		char *message;
 		apb_soc_ctrl_typedef *soc_ctrl;
-		efpga_typedef *efpga;
 		ram_word *ram_addr;
 		unsigned int i;
 		unsigned int test_no;
@@ -228,13 +303,12 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
-		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 		test_no = 1;
 		do {
 		switch(test_no) {
 		case 1:
-			ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m0_oper0);
+			ram_ctrl = (volatile unsigned int *)( EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER0);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0){
@@ -245,8 +319,8 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 2:
-			ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m0_oper1);
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER1);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
@@ -258,8 +332,8 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 3:
-			ram_ctrl = (volatile unsigned int *)&efpga->m0_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m0_coef);
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
@@ -271,8 +345,8 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 4:
-			ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m1_oper0);
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER0);
 			ram_rw_test(ram_addr,ram_ctrl);
 
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
@@ -285,8 +359,8 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 5:
-			ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m1_oper1);
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER1);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0)errors++;
 #if EFPGA_ERROR
@@ -298,8 +372,8 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 #endif
 			break;
 		case 6:
-			ram_ctrl = (volatile unsigned int *)&efpga->m1_ram_ctl;
-			ram_addr = (ram_word *)&(efpga->m1_coef);
+			ram_ctrl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL);
+			ram_addr = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
 			ram_rw_test(ram_addr,ram_ctrl);
 			if( ram_rw_test(ram_addr,ram_ctrl) != 0) errors++;
 #if EFPGA_ERROR
@@ -428,17 +502,18 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 	    // Add functionality here
 		char *message;
 		apb_soc_ctrl_typedef *soc_ctrl;
-		efpga_typedef *efpga;
 		ram_word *ram_addr1, *ram_addr2;
-		mlti_ctl *mt_ctl;
+		mlti_ctl mt_ctl;
 		unsigned int test_no;
+		volatile unsigned int *ram_m0_ctl;
 		unsigned int errors = 0;
 		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
-		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
-		efpga->m0_ram_ctl = 0x0; //32b w, 8b r
+
+		ram_m0_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+		*ram_m0_ctl = 0x0;
 		test_no = 1;
 		do {
 		switch(test_no) {
@@ -448,14 +523,16 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M0_M0_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m0_m0_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m0_m0_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m0_m0_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m0_m0_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m0_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m0_oper0);
-			ram_addr2 = (ram_word *)&(efpga->m0_coef);
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M0_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER0);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
+
+
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0) {
 				dbg_str("m0_m0_ctl_operation: <<FAILED>>\n\r\r\r");
@@ -470,14 +547,15 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M0_M1_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m0_m1_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m0_m1_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m0_m1_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m0_m1_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m0_m1_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m0_oper1);
-			ram_addr2 = (ram_word *)&(efpga->m0_coef);
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_M1_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER1);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
+
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0){
 				dbg_str("m0_m1_ctl_operation: <<FAILED>>\n\r\r\r");
@@ -493,14 +571,15 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M1_M0_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m1_m0_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m1_m0_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m1_m0_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m1_m0_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m1_m0_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m1_oper0);
-			ram_addr2 = (ram_word *)&(efpga->m1_coef);
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M0_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER0);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
+
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0) {
 				dbg_str("m1_m0_ctl_operation: <<FAILED>>\n\r\r\r");
@@ -516,14 +595,15 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("M1_M1_Multiplier Test\n\r\r\r");
 			dbg_str("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n\r\r\r");
 #endif
-			mt_ctl->m_ctl = (volatile unsigned int *)&efpga->m1_m1_ctl;
-			mt_ctl->m_clken = (volatile unsigned int *)&efpga->m1_m1_clken;
-			mt_ctl->m_odata = (volatile unsigned int *)&efpga->m1_m1_odata;
-			mt_ctl->m_cdata = (volatile unsigned int *)&efpga->m1_m1_cdata;
-			mt_ctl->m_data_out = (volatile unsigned int *)&efpga->m1_m1_data_out;
-			ram_addr1 = (ram_word *)&(efpga->m1_oper1);
-			ram_addr2 = (ram_word *)&(efpga->m1_coef);
-			if( mltiply_test(ram_addr1, ram_addr2, mt_ctl) != 0) errors++;
+			mt_ctl.m_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_CONTROL);
+			mt_ctl.m_clken = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_CLKEN);
+			mt_ctl.m_odata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_ODATA);
+			mt_ctl.m_cdata = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_CDATA);
+			mt_ctl.m_data_out = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M1_M1_MULTOUT);
+			ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER1);
+			ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
+
+			if( mltiply_test(ram_addr1, ram_addr2, &mt_ctl) != 0) errors++;
 #if EFPGA_ERROR
 			if(errors != 0)  {
 				dbg_str("m1_m1_ctl_operation: <<FAILED>>\n\r\r\r");
@@ -553,35 +633,32 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		char *message;
 		uint32_t offset;
 		apb_soc_ctrl_typedef *soc_ctrl;
-		efpga_typedef *efpga;
+		ram_word *ram_addr[6];
 		unsigned int errors = 0;
 		unsigned int global_err = 0;
-		int i;
+		int i, j,k;
 		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
-		efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 		// Init all rams to 0
+		for(k = 0; k < 6; k++) {
+			ram_addr[k] = (EFPGA_BASE_ADDR + (k+1)* REG_M0_OPER0);
+		}
+
 #if EFPGA_ERROR
 		sprintf(message,"Testing 6RAMs :");
 		dbg_str(message);
 #endif
 		for (i = 0; i < 512; i++) {
-			efpga->m0_oper0.w[i] = 0;
-			efpga->m0_oper1.w[i] = 0;
-			efpga->m0_coef.w[i] = 0;
-			efpga->m1_oper0.w[i] = 0;
-			efpga->m1_oper1.w[i] = 0;
-			efpga->m1_coef.w[i] = 0;
+			for(j = 0; j < 6; j++ ){
+				ram_addr[j]->w[i] = 0;
+			}
 		}
 		for (i = 512; i < 1024; i++) { // expect 0xffffffff in next 512 locations
-			if (efpga->m0_oper0.w[i] != 0xffffffff) errors++;
-			if (efpga->m0_oper1.w[i] != 0xffffffff) errors++;
-			if (efpga->m0_coef.w[i] != 0xffffffff) errors++;
-			if (efpga->m1_oper0.w[i] != 0xffffffff) errors++;
-			if (efpga->m1_oper1.w[i] != 0xffffffff) errors++;
-			if (efpga->m1_coef.w[i] != 0xffffffff) errors++;
+			for(j = 0; j < 6; j++ ){
+				if(ram_addr[j]->w[i] != 0xffffffff) errors++;
+			}
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -597,10 +674,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0; i < 512; i++) {
-			efpga->m0_oper0.w[i] = i;
+			ram_addr[0]->w[i] = i;
 		}
 		for (i = 0; i < 512; i++) {
-			if (efpga->m0_oper0.w[i+512] != ~i) {
+			if (ram_addr[0]->w[i+512] != ~i) {
 				if (errors++ < 10) {
 #if EFPGA_DEBUG
 					sprintf(message,"m0_oper0[%d] = %x\r\n",i,efpga->m0_oper0.w[i]);
@@ -624,10 +701,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m0_oper1.w[i] = i;
+			ram_addr[1]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m0_oper1.w[i+512] != ~i)
+			if (ram_addr[1]->w[i+512] != ~i)
 			if (errors++ < 10) {
 #if EFPGA_DEBUG
 				sprintf(message,"m0_oper1[%d] = %x\r\n",i,efpga->m0_oper0.w[i]);
@@ -650,10 +727,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m0_coef.w[i] = i;
+			ram_addr[2]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m0_coef.w[i+512] != ~i) errors++;
+			if (ram_addr[2]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -669,10 +746,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_oper0.w[i] = i;
+			ram_addr[3]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_oper0.w[i+512] != ~i) errors++;
+			if (ram_addr[3]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -688,10 +765,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_oper1.w[i] = i;
+			ram_addr[4]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_oper1.w[i+512] != ~i) errors++;
+			if (ram_addr[4]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -707,10 +784,10 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		for (i = 0 ; i < 512; i++) {
-			efpga->m1_coef.w[i] = i;
+			ram_addr[5]->w[i] = i;
 		}
 		for (i = 0 ; i < 512; i++) {
-			if (efpga->m1_coef.w[i+512] != ~i) errors++;
+			if (ram_addr[5]->w[i+512] != ~i) errors++;
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -734,52 +811,62 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	char *message;
 	uint32_t offset;
 	apb_soc_ctrl_typedef *soc_ctrl;
-	efpga_typedef *efpga;
+	//efpga_typedef *efpga;
+	volatile unsigned int *m0_ctl, *m1_ctl, *tcdm_ctl[4];
+	ram_word *ram_addr[4];
 	message  = pvPortMalloc(80);
 	scratch = pvPortMalloc(256);
-	efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
+	//efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 	offset = (unsigned int)scratch & 0xFFFFF;
 	soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 	soc_ctrl->control_in = 0;
 	soc_ctrl->rst_efpga = 0xf;
 	soc_ctrl->ena_efpga = 0x7f;
 
-	efpga->m0_ram_ctl = 0;
-	efpga->m1_ram_ctl = 0;
+	m0_ctl = EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL;
+	m1_ctl = EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL;
+	*m0_ctl = 0x0;
+	*m1_ctl = 0x0;
 #if EFPGA_DEBUG
 	sprintf(message,"TCDM test - Scratch offset = %x\r\n", offset);
 	dbg_str(message);
 #endif
 	{
-		unsigned int i, j;
+		unsigned int i, j, k;
 		unsigned int errors = 0;
 		unsigned int global_err = 0;
-		i = efpga->test_read;
+		//i = efpga->test_read;
 #if EFPGA_DEBUG
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
 #endif
+		for(i = 0; i < 4; i++) {
+			tcdm_ctl[i] = EFPGA_BASE_ADDR + (i*REG_TCDM_CTL_P1);
+		}
+		for(i = 0; i < 2; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+1)* REG_M0_OPER0);
+		}
+		for(i = 2; i < 4; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+2)* REG_M0_OPER0);
+		}
+
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x00000000 | offset;
-		efpga->tcdm1_ctl = 0x00000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x00000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x00000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x00000000 | (offset +i*0x40);
+		}
 // Initialize eFPGA RAMs
 		for (i = 0; i < 0x40; i = i + 1) {
 			scratch[i] = 0;
-			efpga->m0_oper0.w[i] = i;
-			efpga->m0_oper1.w[i] = i+0x10;
-			efpga->m1_oper0.w[i] = i+0x20;
-			efpga->m1_oper1.w[i] = i+0x30;
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = i + (k*0x10);
+			}
 		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(10);
 		for (i = 0;i < 0x40;i = i+1) {
-			efpga->m0_oper0.w[i] = 0;
-			efpga->m0_oper1.w[i] = 0;
-			efpga->m1_oper0.w[i] = 0;
-			efpga->m1_oper1.w[i] = 0;
-
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = 0;
+			}
 			j = scratch[i];
 			j = (volatile)scratch[i];
 			scratch[i] = i;
@@ -804,21 +891,20 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 #endif
 		errors = 0;
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x80000000 | offset;
-		efpga->tcdm1_ctl = 0x80000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x80000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x80000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x80000000 | (offset +i*0x40);
+		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(10);
 		for (i = 0;i < 0x40;i = i+1) {
 			if(i < 0x10)
-			j = efpga->m0_oper0.w[i];
+			j = ram_addr[0]->w[i];
 			else if (i < 0x20)
-			j = efpga->m0_oper1.w[i-0x10];
+			j = ram_addr[1]->w[i-0x10];
 			else if (i < 0x30)
-			j = efpga->m1_oper0.w[i-0x20];
+			j = ram_addr[2]->w[i-0x20];
 			else
-			j = efpga->m1_oper1.w[i-0x30];
+			j = ram_addr[3]->w[i-0x30];
 			if (j != i) {
 				errors++;
 #if EFPGA_DEBUG
@@ -854,10 +940,12 @@ void tcdm_task( void *pParameter )
 	char *message;
 	uint32_t offset;
 	apb_soc_ctrl_typedef *soc_ctrl;
-	efpga_typedef *efpga;
+	//efpga_typedef *efpga;
+	volatile unsigned int *m0_ctl, *m1_ctl, *tcdm_ctl[4];
+	ram_word *ram_addr[4];
 	message  = pvPortMalloc(80);
 	scratch = pvPortMalloc(256);
-	efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
+	//efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
 	offset = (unsigned int)scratch & 0xFFFFF;
 	soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 	soc_ctrl->rst_efpga = 0xf;
@@ -868,35 +956,43 @@ void tcdm_task( void *pParameter )
 	dbg_str(message);
 #endif
 	for(;;){
-		efpga->m0_ram_ctl = 0;
-		efpga->m1_ram_ctl = 0;
-		unsigned int i, j;
+		m0_ctl = EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL;
+		m1_ctl = EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL;
+		*m0_ctl = 0x0;
+		*m1_ctl = 0x0;
+		unsigned int i, j, k;
 		int errors = 0;
-		i = efpga->test_read;
+		//i = efpga->test_read;
 #if EFPGA_DEBUG
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
 #endif
+		for(i = 0; i < 4; i++) {
+			tcdm_ctl[i] = EFPGA_BASE_ADDR + (i*REG_TCDM_CTL_P1);
+		}
+		for(i = 0; i < 2; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+1)* REG_M0_OPER0);
+		}
+		for(i = 2; i < 4; i++) {
+			ram_addr[i] = (EFPGA_BASE_ADDR + (i+2)* REG_M0_OPER0);
+		}
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x00000000 | offset;
-		efpga->tcdm1_ctl = 0x00000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x00000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x00000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x00000000 | (offset +i*0x40);
+		}
 // Initialize eFPGA RAMs
 		for (i = 0; i < 0x40; i = i + 1) {
 			scratch[i] = 0;
-			efpga->m0_oper0.w[i] = i;
-			efpga->m0_oper1.w[i] = i+0x10;
-			efpga->m1_oper0.w[i] = i+0x20;
-			efpga->m1_oper1.w[i] = i+0x30;
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = i + (k*0x10);
+			}
 		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
-			efpga->m0_oper0.w[i] = 0;
-			efpga->m0_oper1.w[i] = 0;
-			efpga->m1_oper0.w[i] = 0;
-			efpga->m1_oper1.w[i] = 0;
+			for(k = 0; k < 4; k++) {
+				ram_addr[k]->w[i] = 0;
+			}
 			j = scratch[i];
 			scratch[i] = i;
 
@@ -915,21 +1011,20 @@ void tcdm_task( void *pParameter )
 		}
 		errors = 0;
 		soc_ctrl->control_in = 0x100000;
-		efpga->tcdm0_ctl = 0x80000000 | offset;
-		efpga->tcdm1_ctl = 0x80000000 | (offset+0x40);
-		efpga->tcdm2_ctl = 0x80000000 | (offset+0x80);
-		efpga->tcdm3_ctl = 0x80000000 | (offset+0xC0);
+		for(i = 0; i < 4; i++) {
+			*tcdm_ctl[i] = 0x80000000 | (offset +i*0x40);
+		}
 		soc_ctrl->control_in = 0x10000f;
 		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
 			if(i < 0x10)
-			j = efpga->m0_oper0.w[i];
+			j = ram_addr[0]->w[i];
 			else if (i < 0x20)
-			j = efpga->m0_oper1.w[i-0x10];
+			j = ram_addr[1]->w[i-0x10];
 			else if (i < 0x30)
-			j = efpga->m1_oper0.w[i-0x20];
+			j = ram_addr[2]->w[i-0x20];
 			else
-			j = efpga->m1_oper1.w[i-0x30];
+			j = ram_addr[3]->w[i-0x30];
 			if (j != i) {
 				errors++;
 #if EFPGA_DEBUG

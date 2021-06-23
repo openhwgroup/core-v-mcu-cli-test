@@ -21,6 +21,7 @@ static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry);
 static uint8_t flash_bulk_erase (const struct cli_cmd_entry *pEntry);
 static void flash_read (const struct cli_cmd_entry *pEntry);
 static void flash_write (const struct cli_cmd_entry *pEntry);
+static void program (const struct cli_cmd_entry *pEntry);
 
 // EFPGA menu
 const struct cli_cmd_entry qspi_cli_tests[] =
@@ -33,8 +34,65 @@ const struct cli_cmd_entry qspi_cli_tests[] =
   CLI_CMD_WITH_ARG( "erase", flash_subsector_erase, 0, "Erase 4K subsector" ),
   CLI_CMD_WITH_ARG( "sector_erase", flash_sector_erase, 0, "Erase 64K sector" ),
   CLI_CMD_WITH_ARG( "bulk_erase", flash_bulk_erase, 0, "Erase All 32MB" ),
+  CLI_CMD_SIMPLE( "program", program, "Program <filename>"),
   CLI_CMD_TERMINATE()
 };
+
+static void program (const struct cli_cmd_entry *pEntry) {
+char*  pzArg = NULL;
+	(void)pEntry;
+	union {
+		int d32;
+		char d8[4];
+	} sdata;
+	char type = 0;
+	int count = 0;
+	int size = 0;
+	int i, erase_addr;
+	uint32_t fl_addr;
+	// Add functionality here
+	CLI_string_ptr_required("Loading file: ", &pzArg);
+	CLI_uint32_required( "addr", &fl_addr );
+		if (pzArg != NULL) {
+			udma_uart_writeraw(1, 5, "Load ");
+			udma_uart_writeraw(1, strlen(pzArg), pzArg);
+			udma_uart_writeraw(1,2,"\r\n");
+			type = 0;
+			while (type != 'z') {
+				type = uart_getchar(1);
+				for (i = 0; i < 4; i++)
+					sdata.d8[i]= uart_getchar(1);
+				if (type == 'C') {
+					udma_flash_write(0, 0, fl_addr, &sdata.d32, 4);
+					count += 4;
+					if ((count & 0x3ff) == 0)
+						dbg_str(".");
+					fl_addr += 4;
+				}
+				else if (type == 's') {
+					dbg_str("Expecting ");
+					dbg_hex32(sdata.d32);
+					dbg_str(" bytes\r\n");
+					erase_addr = fl_addr & ~0xfff;
+					while (sdata.d32 > 0) {
+						if(sdata.d32 & 0xfff)
+							sdata.d32 -= sdata.d32 & 0xfff;
+						else
+							sdata.d32 -= 0x1000;
+						dbg_str("Erasing 4k page at ");
+						dbg_hex32(erase_addr);
+						dbg_str("\r");
+						udma_flash_erase(0, 0, erase_addr, 0); // 4k Sector erase
+						erase_addr += 0x1000;
+					}
+					dbg_str("\r\n");
+				}
+				if (type != 'z')
+					udma_uart_writeraw(1,1,"c");
+			}
+			dbg_str_hex32("\r\nReceived Bytes",count);
+	}
+}
 
 static void flash_write (const struct cli_cmd_entry *pEntry)
 {
@@ -125,7 +183,7 @@ static uint8_t flash_sector_erase (const struct cli_cmd_entry *pEntry)
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		result = udma_flash_erase(0,0,addr,1);
 		sprintf(message,"FLASH sector 0x%x = %s\n", addr,
-				result ? "Fail" : "Pass");
+				result ? "Pass" : "Fail");
 		dbg_str(message);
 		vPortFree(message);
 }
@@ -142,7 +200,7 @@ static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry)
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		result = udma_flash_erase(0,0,addr,0);
 		sprintf(message,"FLASH subsector 0x%x = %s\n", addr,
-				result ? "Fail" : "Pass");
+				result ? "Pass" : "Fail");
 		dbg_str(message);
 		vPortFree(message);
 }

@@ -30,7 +30,28 @@
 
 SemaphoreHandle_t  uart_semaphores_rx[N_UART];
 SemaphoreHandle_t  uart_semaphores_tx[N_UART];
+static char u1buffer[128];
+static int u1rdptr, u1wrptr;
+	static UdmaUart_t *puart1 = (UdmaUart_t*)(UDMA_CH_ADDR_UART + UDMA_CH_SIZE);
 
+void uart_rx_isr (void *id){
+	if (id == 6) {
+		while (*(int*)0x1a102130) {
+			u1buffer[u1wrptr++] = puart1->data_b.rx_data & 0xff;
+			u1wrptr &= 0x7f;
+		}
+	}
+}
+uint8_t uart_getchar (uint8_t id) {
+	uint8_t retval;
+if (id == 1) {
+	while (u1rdptr == u1wrptr) ;
+	retval = u1buffer[u1rdptr++];
+	u1rdptr &= 0x7f;
+}
+	return retval;
+
+}
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	UdmaUart_t*				puart;
 	volatile UdmaCtrl_t*		pudma_ctrl = (UdmaCtrl_t*)UDMA_CH_ADDR_CTRL;
@@ -56,20 +77,27 @@ uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	uart_semaphores_tx[uart_id] = shSemaphoreHandle;
 
 	/* Set handlers. */
-	pi_fc_event_handler_set(SOC_EVENT_UDMA_UART_RX(uart_id), NULL, uart_semaphores_rx[uart_id]);
+	pi_fc_event_handler_set(SOC_EVENT_UART_RX(uart_id), uart_rx_isr, uart_semaphores_rx[uart_id]);
 	pi_fc_event_handler_set(SOC_EVENT_UDMA_UART_TX(uart_id), NULL, uart_semaphores_tx[uart_id]);
 	/* Enable SOC events propagation to FC. */
-	hal_soc_eu_set_fc_mask(SOC_EVENT_UDMA_UART_RX(uart_id));
+	hal_soc_eu_set_fc_mask(SOC_EVENT_UART_RX(uart_id));
 	hal_soc_eu_set_fc_mask(SOC_EVENT_UDMA_UART_TX(uart_id));
 
 	/* configure */
 	puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
 	puart->uart_setup_b.div = (uint16_t)(5000000/xbaudrate);
 	puart->uart_setup_b.bits = 3; // 8-bits
-	puart->uart_setup_b.rx_polling_en = 1;
+	if (uart_id == 0) puart->uart_setup_b.rx_polling_en = 1;
+	if (uart_id == 1) puart->irq_en_b.rx_irq_en = 1;
 	puart->uart_setup_b.en_tx = 1;
 	puart->uart_setup_b.en_rx = 1;
+	puart->uart_setup_b.rx_clean_fifo = 1;
 	
+	if (uart_id == 1) {
+		 u1rdptr = 0;
+	 	 u1wrptr = 0;
+	}
+
 	return 0;
 }
 
@@ -123,7 +151,7 @@ uint16_t udma_uart_readraw(uint8_t uart_id, uint16_t read_len, uint8_t* read_buf
 	return ret--;
 }
 
-uint16_t udma_uart_getchar(uint8_t uart_id) {
+uint8_t udma_uart_getchar(uint8_t uart_id) {
 	UdmaUart_t*				puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
 
 	while (puart->valid_b.rx_data_valid == 0) {
