@@ -365,7 +365,10 @@ static unsigned int gpio_set_clr_toggle_mode_test(gpio_struct_typedef *gpio) {
 	dbg_str(message);
 #endif
 
-	if((lgpio.mux_sel == gpio->mux_sel) && (lgpio.out_val == gpio->result)) {
+	if( (lgpio.mux_sel == gpio->mux_sel) &&
+		(lgpio.out_val == gpio->result) &&
+		(lgpio.in_val == gpio->result)		//To confirm the value on the pin, read the input value
+	) {
 		error = 0;
 	}else {
 		error = 1;
@@ -383,7 +386,7 @@ static void apb_gpio_tests(const struct cli_cmd_entry *pEntry)
 	unsigned int t_type;
 	gpio.io_num = 11;
 	gpio.mux_sel = 2;
-	gpio.mode = 0;
+	gpio.mode = 1;  //Output = 1, Input = 0.
 	for(t_type = 0; t_type <= GPIO_TOGGLE_L; t_type ++) {
 		switch(t_type) {
 		case GPIO_SET:
@@ -409,8 +412,8 @@ static void apb_gpio_tests(const struct cli_cmd_entry *pEntry)
 		default:
 			break;
 		}
-		for(gpio.number = 4; gpio.number <= 40; gpio.number++ ) {
-			err =+ gpio_set_clr_toggle_mode_test(&gpio);
+		for(gpio.number = 4; gpio.number <= 31; gpio.number++ ) {
+			err += gpio_set_clr_toggle_mode_test(&gpio);
 			gpio.io_num++;
 		}
 		gpio.io_num = 11;

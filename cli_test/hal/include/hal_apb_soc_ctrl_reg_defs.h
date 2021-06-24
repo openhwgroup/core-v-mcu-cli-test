@@ -72,13 +72,53 @@ typedef struct {
       __IO uint32_t  hour       :  8;
     } build_time_b;
   };
-  __I uint32_t    unused1[24];
+
+  // Offset = 0x0014
+  union {
+    __IO uint32_t io_cfg0;
+    struct {
+      __IO uint32_t  n_io       :  8;
+      __IO uint32_t  n_sysio    :  8;
+      __IO uint32_t  n_gpio     :  8;
+    } io_cfg0_b;
+  };
+
+  // Offset = 0x0018
+  union {
+    __IO uint32_t io_cfg1;
+    struct {
+      __IO uint32_t  nbit_padcfg :  8;
+      __IO uint32_t  nbit_padmux :  8;
+    } io_cfg1_b;
+  };
+  __I uint32_t    unused1[1];
+
+  // Offset = 0x0020
+  union {
+    __IO uint32_t per_cfg0;
+    struct {
+      __IO uint32_t  n_uart     :  8;
+      __IO uint32_t  n_qspim    :  8;
+      __IO uint32_t  n_i2cm     :  8;
+      __IO uint32_t  n_i2sc     :  8;
+    } per_cfg0_b;
+  };
+
+  // Offset = 0x0024
+  union {
+    __IO uint32_t per_cfg1;
+    struct {
+      __IO uint32_t  n_sdio     :  8;
+      __IO uint32_t  n_cam      :  8;
+    } per_cfg1_b;
+  };
+  __I uint32_t    unused2[19];
 
   // Offset = 0x0074
   union {
     __IO uint32_t jtagreg;
   };
-  __I uint32_t    unused2[10];
+  __I uint32_t    unused3[10];
 
   // Offset = 0x00a0
   union {
@@ -88,7 +128,7 @@ typedef struct {
       __IO uint32_t  eoc        :  1;
     } corestatus_b;
   };
-  __I uint32_t    unused3[7];
+  __I uint32_t    unused4[7];
 
   // Offset = 0x00c0
   union {
@@ -108,13 +148,13 @@ typedef struct {
   union {
     __IO uint32_t clksel;
   };
-  __I uint32_t    unused4[3];
+  __I uint32_t    unused5[3];
 
   // Offset = 0x00d8
   union {
     __IO uint32_t clk_div_clu;
   };
-  __I uint32_t    unused5[1];
+  __I uint32_t    unused6[1];
 
   // Offset = 0x00e0
   union {
@@ -162,7 +202,7 @@ typedef struct {
       __IO uint32_t  efpga_version :  8;
     } efpga_status_out_b;
   };
-  __I uint32_t    unused6[194];
+  __I uint32_t    unused7[194];
 
   // Offset = 0x0400
   union {
@@ -195,6 +235,32 @@ typedef struct {
 #define   REG_BUILD_TIME_MINUTES_MASK              0xff
 #define   REG_BUILD_TIME_SECONDS_LSB               0
 #define   REG_BUILD_TIME_SECONDS_MASK              0xff
+#define REG_IO_CFG0                    0x0014
+#define   REG_IO_CFG0_N_GPIO_LSB                   16
+#define   REG_IO_CFG0_N_GPIO_MASK                  0xff
+#define   REG_IO_CFG0_N_SYSIO_LSB                  8
+#define   REG_IO_CFG0_N_SYSIO_MASK                 0xff
+#define   REG_IO_CFG0_N_IO_LSB                     0
+#define   REG_IO_CFG0_N_IO_MASK                    0xff
+#define REG_IO_CFG1                    0x0018
+#define   REG_IO_CFG1_NBIT_PADMUX_LSB              8
+#define   REG_IO_CFG1_NBIT_PADMUX_MASK             0xff
+#define   REG_IO_CFG1_NBIT_PADCFG_LSB              0
+#define   REG_IO_CFG1_NBIT_PADCFG_MASK             0xff
+#define REG_PER_CFG0                   0x0020
+#define   REG_PER_CFG0_N_I2SC_LSB                  24
+#define   REG_PER_CFG0_N_I2SC_MASK                 0xff
+#define   REG_PER_CFG0_N_I2CM_LSB                  16
+#define   REG_PER_CFG0_N_I2CM_MASK                 0xff
+#define   REG_PER_CFG0_N_QSPIM_LSB                 8
+#define   REG_PER_CFG0_N_QSPIM_MASK                0xff
+#define   REG_PER_CFG0_N_UART_LSB                  0
+#define   REG_PER_CFG0_N_UART_MASK                 0xff
+#define REG_PER_CFG1                   0x0024
+#define   REG_PER_CFG1_N_CAM_LSB                   8
+#define   REG_PER_CFG1_N_CAM_MASK                  0xff
+#define   REG_PER_CFG1_N_SDIO_LSB                  0
+#define   REG_PER_CFG1_N_SDIO_MASK                 0xff
 #define REG_JTAGREG                    0x0074
 #define REG_CORESTATUS                 0x00A0
 #define   REG_CORESTATUS_EOC_LSB                   31

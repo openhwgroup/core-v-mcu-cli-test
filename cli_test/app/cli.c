@@ -43,6 +43,7 @@ extern const struct cli_cmd_entry gpio_functions[];
 extern const struct cli_cmd_entry efpgaio_functions[];
 extern const struct cli_cmd_entry i2cm0_functions[];
 extern const struct cli_cmd_entry i2cm1_functions[];
+extern const struct cli_cmd_entry i2cs_functions[];
 extern const struct cli_cmd_entry efpga_cli_tests[];
 extern const struct cli_cmd_entry qspi_cli_tests[];
 extern const struct cli_cmd_entry cam_tests[];
@@ -77,6 +78,7 @@ const struct cli_cmd_entry my_main_menu[] = {
 		CLI_CMD_SUBMENU( "efpgaio", efpgaio_functions,   "commands for efpgaio"),
 		CLI_CMD_SUBMENU( "i2cm0", 	i2cm0_functions, 	"commands for i2cm0" ),
 		CLI_CMD_SUBMENU( "i2cm1", 	i2cm1_functions, 	"commands for i2cm1" ),
+		CLI_CMD_SUBMENU( "i2cs", 	i2cs_functions, 	"commands for i2cSlave" ),
 		CLI_CMD_SUBMENU( "efpga", 	efpga_cli_tests,    "commands for efpga connectivity"),
 		CLI_CMD_SUBMENU( "qspi", qspi_cli_tests, "commands for efpga tests"),
 		CLI_CMD_SUBMENU( "cam", cam_tests, "commands for Himax camera tests"),

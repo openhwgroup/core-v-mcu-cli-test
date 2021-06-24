@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __UDMA_CAM_H_
-#define __UDMA_CAM_H_
+#ifndef __UDMA_I2CM_H_
+#define __UDMA_I2CM_H_
 
 //---------------------------------//
 //
-// Module: UDMA_CAM
+// Module: UDMA_I2CM
 //
 //---------------------------------//
 
@@ -117,7 +117,7 @@ typedef struct {
       __IO uint32_t  reset      :  1;
     } setup_b;
   };
-} UdmaI2c_t;
+} UdmaI2cm_t;
 
 
 #define REG_RX_SADDR                   0x00
@@ -171,4 +171,4 @@ static inline uint32_t regfield_write(uint32_t reg, uint32_t mask, uint32_t lsb,
 }
 #endif  // __REGFIELD_OPS_
 
-#endif // __UDMA_CAM_H_
+#endif // __UDMA_I2CM_H_
