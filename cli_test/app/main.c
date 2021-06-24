@@ -99,7 +99,7 @@ static void prvSetupHardware( void );
 #include <app/include/efpga_tests.h>
 
 #include "libs/cli/include/cli.h"
-#include "hal/include/hal_udma_i2c_reg_defs.h"
+#include "hal/include/hal_udma_i2cm_reg_defs.h"
 
 char* SOFTWARE_VERSION_STR = "cli_test v0.1\n";
 extern const struct cli_cmd_entry my_main_menu[];
