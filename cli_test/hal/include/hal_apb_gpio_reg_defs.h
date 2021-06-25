@@ -176,12 +176,14 @@ typedef struct {
       __IO uint32_t  inttype    :  3;
     } setint_b;
   };
+
+  // Offset = 0x0040
   union {
-     __IO uint32_t intack;
-     struct {
-       __IO uint32_t  gpio_num   :  8;
-       __IO uint32_t             :  24;
-     } intack_b;
+    __IO uint32_t intack;
+    struct {
+      __IO uint32_t  gpio_num   :  8;
+      __IO uint32_t  reserved   : 24;
+    } intack_b;
   };
 } ApbGpio_t;
 
@@ -225,12 +227,16 @@ typedef struct {
 #define REG_RDSTAT                     0x34
 #define   REG_RDSTAT_mode_LSB                      24
 #define   REG_RDSTAT_mode_MASK                     0x3
-#define   REG_RDSTAT_INTTYPE_LSB                   16
+#define   REG_RDSTAT_INTTYPE_LSB                   17
 #define   REG_RDSTAT_INTTYPE_MASK                  0x7
+#define   REG_RDSTAT_INTEN_LSB                     16
+#define   REG_RDSTAT_INTEN_MASK                    0x1
 #define   REG_RDSTAT_INPUT_LSB                     12
 #define   REG_RDSTAT_INPUT_MASK                    0x1
 #define   REG_RDSTAT_OUTPUT_LSB                    8
 #define   REG_RDSTAT_OUTPUT_MASK                   0x1
+#define   REG_RDSTAT_gpio_sel_LSB                  0
+#define   REG_RDSTAT_gpio_sel_MASK                 0xff
 #define REG_SETMODE                    0x38
 #define   REG_SETMODE_mode_LSB                     24
 #define   REG_SETMODE_mode_MASK                    0x3
@@ -243,6 +249,11 @@ typedef struct {
 #define   REG_SETINT_INTENABLE_MASK                0x1
 #define   REG_SETINT_gpio_num_LSB                  0
 #define   REG_SETINT_gpio_num_MASK                 0xff
+#define REG_INTACK                     0x40
+#define   REG_INTACK_RESERVED_LSB                  8
+#define   REG_INTACK_RESERVED_MASK                 0xffffff
+#define   REG_INTACK_gpio_num_LSB                  0
+#define   REG_INTACK_gpio_num_MASK                 0xff
 
 #ifndef __REGFIELD_OPS_
 #define __REGFIELD_OPS_
