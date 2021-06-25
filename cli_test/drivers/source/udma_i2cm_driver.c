@@ -26,7 +26,7 @@
 
 #include "hal/include/hal_fc_event.h"
 #include "hal/include/hal_udma_ctrl_reg_defs.h"
-#include "hal/include/hal_udma_i2c_reg_defs.h"
+#include "hal/include/hal_udma_i2cm_reg_defs.h"
 
 #include <drivers/include/udma_i2cm_driver.h>
 
@@ -40,7 +40,7 @@ static uint8_t aucclkdiv[2];
 
 uint16_t udma_i2cm_open (uint8_t i2cm_id, uint32_t clk_freq) {
 	volatile UdmaCtrl_t*		pudma_ctrl = (UdmaCtrl_t*)UDMA_CH_ADDR_CTRL;
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	uint32_t					clk_divisor;
 
 	/* See if already initialized */
@@ -81,7 +81,7 @@ uint16_t udma_i2cm_open (uint8_t i2cm_id, uint32_t clk_freq) {
 
 uint16_t udma_i2cm_control(uint8_t i2cm_id, udma_i2cm_control_type_t control_type, void* pparam) {
 	volatile UdmaCtrl_t*		pudma_ctrl = (UdmaCtrl_t*)UDMA_CH_ADDR_CTRL;
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 
 	switch(control_type) {
 	case kI2cmReset:
@@ -107,7 +107,7 @@ void udma_i2cm_16read8(uint8_t i2cm_id, uint8_t i2cm_addr, uint16_t reg_addr, ui
 
 static uint8_t auccmd_tx[32];
 void udma_i2cm_write (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr, uint16_t write_len, uint8_t *write_data,  bool more_follows) {
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	uint8_t*					pcmd = auccmd_tx;
 	uint8_t*					pdata = write_data;
 	SemaphoreHandle_t 			shSemaphoreHandleTx = i2cm_semaphores_tx[i2cm_id];
@@ -142,7 +142,7 @@ void udma_i2cm_write (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr, uint
 }
 
 void _udma_i2cm_write_addr_plus_regaddr (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr) {
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	uint8_t*					pcmd = auccmd_tx;
 
 	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
@@ -176,7 +176,7 @@ void _udma_i2cm_write_addr_plus_regaddr (uint8_t i2cm_id, uint8_t i2cm_addr, uin
 
 }
 void _udma_i2cm_write_addr_plus_reg16addr (uint8_t i2cm_id, uint8_t i2cm_addr, uint16_t reg_addr) {
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	uint8_t*					pcmd = auccmd_tx;
 
 	SemaphoreHandle_t shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
@@ -214,7 +214,7 @@ void _udma_i2cm_write_addr_plus_reg16addr (uint8_t i2cm_id, uint8_t i2cm_addr, u
 }
 
 void _udma_i2cm_read(uint8_t i2cm_id, uint8_t i2cm_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows) {
-	UdmaI2c_t*					pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	uint8_t*					pcmd = auccmd_rx;
 
 	configASSERT(read_len < 256);
@@ -265,7 +265,7 @@ static uint8_t auci2cm_stop_seq[] = {
 };
 
 void _udma_i2cm_send_stop(uint8_t i2cm_id) {
-	UdmaI2c_t*			pi2cm_regs = (UdmaI2c_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	UdmaI2cm_t*			pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	SemaphoreHandle_t 	shSemaphoreHandle = i2cm_semaphores_tx[i2cm_id];
 	configASSERT(xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
 
