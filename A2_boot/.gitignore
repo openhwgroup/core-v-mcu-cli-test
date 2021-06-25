@@ -1,2 +1,4 @@
+.settings/language.settings.xml
+fpga_bootrom.sv
 /Release/
 /Debug/
