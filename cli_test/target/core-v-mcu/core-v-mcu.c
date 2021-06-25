@@ -62,13 +62,15 @@ BaseType_t xTaskIncrementTick(void);
 void vTaskSwitchContext(void);
 
 /* interrupt handling */
-void timer_irq_handler(void);
-void undefined_handler(void);
-void (*isr_table[32])(void);
+void timer_irq_handler(uint32_t mcause);
+void undefined_handler(uint32_t mcause);
+extern void fc_soc_event_handler1 (uint32_t mcause);
+void (*isr_table[32])(uint32_t);
 
 /**
  * Board init code. Always call this before anything else.
  */
+int handler_count[32];
 void system_init(void)
 {
 	timer_irq_disable();
@@ -83,9 +85,12 @@ void system_init(void)
 	/* Hook up isr table. This table is temporary until we figure out how to
 	 * do proper vectored interrupts.
 	 */
-for (int i = 0 ; i < 32 ; i ++) isr_table[i] = undefined_handler;
+for (int i = 0 ; i < 32 ; i ++){
+	isr_table[i] = undefined_handler;
+	handler_count[i] = 0;
+}
 	isr_table[0x7] = timer_irq_handler;
-	isr_table[0xb] = fc_soc_event_handler; // 11 for cv32
+	isr_table[0xb] = (void(*)(uint32_t))fc_soc_event_handler1; // 11 for cv32
 
 	/* mtvec is set in crt0.S */
 
@@ -121,7 +126,7 @@ void system_core_clock_get(void)
 	return ;
 }
 
-void timer_irq_handler(void)
+void timer_irq_handler(uint32_t mcause)
 {
 #warning requires critical section if interrupt nesting is used.
 	if (xTaskIncrementTick() != 0) {
@@ -129,13 +134,14 @@ void timer_irq_handler(void)
 	}
 }
 
-void undefined_handler(void)
+void undefined_handler(uint32_t mcause)
 {
 #ifdef __PULP_USE_LIBC
 	abort();
 #else
-	taskDISABLE_INTERRUPTS();
-	for(;;);
+//	taskDISABLE_INTERRUPTS();
+//	for(;;);
+	handler_count[mcause]++;
 #endif
 }
 
@@ -153,6 +159,7 @@ void vPortSetupTimerInterrupt(void)
 
 void vSystemIrqHandler(uint32_t mcause)
 {
-	extern void (*isr_table[32])(void);
-	isr_table[mcause & 0x1f]();
+//	extern void (*isr_table[32])(uint32_t);
+	isr_table[mcause & 0x1f](mcause & 0x1f);
+
 }
