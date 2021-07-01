@@ -53,7 +53,12 @@ uint32_t irq_clint_disable()
 
 uint32_t irq_clint_enable()
 {
-	uint32_t val = csr_read_set(CSR_MSTATUS, MSTATUS_IE);
+	uint32_t val = 0;
+	val = csr_read(CSR_MSTATUS);
+
+	val = csr_read_set(CSR_MSTATUS, MSTATUS_IE);
+	//csr_write(CSR_MIE, BIT(25));
+	val = csr_read(CSR_MSTATUS);
 	return val;
 }
 

@@ -57,6 +57,7 @@ __attribute__((always_inline)) static inline void __disable_irq(void)
 #endif
 
 volatile int __debug_fatal__ = 0;
+uint8_t gDebugEnabledFlg = 1;
 
 static void
 __debug_lockup( void )
@@ -144,11 +145,14 @@ void dbg_nl( void )
 
 void dbg_ch( int ch )
 {
-    if( ch == '\n' ){
-        dbg_nl();
-    } else {
-        dbg_ch_raw(ch);
-    }
+	if( gDebugEnabledFlg == 1 )
+	{
+		if( ch == '\n' ){
+			dbg_nl();
+		} else {
+			dbg_ch_raw(ch);
+		}
+	}
 }
 
 void dbg_str(const char *s)
