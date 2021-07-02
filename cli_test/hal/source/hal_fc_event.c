@@ -81,10 +81,12 @@ void pi_fc_event_handler_clear(uint32_t event_id)
 /* TODO: Use Eric's FIRQ ABI */
 void fc_soc_event_handler1 (uint32_t mcause)
 {
+	uint32_t val = 0;
 	static BaseType_t xHigherPriorityTaskWoken;
+
 	/* Pop one event element from the FIFO */
 	/* TODO: don't use it like this */
-	__asm volatile( "csrs mie, %0" :: "r"(0x06000800) );
+	//__asm volatile( "csrs mie, %0" :: "r"(0x06000800) );
 
 	uint32_t event_id = *(uint32_t*)(0x1a106090); // new event fifo address
 //	event_id = NVIC->FIFO;

@@ -33,12 +33,14 @@
 #include "drivers/include/udma_uart_driver.h"
 #include "hal/include/hal_fc_event.h"
 
+extern uint8_t gDebugEnabledFlg;
 // Sub menus
 const struct cli_cmd_entry misc_functions[];
 const struct cli_cmd_entry uart1_functions[];
 const struct cli_cmd_entry mem_functions[];
 const struct cli_cmd_entry mem_tests[];
 extern const struct cli_cmd_entry io_functions[];
+extern const struct cli_cmd_entry intr_functions[];
 extern const struct cli_cmd_entry gpio_functions[];
 extern const struct cli_cmd_entry efpgaio_functions[];
 extern const struct cli_cmd_entry i2cm0_functions[];
@@ -50,7 +52,7 @@ extern const struct cli_cmd_entry cam_tests[];
 
 // MISC functions
 static void misc_info(const struct cli_cmd_entry *pEntry);
-
+static void debug_on_off(const struct cli_cmd_entry *pEntry);
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry);
 
@@ -74,6 +76,7 @@ const struct cli_cmd_entry my_main_menu[] = {
 		CLI_CMD_SUBMENU( "uart1", 	uart1_functions, 	"commands for uart1" ),
 		CLI_CMD_SUBMENU( "mem", 	mem_functions, 		"commands for memory" ),
 		CLI_CMD_SUBMENU( "io", 		io_functions, 		"commands for io" ),
+		CLI_CMD_SUBMENU( "intr", 	intr_functions, 		"commands for interrupt" ),
 		CLI_CMD_SUBMENU( "gpio", 	gpio_functions, 	"commands for gpio" ),
 		CLI_CMD_SUBMENU( "efpgaio", efpgaio_functions,   "commands for efpgaio"),
 		CLI_CMD_SUBMENU( "i2cm0", 	i2cm0_functions, 	"commands for i2cm0" ),
@@ -90,6 +93,7 @@ const struct cli_cmd_entry my_main_menu[] = {
 const struct cli_cmd_entry misc_functions[] =
 {
 		CLI_CMD_SIMPLE( "info", misc_info, "print build info" ),
+		CLI_CMD_SIMPLE( "dbg", debug_on_off, "debug prints on / off" ),
 		CLI_CMD_TERMINATE()
 };
 
@@ -153,6 +157,17 @@ static void misc_info(const struct cli_cmd_entry *pEntry)
 	pzTemp[15] += (char)((xval >>  8) & 0xFU);
 
 	dbg_str_str("build_info", pzTemp);
+	dbg_str("<<DONE>>");
+}
+
+static void debug_on_off(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint32_t	lDbgStatus = 0;
+
+	CLI_uint32_required( "debug flag", &lDbgStatus );
+	gDebugEnabledFlg = lDbgStatus;
 	dbg_str("<<DONE>>");
 }
 
