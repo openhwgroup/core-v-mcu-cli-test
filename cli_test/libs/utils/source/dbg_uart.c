@@ -125,16 +125,19 @@ bool        fSkipSemi = false;          // Used to speed strings
 void dbg_ch_raw( int c )
 {
     char buf[1];
-    switch(_dbg_uart_id) {
-    case UART_ID_BUFFER:
-        *pcDbgBuffer++ = c;
-        if (pcDbgBuffer == pcDbgBufferLim) {
-            pcDbgBuffer = acDbgBuffer;
-        }
-        break;
-    default:
-    	udma_uart_writeraw(_dbg_uart_id, 1, &c);
-    }
+    if( gDebugEnabledFlg == 1 )
+	{
+		switch(_dbg_uart_id) {
+		case UART_ID_BUFFER:
+			*pcDbgBuffer++ = c;
+			if (pcDbgBuffer == pcDbgBufferLim) {
+				pcDbgBuffer = acDbgBuffer;
+			}
+			break;
+		default:
+			udma_uart_writeraw(_dbg_uart_id, 1, &c);
+		}
+	}
 }
 
 void dbg_nl( void )
