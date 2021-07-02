@@ -41,6 +41,7 @@ const struct cli_cmd_entry mem_functions[];
 const struct cli_cmd_entry mem_tests[];
 extern const struct cli_cmd_entry io_functions[];
 extern const struct cli_cmd_entry intr_functions[];
+extern const struct cli_cmd_entry adv_timer_unit_test_functions[];
 extern const struct cli_cmd_entry gpio_functions[];
 extern const struct cli_cmd_entry efpgaio_functions[];
 extern const struct cli_cmd_entry i2cm0_functions[];
@@ -77,6 +78,7 @@ const struct cli_cmd_entry my_main_menu[] = {
 		CLI_CMD_SUBMENU( "mem", 	mem_functions, 		"commands for memory" ),
 		CLI_CMD_SUBMENU( "io", 		io_functions, 		"commands for io" ),
 		CLI_CMD_SUBMENU( "intr", 	intr_functions, 		"commands for interrupt" ),
+		CLI_CMD_SUBMENU( "advtmr", 	adv_timer_unit_test_functions, 		"commands for testing advance timers" ),
 		CLI_CMD_SUBMENU( "gpio", 	gpio_functions, 	"commands for gpio" ),
 		CLI_CMD_SUBMENU( "efpgaio", efpgaio_functions,   "commands for efpgaio"),
 		CLI_CMD_SUBMENU( "i2cm0", 	i2cm0_functions, 	"commands for i2cm0" ),
