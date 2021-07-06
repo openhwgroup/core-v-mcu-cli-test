@@ -101,7 +101,7 @@ static void prvSetupHardware( void );
 #include "libs/cli/include/cli.h"
 #include "hal/include/hal_udma_i2cm_reg_defs.h"
 
-char* SOFTWARE_VERSION_STR = "cli_test v0.1\n";
+char* SOFTWARE_VERSION_STR = "cli_test v0.2 - NoInt \n";
 extern const struct cli_cmd_entry my_main_menu[];
 
 
