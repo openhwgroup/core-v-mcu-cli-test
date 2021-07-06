@@ -26,12 +26,24 @@
 #include "task.h"
 #include "hal/include/efpga_template_reg_defs.h"
 
+typedef struct {
+	uint32_t totalTestsCount; //
+	uint32_t totalFailedCount;
+	uint32_t totalMismatchCount;
+}tcdm_bg_task_sts_t;
+
+tcdm_bg_task_sts_t gTCDMReadStatus;
+tcdm_bg_task_sts_t gTCDMWriteStatus;
+
+extern uint8_t gDebugEnabledFlg;
+
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
 static void m_mltiply_test(const struct cli_cmd_entry *pEntry);
 static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry);
 static void tcdm_task_start(const struct cli_cmd_entry *pEntry);
 static void tcdm_task_stop(const struct cli_cmd_entry *pEntry);
+static void tcdm_task_status(const struct cli_cmd_entry *pEntry);
 static void efpga_autotest(const struct cli_cmd_entry *pEntry);
 
 // EFPGA menu
@@ -40,6 +52,7 @@ const struct cli_cmd_entry efpga_cli_tests[] =
   CLI_CMD_SIMPLE( "tcdm", tcdm_test, "Tcdm0-4 r/w tests" ),
   CLI_CMD_SIMPLE( "tcdm_st", tcdm_task_start, "Tcdm start task" ),
   CLI_CMD_SIMPLE( "tcdm_sp", tcdm_task_stop, "Tcdm delete task" ),
+  CLI_CMD_SIMPLE( "tcdm_status", tcdm_task_status, "Tcdm delete task" ),
   CLI_CMD_SIMPLE( "ram", ram_test, "32 bit ram tests" ),
   CLI_CMD_SIMPLE ( "mlt", m_mltiply_test ,"mltiply_test"),
   CLI_CMD_SIMPLE( "rw", ram_32bit_16bit_8bit_test, "ram_rw_tests" ),
@@ -809,7 +822,7 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
     // Add functionality here
 	uint32_t *scratch;
 	char *message;
-	uint32_t offset;
+	uint32_t lDestinationAddress = 0;
 	apb_soc_ctrl_typedef *soc_ctrl;
 	//efpga_typedef *efpga;
 	volatile unsigned int *m0_ctl, *m1_ctl, *tcdm_ctl[4];
@@ -817,7 +830,7 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 	message  = pvPortMalloc(80);
 	scratch = pvPortMalloc(256);
 	//efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
-	offset = (unsigned int)scratch & 0xFFFFF;
+	lDestinationAddress = (unsigned int)scratch & 0xFFFFF;
 	soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 	soc_ctrl->control_in = 0;
 	soc_ctrl->rst_efpga = 0xf;
@@ -840,19 +853,21 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
 #endif
-		for(i = 0; i < 4; i++) {
-			tcdm_ctl[i] = EFPGA_BASE_ADDR + (i*REG_TCDM_CTL_P1);
-		}
-		for(i = 0; i < 2; i++) {
-			ram_addr[i] = (EFPGA_BASE_ADDR + (i+1)* REG_M0_OPER0);
-		}
-		for(i = 2; i < 4; i++) {
-			ram_addr[i] = (EFPGA_BASE_ADDR + (i+2)* REG_M0_OPER0);
-		}
+		//Set the TCDM control registers to correct base addresses
+		tcdm_ctl[0] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P0 );
+		tcdm_ctl[1] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P1 );
+		tcdm_ctl[2] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P2 );
+		tcdm_ctl[3] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P3 );
+
+		//Set the Multiplier operand RAM addresses. Each of which is 4096 bytes (4 KB)
+		ram_addr[0] = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER0);
+		ram_addr[1] = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER1);
+		ram_addr[2] = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER0);
+		ram_addr[3] = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER1);
 
 		soc_ctrl->control_in = 0x100000;
 		for(i = 0; i < 4; i++) {
-			*tcdm_ctl[i] = 0x00000000 | (offset +i*0x40);
+			*tcdm_ctl[i] = 0x00000000 | (lDestinationAddress +i*0x40);
 		}
 // Initialize eFPGA RAMs
 		for (i = 0; i < 0x40; i = i + 1) {
@@ -862,15 +877,9 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 			}
 		}
 		soc_ctrl->control_in = 0x10000f;
-		vTaskDelay(10);
+		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
-			for(k = 0; k < 4; k++) {
-				ram_addr[k]->w[i] = 0;
-			}
 			j = scratch[i];
-			j = (volatile)scratch[i];
-			scratch[i] = i;
-
 			if (j != i) {
 				errors++;
 
@@ -889,13 +898,20 @@ static void tcdm_test(const struct cli_cmd_entry *pEntry)
 			dbg_str("eFPGA RAM Write Test: <<FAILED>>\r\n");
 		}
 #endif
+		// Test for read from main memory and transfer into operand RAM
 		errors = 0;
 		soc_ctrl->control_in = 0x100000;
 		for(i = 0; i < 4; i++) {
-			*tcdm_ctl[i] = 0x80000000 | (offset +i*0x40);
+			*tcdm_ctl[i] = 0x80000000 | (lDestinationAddress +i*0x40);
+		}
+		for (i = 0;i < 0x40;i = i+1) {
+			for(k = 0; k < 4; k++) {	//Reset the operand ram to 0 so the it can be verified if the transfer from main memory happened or not.
+				ram_addr[k]->w[i] = 0;
+			}
+			scratch[i] = i;		//Initialize the main memory with a known pattern.
 		}
 		soc_ctrl->control_in = 0x10000f;
-		vTaskDelay(10);
+		vTaskDelay(1);
 		for (i = 0;i < 0x40;i = i+1) {
 			if(i < 0x10)
 			j = ram_addr[0]->w[i];
@@ -938,7 +954,7 @@ void tcdm_task( void *pParameter )
     // Add functionality here
 	uint32_t *scratch;
 	char *message;
-	uint32_t offset;
+	uint32_t lDestinationAddress = 0;;
 	apb_soc_ctrl_typedef *soc_ctrl;
 	//efpga_typedef *efpga;
 	volatile unsigned int *m0_ctl, *m1_ctl, *tcdm_ctl[4];
@@ -946,7 +962,7 @@ void tcdm_task( void *pParameter )
 	message  = pvPortMalloc(80);
 	scratch = pvPortMalloc(256);
 	//efpga = (efpga_typedef*)EFPGA_BASE_ADDR;  // base address of efpga
-	offset = (unsigned int)scratch & 0xFFFFF;
+	lDestinationAddress = (unsigned int)scratch & 0xFFFFF;
 	soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 	soc_ctrl->rst_efpga = 0xf;
 	soc_ctrl->ena_efpga = 0x7f;
@@ -967,35 +983,43 @@ void tcdm_task( void *pParameter )
 		sprintf(message,"eFPGA access test read = %x \r\n", i);
 		dbg_str(message);
 #endif
-		for(i = 0; i < 4; i++) {
-			tcdm_ctl[i] = EFPGA_BASE_ADDR + (i*REG_TCDM_CTL_P1);
-		}
-		for(i = 0; i < 2; i++) {
-			ram_addr[i] = (EFPGA_BASE_ADDR + (i+1)* REG_M0_OPER0);
-		}
-		for(i = 2; i < 4; i++) {
-			ram_addr[i] = (EFPGA_BASE_ADDR + (i+2)* REG_M0_OPER0);
-		}
+
+		//Set the TCDM control registers to correct base addresses
+		tcdm_ctl[0] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P0 );
+		tcdm_ctl[1] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P1 );
+		tcdm_ctl[2] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P2 );
+		tcdm_ctl[3] = (unsigned int *)(EFPGA_BASE_ADDR + REG_TCDM_CTL_P3 );
+
+		//Set the Multiplier operand RAM addresses. Each of which is 4096 bytes (4 KB)
+		ram_addr[0] = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER0);
+		ram_addr[1] = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER1);
+		ram_addr[2] = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER0);
+		ram_addr[3] = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER1);
+
 		soc_ctrl->control_in = 0x100000;
+
+		//Setup the TCDM control to write into a destination memory pointed by lDestinationAddress.
+		//lDestinationAddress is an area in the heap memory which is a part of the main system memory.
+		//The 'lDestinationAddress' is a 20 bit address which is stored in the TCDM control register.
+		//31st bit - 0 is for write and 1 is for read from destination address.
+
 		for(i = 0; i < 4; i++) {
-			*tcdm_ctl[i] = 0x00000000 | (offset +i*0x40);
+			*tcdm_ctl[i] = 0x00000000 | (lDestinationAddress +i*0x40);
 		}
 // Initialize eFPGA RAMs
 		for (i = 0; i < 0x40; i = i + 1) {
-			scratch[i] = 0;
-			for(k = 0; k < 4; k++) {
+			scratch[i] = 0;				//Before initiating the transfer ensure that the destination is zeroed out.
+			for(k = 0; k < 4; k++) {	//Fill in the pattern in the operand RAM which gets transferred into the main memory
 				ram_addr[k]->w[i] = i + (k*0x10);
 			}
 		}
 		soc_ctrl->control_in = 0x10000f;
+		//Start the TCDM transfer of 16 words (0x10) indicates 16 words. = 64 bytes. 4 channels = 64*4 = 256 bytes ?? No description found
 		vTaskDelay(1);
+		gTCDMWriteStatus.totalTestsCount++;
+		//Verify the contents if the transfer from operand RAM is moved into main memory pointed by 'lDestinationAddress'
 		for (i = 0;i < 0x40;i = i+1) {
-			for(k = 0; k < 4; k++) {
-				ram_addr[k]->w[i] = 0;
-			}
 			j = scratch[i];
-			scratch[i] = i;
-
 			if (j != i) {
 				errors++;
 #if EFPGA_DEBUG
@@ -1005,17 +1029,32 @@ void tcdm_task( void *pParameter )
 			}
 		}
 		if (errors == 0)
-			dbg_str("eFPGA RAM Write Test: <<PASSED>>\r\n");
-		else {
-			dbg_str("eFPGA RAM Write Test: <<FAILED>>\r\n");
+		{
+			//dbg_str("eFPGA RAM Write Test: <<PASSED>>\r\n");
 		}
+		else {
+			//dbg_str("eFPGA RAM Write Test: <<FAILED>>\r\n");
+			gTCDMWriteStatus.totalFailedCount++;
+			gTCDMWriteStatus.totalMismatchCount += errors;
+		}
+
+		// Test for read from main memory and transfer into operand RAM
 		errors = 0;
 		soc_ctrl->control_in = 0x100000;
 		for(i = 0; i < 4; i++) {
-			*tcdm_ctl[i] = 0x80000000 | (offset +i*0x40);
+			*tcdm_ctl[i] = 0x80000000 | (lDestinationAddress +i*0x40);
 		}
-		soc_ctrl->control_in = 0x10000f;
+
+		for (i = 0;i < 0x40;i = i+1) {
+			for(k = 0; k < 4; k++) {	//Reset the operand ram to 0 so the it can be verified if the transfer from main memory happened or not.
+				ram_addr[k]->w[i] = 0;
+			}
+			scratch[i] = i;		//Initialize the main memory with a known pattern.
+		}
+		soc_ctrl->control_in = 0x10000f;	//Start the TCDM transfer
 		vTaskDelay(1);
+		gTCDMReadStatus.totalTestsCount++;
+		//Verify if all the contents from the main memory are shifted into the operand RAM
 		for (i = 0;i < 0x40;i = i+1) {
 			if(i < 0x10)
 			j = ram_addr[0]->w[i];
@@ -1034,15 +1073,19 @@ void tcdm_task( void *pParameter )
 			}
 		}
 		if (errors == 0)
-			dbg_str("eFPGA RAM Read Test: <<PASSED>>\r\n");
+		{
+			//dbg_str("eFPGA RAM Read Test: <<PASSED>>\r\n");
+		}
 		else {
 #if EFPGA_DEBUG
 			sprintf(message,"*** %d Test Failures\r\n",errors);
 			dbg_str(message);
 #endif
-			dbg_str("eFPGA RAM Read Test: <<FAILED>>\r\n");
+			//dbg_str("eFPGA RAM Read Test: <<FAILED>>\r\n");
+			gTCDMReadStatus.totalFailedCount++;
+			gTCDMReadStatus.totalMismatchCount += errors;
 		}
-		vTaskDelay(1000);
+		vTaskDelay(10);
 	}
 	vPortFree(scratch);
 	vPortFree(message);
@@ -1052,15 +1095,28 @@ void tcdm_task( void *pParameter )
 static void tcdm_task_start(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
+	//if( gDebugEnabledFlg == 1 )
+	//	gDebugEnabledFlg = 0;
+
+	gTCDMReadStatus.totalFailedCount = 0;
+	gTCDMReadStatus.totalMismatchCount = 0;
+	gTCDMReadStatus.totalTestsCount = 0;
+
+	gTCDMWriteStatus.totalFailedCount = 0;
+	gTCDMWriteStatus.totalMismatchCount = 0;
+	gTCDMWriteStatus.totalTestsCount = 0;
+
 	xTaskCreate ( tcdm_task, "tcdm_task", 1000, NULL, (UBaseType_t)(tskIDLE_PRIORITY+1), &xHandleTcmdTest);
 	configASSERT( xHandleTcmdTest );
-
+	CLI_printf("<<TCDM TASK STARTED>>\n");
 }
 
 
 static void tcdm_task_stop(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
+	if( gDebugEnabledFlg == 0 )
+		gDebugEnabledFlg = 1;
 	if(xHandleTcmdTest != NULL) {
 		vTaskDelete(xHandleTcmdTest);
 		dbg_str("<<TCDM TASK DELETED>>\r\n");
@@ -1068,10 +1124,16 @@ static void tcdm_task_stop(const struct cli_cmd_entry *pEntry)
 	else {
 		dbg_str("<<NO TCDM TASK STARTED>>\r\n");
 		xHandleTcmdTest = NULL;
-
 	}
-
 }
+
+static void tcdm_task_status(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
+	CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
+}
+
 
 static void efpga_autotest(const struct cli_cmd_entry *pEntry) {
 	ram_test(NULL);
