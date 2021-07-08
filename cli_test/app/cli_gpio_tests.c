@@ -429,6 +429,7 @@ static void apb_gpio_tests(const struct cli_cmd_entry *pEntry)
 		}
 		for(gpio.number = 4; gpio.number <= 31; gpio.number++ ) {
 			err += gpio_set_clr_toggle_mode_test(&gpio);
+			hal_setpinmux(gpio.io_num, 0);
 			gpio.io_num++;
 		}
 		gpio.io_num = 11;

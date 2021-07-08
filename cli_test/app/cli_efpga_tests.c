@@ -651,6 +651,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		unsigned int global_err = 0;
 		int i, j,k;
 		soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
+		soc_ctrl->rst_efpga = 0x0;  //assert efpga reset
 		soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 		soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 		message  = pvPortMalloc(80);
