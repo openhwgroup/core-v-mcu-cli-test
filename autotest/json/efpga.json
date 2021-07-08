@@ -1,0 +1,12 @@
+{
+	"efpga" : [
+		{">console"		: "efpga tcdm\r\n"},
+		{">console"		: "efpga tcdm_st\r\n"},
+		{">console"		: "efpga tcdm_sp\r\n"},
+		{">console"		: "efpga ram\r\n"},
+		{">console"		: "efpga mlt\r\n"},
+		{">console"		: "efpga rw\r\n"},
+		{">console"		: "efpga auto\r\n"}
+	]
+	
+}

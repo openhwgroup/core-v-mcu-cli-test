@@ -1,0 +1,24 @@
+{
+	"qspi" : [
+		{">console"		: "io setmux 13 0\r\n"},		
+		{">console"		: "io setmux 14 0\r\n"},
+		{">console"		: "io setmux 15 0\r\n"},		
+		{">console"		: "io setmux 16 0\r\n"},
+		{">console"		: "io setmux 17 0\r\n"},		
+		{">console"		: "io setmux 18 0\r\n"},
+		{">console"		: "io setmux 19 0\r\n"},		
+		{">console"		: "io setmux 20 0\r\n"},
+
+		{">console"		: "qspi write 1\r\n"},		
+		{">console"		: "qspi read\r\n"},
+		{">console"		: "qspi erase 0xDE\r\n"},
+		{">console"		: "qspi flashid\r\n"},
+		{">console"		: "qspi flash_write 0xDE 0x10\r\n"},
+		{">console"		: "qspi flash_read 0xDE 32\r\n"},
+		{">console"		: "qspi sector_erase 0xDE\r\n"},
+		{">console"		: "qspi flash_read 0xDE 32\r\n"},
+		{">console"		: "qspi flash_write 0xDE 0x10\r\n"},
+		{">console"		: "qspi bulk_erase 0xDE\r\n"}
+	]
+	
+}
