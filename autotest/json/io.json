@@ -1,7 +1,6 @@
 {
 	"io" : [
-		{">console"		: "io setmux 1 0\r\n"},
-		{">console"		: "io getmux 1\r\n"}
+		{">console"		: "io setmux 11 2\r\n"}
 	]
 	
 }
