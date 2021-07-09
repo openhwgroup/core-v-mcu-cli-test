@@ -52,6 +52,7 @@ extern const struct cli_cmd_entry fcb_cli_tests[];
 extern const struct cli_cmd_entry qspi_cli_tests[];
 extern const struct cli_cmd_entry cam_tests[];
 
+
 // MISC functions
 static void misc_info(const struct cli_cmd_entry *pEntry);
 static void debug_on_off(const struct cli_cmd_entry *pEntry);
@@ -119,7 +120,7 @@ const struct cli_cmd_entry mem_functions[] =
 		CLI_CMD_SIMPLE( "md.w", 	mem_peek_16,         	"0xaddr -- print 16-bit memory location " ),
 		CLI_CMD_SIMPLE( "mw.w",   mem_poke_16,         	"0xaddr 0xvalue -- write 16-bit value to addr" ),
 		CLI_CMD_SIMPLE( "md.l", 	mem_peek,         	"0xaddr -- print 32-bit memory location " ),
-		CLI_CMD_SIMPLE( "poke",   	mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
+		CLI_CMD_SIMPLE( "mw.l",   	mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
 		CLI_CMD_SUBMENU( "test", 	mem_tests, 			"tests" ),
 		CLI_CMD_TERMINATE()
 };
@@ -161,7 +162,7 @@ static void misc_info(const struct cli_cmd_entry *pEntry)
 	pzTemp[15] += (char)((xval >>  8) & 0xFU);
 
 	dbg_str_str("build_info", pzTemp);
-	dbg_str("<<DONE>>");
+	dbg_str("<<PASSED>>");
 }
 
 static void debug_on_off(const struct cli_cmd_entry *pEntry)
@@ -172,7 +173,7 @@ static void debug_on_off(const struct cli_cmd_entry *pEntry)
 
 	CLI_uint32_required( "debug flag", &lDbgStatus );
 	gDebugEnabledFlg = lDbgStatus;
-	dbg_str("<<DONE>>");
+	dbg_str("<<PASSED>>");
 }
 
 // UART functions
@@ -235,39 +236,90 @@ static void mem_peek(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
-	uint32_t	xValue;
-	uint32_t*	pAddr;
+	uint32_t	xValue = 0;
+	uint32_t    lExpVal = 0;
+	uint8_t 	lExpValTrueOrFalse = 0;
+	uint32_t	lAddress = 0;
+	uint32_t*	pAddr = 0;
 
-	CLI_uint32_required( "addr", &pAddr );
+	CLI_uint32_required( "addr", &lAddress );
+
+	if( CLI_is_more_args() ){
+		lExpValTrueOrFalse = 1;
+		CLI_uint32_required("exp", &lExpVal);
+	}
+
+	pAddr = (uint32_t*)lAddress;
 	xValue = *pAddr;
 	dbg_str_hex32("value", xValue);
-	dbg_str("<<DONE>>");
+
+
+	if( lExpValTrueOrFalse )
+	{
+		if( xValue == lExpVal )
+		{
+			dbg_str("<<PASSED>>\r\n");
+		}
+		else
+		{
+			dbg_str("<<FAILED>>\r\n");
+		}
+	}
+	else
+	{
+		dbg_str("<<DONE>>\r\n");
+	}
+
 }
 
 static void mem_poke(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
-	uint32_t	xValue;
-	uint32_t*	pAddr;
+	uint32_t	xValue = 0;
+	uint32_t	lAddress = 0;
+	uint32_t*	pAddr = 0;
 
-	CLI_uint32_required( "addr", &pAddr );
+	CLI_uint32_required( "addr", &lAddress );
 	CLI_uint32_required( "value", &xValue);
+	pAddr = (uint32_t*)lAddress;
+
 	*pAddr = xValue;
-	dbg_str("<<DONE>>");
+	dbg_str("<<DONE>>\r\n");
+
 }
 
 static void mem_peek_16(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
-	uint16_t	xValue;
+	uint16_t	xValue, lExpVal;
 	uint16_t*	pAddr;
+	uint8_t lExpValTrueOrFalse = 0;
 
 	CLI_uint32_required( "addr", &pAddr );
+	if( CLI_is_more_args() ){
+		lExpValTrueOrFalse = 1;
+		CLI_uint16_required("exp", &lExpVal);
+	}
 	xValue = *pAddr;
 	dbg_str_hex16("value", xValue);
-	dbg_str("<<DONE>>");
+
+	if( lExpValTrueOrFalse )
+	{
+		if( xValue == lExpVal )
+		{
+			dbg_str("<<PASSED>>\r\n");
+		}
+		else
+		{
+			dbg_str("<<FAILED>>\r\n");
+		}
+	}
+	else
+	{
+		dbg_str("<<DONE>>");
+	}
 }
 
 static void mem_poke_16(const struct cli_cmd_entry *pEntry)
@@ -282,17 +334,38 @@ static void mem_poke_16(const struct cli_cmd_entry *pEntry)
 	*pAddr = xValue;
 	dbg_str("<<DONE>>");
 }
+
 static void mem_peek_8(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
-	uint8_t	xValue;
+	uint8_t	xValue, lExpVal;
 	uint8_t*	pAddr;
+	uint8_t lExpValTrueOrFalse = 0;
 
 	CLI_uint32_required( "addr", &pAddr );
+	if( CLI_is_more_args() ){
+		lExpValTrueOrFalse = 1;
+		CLI_uint8_required("exp", &lExpVal);
+	}
+
 	xValue = *pAddr;
 	dbg_str_hex8("value", xValue);
-	dbg_str("<<DONE>>");
+	if( lExpValTrueOrFalse )
+	{
+		if( xValue == lExpVal )
+		{
+			dbg_str("<<PASSED>>\r\n");
+		}
+		else
+		{
+			dbg_str("<<FAILED>>\r\n");
+		}
+	}
+	else
+	{
+		dbg_str("<<DONE>>");
+	}
 }
 
 static void mem_poke_8(const struct cli_cmd_entry *pEntry)

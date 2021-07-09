@@ -207,21 +207,20 @@ static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry)
 static void flash_readid(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
-		char *message;
-		int errors = 0;
-		int i;
-		union {
-			uint32_t w;
-			uint8_t b[4];
-		} result ;
-		message  = pvPortMalloc(80);
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		result.w = udma_flash_readid(0,0);
-		sprintf(message,"FLASH read ID results = %02x %02x %02x %02x\n",
-				result.b[0],result.b[1],result.b[2],result.b[3]);
-		dbg_str(message);
-		vPortFree(message);
+	// Add functionality here
+	union {
+		uint32_t w;
+		uint8_t b[4];
+	} result ;
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	result.w = udma_flash_readid(0,0);
+	CLI_printf("FLASH read ID results = 0x%08x %02x %02x %02x %02x\n",
+			result.w, result.b[0],result.b[1],result.b[2],result.b[3]);
+	if( result.w == 0x1019ba20 )
+		CLI_printf("<<PASSED>>\n");
+	else
+		CLI_printf("<<FAILED>>\n");
 }
 
 
@@ -229,25 +228,14 @@ static void qspi_read(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	    // Add functionality here
-		char *message;
-		int errors = 0;
-		int i;
-		char read_data[8] = {0xff,0xfe,0xfc,0xf8,0xf0,0xe0,0xc0,0x80};
-		message  = pvPortMalloc(80);
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		sprintf(message,"Qspi Read tests");
 
-		dbg_str(message);
-		udma_qspim_read(0, 0, 4, read_data);
-		sprintf(message,"Read data = %d",read_data[0]);
-		dbg_str(message);
-		sprintf(message," %d",read_data[1]);
-		dbg_str(message);
-		sprintf(message," %d",read_data[2]);
-		dbg_str(message);
-		sprintf(message," %d\r\n",read_data[3]);
-		dbg_str(message);
-		vPortFree(message);
+		uint8_t read_data[8] = {0xff,0xfe,0xfc,0xf8,0xf0,0xe0,0xc0,0x80};
+		uint8_t lRead_data[8] = {0};
+
+		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		udma_qspim_read(0, 0, 4, lRead_data);
+		CLI_printf("[0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n",lRead_data[0], lRead_data[1], lRead_data[2], lRead_data[3]);
+
 }
 
 static void qspi_write(const struct cli_cmd_entry *pEntry)

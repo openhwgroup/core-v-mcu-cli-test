@@ -38,53 +38,67 @@ const struct cli_cmd_entry i2cs_functions[] =
 
 static void i2cs_on (const struct cli_cmd_entry *pEntry)
 {
-	char *message = 0;
+	(void)pEntry;
 	uint8_t status = 0;
-	message  = pvPortMalloc(80);
-	configASSERT (message);
 	status = hal_set_apb_i2c_slave_on_off(1);
-	sprintf(message," Status = 0x%02x\r\n", status);
-	dbg_str(message);
-	vPortFree(message);
+	if( status == 1 )
+	{
+		dbg_str("<<PASSED>>\r\n");
+	}
+	else
+	{
+		dbg_str("<<FAILED>>\r\n");
+	}
+
 }
 
 static void i2cs_off (const struct cli_cmd_entry *pEntry)
 {
-	char *message = 0;
+	(void)pEntry;
 	uint8_t status = 0;
-	message  = pvPortMalloc(80);
-	configASSERT (message);
+
 	status = hal_set_apb_i2c_slave_on_off(0);
-	sprintf(message," Status = 0x%02x\r\n", status);
-	dbg_str(message);
-	vPortFree(message);
+	if( status == 0 )
+	{
+		dbg_str("<<PASSED>>\r\n");
+	}
+	else
+	{
+		dbg_str("<<FAILED>>\r\n");
+	}
 }
 
 static void i2cs_readSlaveAddress (const struct cli_cmd_entry *pEntry)
 {
-	char *message = 0;
-	uint32_t address = 0;
-	message  = pvPortMalloc(80);
-	configASSERT (message);
+	(void)pEntry;
+	uint8_t address = 0;
 	address = hal_get_apb_i2c_slave_address();
-	sprintf(message," Slave address = 0x%08x\r\n", address);
-	dbg_str(message);
-	vPortFree(message);
+
+	dbg_str_hex8("Slave Address", address);
+	dbg_str("<<PASSED>>\r\n");
+
 }
 
 static void i2cs_writeSlaveAddress (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	char *message = 0;
 	uint8_t address = 0;
-	message  = pvPortMalloc(80);
-	configASSERT (message);
+	uint8_t lReadAddress = 0;
 
 	CLI_uint8_required( "i2c_addr", &address );
 
-	sprintf(message," Setting address = 0x%02x\r\n", address);
-	dbg_str(message);
 	hal_set_apb_i2c_slave_address(address);
-	vPortFree(message);
+
+	lReadAddress = hal_get_apb_i2c_slave_address();
+
+	CLI_printf("Setting I2C Slave address to 0x%02x\n", address);
+	if( lReadAddress == address )
+	{
+		dbg_str("<<PASSED>>\r\n");
+	}
+	else
+	{
+		dbg_str("<<PASSED>>\r\n");
+	}
 }
 
