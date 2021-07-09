@@ -1,0 +1,26 @@
+{
+	"uart1" : [
+		{">console"		: "uart1 tx abcdefghijklmnopqrstuvwxyz\r\n"},
+		{"<uart1"			: "abcdefghijklmnopqrstuvwxyz\r\n"},
+
+		{">console"		: "uart1 tx `~!@#$%^&*()_-=+\r\n"},
+		{"<uart1"			: "`~!@#$%^&*()_-=+\r\n"}, 
+
+		{">console"		: "uart1 tx []{};':\r\n"},
+		{"<uart1"			: "[]{};':\r\n"},
+
+		{">console"		: "uart1 tx <>,.?\r\n"},
+		{"<uart1"			: "<>,.?\r\n"},
+
+		{">console"		: "uart1 tx 0123456789\r\n"},
+		{"<uart1"			: "0123456789\r\n"},
+
+		{">console"		: "uart1 tx hello\r\n"},
+		{"<uart1"			: "hello\r\n"},
+
+		{">console"		: "uart1 tx hello.this.is.a.test.\r\n"},
+                {"<uart1"			: "hello.this.is.a.test.\r\n"}
+
+
+	]
+}
