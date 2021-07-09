@@ -1,0 +1,6 @@
+{
+	"Fast IRQ test" : [
+		{">console"		: "intr all\r\n"}
+	]
+	
+}

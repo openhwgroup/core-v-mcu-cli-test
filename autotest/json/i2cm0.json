@@ -1,0 +1,10 @@
+{
+	"i2cm0"	: [
+		{">console"		: "io setmux 23 0\r\n"},
+		{">console"		: "io setmux 24 0\r\n"},
+		{">console"		: "i2cm0 writebyte 0xDE 0x20 0x10\r\n"},		
+		{">console"		: "i2cm0 readbyte 0xDE 0x20\r\n"},
+		{">console"		: "i2cm0 singlebyte 0xDE 0x20\r\n"},
+		{">console"		: "i2cm0 singlebyte 0xDE 0x00\r\n"}
+	]
+}

@@ -10,6 +10,7 @@ import argparse
 import serial
 import json
 import time
+import os
 
 ##############################
 #
@@ -19,6 +20,7 @@ import time
 parser = argparse.ArgumentParser()
 parser.add_argument("--console", metavar="/dev/ttyUSB?", help="port associated with the console", required=True);
 parser.add_argument("--uart1", metavar="/dev/ttyUSB?", help="port associated with the uart1", required=True);
+parser.add_argument("--test", metavar="?", help=".json file to be tested", required=True);
 args = parser.parse_args()
 
 ##############################
@@ -33,7 +35,9 @@ with serial.Serial(args.console, 115200) as console:
     print("Opened console(" + args.console + ")")
     with serial.Serial(args.uart1, 115200) as uart1:
         print("Opened uart1(" + args.uart1 + ")")
-        with open('test.json') as ftest:
+        json_loc = '/home/qlblue/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/json/'
+        os.chdir(json_loc)
+        with open(args.test) as ftest:
             script = json.load(ftest)
             for test in script:
                 print("*** " + test + " ***")

@@ -1,2 +1,49 @@
 #!/bin/bash
-python3 test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB1
+
+# initialize
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test initialize.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/initialize.log
+
+# misc
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test misc.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/misc.log
+
+# uart1
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test uart1.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/uart1.log
+
+# mem
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test mem.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/mem.log
+
+# io
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test io.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/io.log
+
+# gpio
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test gpio.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/gpio.log
+
+# efpgaio
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test efpgaio.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/efpgaio.log
+
+# i2cm0
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test i2cm0.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/i2cm0.log
+
+# i2cm1
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test i2cm1.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/i2cm1.log
+
+# i2cs
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test i2cs.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/i2cs.log
+
+# efpga
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test efpga.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/efpga.log
+
+# qspi
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test qspi.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/qspi.log
+
+# cam
+#python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test cam.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/cam.log
+
+# advtmr
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test advtmr.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/advtmr.log
+
+# fastInterrupt
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test fastInterrupt.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/fastInterrupt.log
+
+# FBCTest
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test FBCTest.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/FBCTest.log
