@@ -12,6 +12,12 @@
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
 #include "drivers/include/udma_qspi_driver.h"
+#include "hal/include/hal_pinmux.h"
+
+typedef union {
+	uint32_t w;
+	uint8_t b[4];
+} split_4Byte_t ;
 
 static void qspi_read(const struct cli_cmd_entry *pEntry);
 static void qspi_write(const struct cli_cmd_entry *pEntry);
@@ -22,6 +28,8 @@ static uint8_t flash_bulk_erase (const struct cli_cmd_entry *pEntry);
 static void flash_read (const struct cli_cmd_entry *pEntry);
 static void flash_write (const struct cli_cmd_entry *pEntry);
 static void program (const struct cli_cmd_entry *pEntry);
+static void flash_peek (const struct cli_cmd_entry *pEntry);
+static void flash_poke (const struct cli_cmd_entry *pEntry);
 
 // EFPGA menu
 const struct cli_cmd_entry qspi_cli_tests[] =
@@ -31,6 +39,8 @@ const struct cli_cmd_entry qspi_cli_tests[] =
   CLI_CMD_WITH_ARG( "flashid", flash_readid, 0, "read flash id" ),
   CLI_CMD_WITH_ARG( "flash_read", flash_read, 0, "read spi flash address, num_bytes"),
   CLI_CMD_WITH_ARG( "flash_write", flash_write, 0, "write spi flash address, data"),
+  CLI_CMD_WITH_ARG( "flash_peek", flash_peek, 0, "read spi flash address, 4 bytes fixed"),
+  CLI_CMD_WITH_ARG( "flash_poke", flash_poke, 0, "write spi flash address, 4 bytes fixed"),
   CLI_CMD_WITH_ARG( "erase", flash_subsector_erase, 0, "Erase 4K subsector" ),
   CLI_CMD_WITH_ARG( "sector_erase", flash_sector_erase, 0, "Erase 64K sector" ),
   CLI_CMD_WITH_ARG( "bulk_erase", flash_bulk_erase, 0, "Erase All 32MB" ),
@@ -271,4 +281,106 @@ static void qspi_write(const struct cli_cmd_entry *pEntry)
 		udma_qspim_write(0, 2, length, message);
 		udma_qspim_write(0, 3, length, message);
 		vPortFree(message);
+}
+
+
+static void flash_peek(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	split_4Byte_t	xValue;
+	split_4Byte_t    lExpVal;
+	uint8_t 	lExpValTrueOrFalse = 0;
+	uint32_t	lAddress = 0;
+	uint8_t lMuxSelSaveBuf[8] = {0};
+	uint8_t i = 0;
+
+	xValue.w = 0;
+	lExpVal.w = 0;
+
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+	}
+
+	for(i=0; i<8; i++ )
+	{
+		//set pin muxes
+		hal_setpinmux(13+i, 0);
+	}
+
+	CLI_uint32_required( "addr", &lAddress );
+
+	if( CLI_is_more_args() ){
+		lExpValTrueOrFalse = 1;
+		CLI_uint32_required("exp", &lExpVal);
+	}
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	dbg_str("Qspi Flash Read\n");
+	udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
+	CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
+
+	if( lExpValTrueOrFalse )
+	{
+		if( xValue.w == lExpVal.w )
+		{
+			dbg_str("<<PASSED>>\r\n");
+		}
+		else
+		{
+			dbg_str("<<FAILED>>\r\n");
+		}
+	}
+	else
+	{
+		dbg_str("<<DONE>>\r\n");
+	}
+
+	//Restore pin muxes
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+	}
+}
+
+static void flash_poke(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	split_4Byte_t	xValue;
+	uint32_t	lAddress = 0;
+	uint8_t i = 0;
+	uint8_t lMuxSelSaveBuf[8] = {0};
+
+	xValue.w = 0;
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+	}
+
+	for(i=0; i<8; i++ )
+	{
+		//set pin muxes
+		hal_setpinmux(13+i, 0);
+	}
+
+	CLI_uint32_required( "addr", &lAddress );
+	CLI_uint32_required( "value", &xValue.w);
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	dbg_str("Qspi Flash write\n");
+	udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
+
+	dbg_str("<<DONE>>\r\n");
+
+	//Restore pin muxes
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+	}
 }

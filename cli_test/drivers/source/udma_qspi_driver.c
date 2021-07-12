@@ -421,7 +421,7 @@ void udma_flash_write(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,
 		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
 uint8_t test;
 		test = 1;
-				while ((test & 0x1) == 0x1) {
+				while ((test & 0x3) == 0x1) {
 
 					pqspim_regs->rx_cfg_b.en = 0;
 					pqspim_regs->tx_cfg_b.en = 0;
