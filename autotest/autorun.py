@@ -3,11 +3,10 @@ import sys
 import subprocess
 
 length = len(sys.argv)
-first_arg = sys.argv[1]
 args = sys.argv
 JsonFolder = []
 
-def autorun(length=length, Type=first_arg, args=args):
+def autorun(length=length, console=sys.argv[1], uart=sys.argv[2], Type=sys.argv[3], args=args):
     arnold = '/home/qlblue/NightlyBuild/arnold2/'
     test = arnold + 'core-v-mcu-cli-test/autotest/'
     JSON = test + 'json/'
@@ -19,12 +18,12 @@ def autorun(length=length, Type=first_arg, args=args):
         for json in JsonFolder:
             os.chdir(test) # location of Test.py
             name= json[0:-5]
-            command = 'python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test ' + json + ' >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/' + name + '.log'
+            command = 'python3 Test.py --console /dev/ttyUSB' + console + ' --uart1 /dev/ttyUSB' + uart + ' --test ' + json + ' >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/' + name + '.log'
             process = subprocess.call(command, shell=True)
     
     # run only the specified apps
     if Type == '-s':
-        i = 2
+        i = 4
         while i < length:
             os.chdir(test)
             command = 'python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test ' + args[i] + '.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/' + args[i] + '.log'
@@ -34,7 +33,7 @@ def autorun(length=length, Type=first_arg, args=args):
     # run all except specified logs
     if Type == '-e':
         JsonFolder = os.listdir(JSON)
-        i = 2
+        i = 4
         while i < length:
             jfile = args[i] + '.json'
             JsonFolder.remove(jfile)
