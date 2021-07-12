@@ -45,5 +45,5 @@ python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test advtmr.json >
 # fastInterrupt
 python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test fastInterrupt.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/fastInterrupt.log
 
-# FBCTest
-python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test FBCTest.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/FBCTest.log
+# FCBTest
+python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test FCBTest.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/FCBTest.log

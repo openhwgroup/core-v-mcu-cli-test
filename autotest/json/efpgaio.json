@@ -1,10 +1,6 @@
 {
 	"efpgaio" : [
-		{">console"		: "efpgaio set 1\r\n"},
-		{">console"		: "efpgaio clr 1\r\n"},
-		{">console"		: "efpgaio all\r\n"},
-		{">console"		: "gpio mode 1 1\r\n"}, 
-		{">console"		: "gpio status 1\r\n"}
+		{">console"		: "efpgaio all\r\n"}
 	]
 	
 }

@@ -1,11 +1,6 @@
 {
 	"gpio" : [
-		{">console"		: "gpio set 1\r\n"},
-		{">console"		: "gpio clr 1\r\n"},
-		{">console"		: "gpio toggle 1\r\n"},
-		{">console"		: "gpio mode 1 1\r\n"}, 
-		{">console"		: "gpio status 1\r\n"},
-		{">console"		: "gpio event 1 0 3 2\r\n"},
+		{">console"		: "gpio event\r\n"},
                 {">console"		: "gpio evnt\r\n"},
 		{">console"		: "gpio all\r\n"}
 

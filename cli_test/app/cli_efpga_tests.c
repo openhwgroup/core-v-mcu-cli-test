@@ -1109,7 +1109,7 @@ static void tcdm_task_start(const struct cli_cmd_entry *pEntry)
 
 	xTaskCreate ( tcdm_task, "tcdm_task", 1000, NULL, (UBaseType_t)(tskIDLE_PRIORITY+1), &xHandleTcmdTest);
 	configASSERT( xHandleTcmdTest );
-	CLI_printf("<<TCDM TASK STARTED>>\n");
+	CLI_printf("TCDM TASK STARTED <<DONE>>\n");
 }
 
 
@@ -1120,10 +1120,10 @@ static void tcdm_task_stop(const struct cli_cmd_entry *pEntry)
 		gDebugEnabledFlg = 1;
 	if(xHandleTcmdTest != NULL) {
 		vTaskDelete(xHandleTcmdTest);
-		dbg_str("<<TCDM TASK DELETED>>\r\n");
+		dbg_str("TCDM TASK DELETED <<DONE>>\r\n");
 	}
 	else {
-		dbg_str("<<NO TCDM TASK STARTED>>\r\n");
+		dbg_str("NO TCDM TASK STARTED <<PASSED>>\r\n");
 		xHandleTcmdTest = NULL;
 	}
 }
@@ -1133,6 +1133,7 @@ static void tcdm_task_status(const struct cli_cmd_entry *pEntry)
 	(void)pEntry;
 	CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
 	CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
+	CLI_printf("TCDM TASK STATUS <<PASSED>>\n");
 }
 
 

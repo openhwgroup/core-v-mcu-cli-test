@@ -1,6 +1,6 @@
 {
 	"initialize" : [
-		{">console"		: "exit <<DONE>>\r\n"}
+		{">console"		: "exit\r\n"}
 	]
 	
 }
