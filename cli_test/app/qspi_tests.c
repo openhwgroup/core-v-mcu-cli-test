@@ -176,7 +176,7 @@ static uint8_t flash_bulk_erase (const struct cli_cmd_entry *pEntry)
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		result = udma_flash_erase(0,0,addr,2);
 		sprintf(message,"FLASH all erase = %s\n",
-				result ? "Pass" : "Fail");
+				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
 }
@@ -193,7 +193,7 @@ static uint8_t flash_sector_erase (const struct cli_cmd_entry *pEntry)
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		result = udma_flash_erase(0,0,addr,1);
 		sprintf(message,"FLASH sector 0x%x = %s\n", addr,
-				result ? "Pass" : "Fail");
+				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
 }
@@ -210,7 +210,7 @@ static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry)
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		result = udma_flash_erase(0,0,addr,0);
 		sprintf(message,"FLASH subsector 0x%x = %s\n", addr,
-				result ? "Pass" : "Fail");
+				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
 }

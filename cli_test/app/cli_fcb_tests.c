@@ -39,7 +39,7 @@ static void program_fpga(const struct cli_cmd_entry *pEntry)
 {
 	programFPGA();
     (void)pEntry;
-
+    dbg_str("<<DONE>>");
 }
 
 static void read_fcb_reg(const struct cli_cmd_entry *pEntry)
