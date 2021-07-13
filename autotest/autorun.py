@@ -18,7 +18,9 @@ def autorun(length=length, console=sys.argv[1], uart=sys.argv[2], Type=sys.argv[
         for json in JsonFolder:
             os.chdir(test) # location of Test.py
             name= json[0:-5]
+
             command = 'python3 Test.py --console /dev/ttyUSB' + console + ' --uart1 /dev/ttyUSB' + uart + ' --test ' + json + ' >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/' + name + '.log'
+
             process = subprocess.call(command, shell=True)
     
     # run only the specified apps
@@ -33,6 +35,7 @@ def autorun(length=length, console=sys.argv[1], uart=sys.argv[2], Type=sys.argv[
     # run all except specified logs
     if Type == '-e':
         JsonFolder = os.listdir(JSON)
+
         i = 4
         while i < length:
             jfile = args[i] + '.json'
