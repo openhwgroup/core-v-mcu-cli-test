@@ -35,7 +35,7 @@ with serial.Serial(args.console, 115200) as console:
     print("Opened console(" + args.console + ")")
     with serial.Serial(args.uart1, 115200) as uart1:
         print("Opened uart1(" + args.uart1 + ")")
-        json_loc = '/home/qlblue/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/json/'
+        json_loc = './json/'
         os.chdir(json_loc)
         with open(args.test) as ftest:
             script = json.load(ftest)
