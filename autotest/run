@@ -1,10 +1,47 @@
 #!/bin/bash
-
-CONSOLE_UART_PORT=$(python3 -m serial.tools.list_ports 0403:6010 -q -n 2) #Second instance of Nexsys USB2UART
-UART1_UART_PORT=$(python3 -m serial.tools.list_ports 0403:6001 -q -n 1) #First instance of PMOD USB2UART
-
 console_uart_found_flag=0
 uart1_uart_found_flag=0
+OUTPUTDIR=~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs
+
+while getopts ":c:d:u:U:" opt; do
+    case $opt in
+        c) CONSOLE_UART_PORT="/dev/tty${OPTARG}"
+           console_uart_found_flag=1
+           ;;
+        d) OUTPUTDIR="$OPTARG"
+           ;;
+        u) UART1_UART_PORT="/dev/tty${OPTARG}"
+           uart1_uart_found_flag=1
+           ;;
+        U) user="${OPTARG}"
+           ;;
+        \?) echo "Invalid Option -$OPTARG" >&2
+            ;;
+    esac
+done
+
+if [ "$user" == "greg" ]
+then
+    if [ $console_uart_found_flag == 0 ]
+    then
+       CONSOLE_UART_PORT=$(python3 -m serial.tools.list_ports 0403:6010 -q -n 1)
+    fi
+    if [ $uart1_uart_found_flag == 0 ]
+    then       
+       UART1_UART_PORT=$(python3 -m serial.tools.list_ports 067B:2303 -q -n 1)
+    fi
+       OUTPUTDIR=TestOutputs
+else
+    if [ $console_uart_found_flag == 0 ]
+    then
+       CONSOLE_UART_PORT=$(python3 -m serial.tools.list_ports 0403:6010 -q -n 2) #Second instance of Nexsys USB2UART
+    fi
+    if [ $uart1_uart_found_flag == 0 ]
+    then       
+       UART1_UART_PORT=$(python3 -m serial.tools.list_ports 0403:6001 -q -n 1) #First instance of PMOD USB2UART
+    fi
+fi
+
 
 if [ "$CONSOLE_UART_PORT" == "" ]
 then
@@ -27,66 +64,66 @@ then
     echo "Both UART ports found"
     # initialize
     	echo "Testing initialize"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test initialize.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/initialize.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test initialize.json >& $OUTPUTDIR/initialize.log
 
 	# misc
 	echo "Testing misc"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test misc.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/misc.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test misc.json >& $OUTPUTDIR/misc.log
 
 	# uart1
 	echo "Testing uart1"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test uart1.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/uart1.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test uart1.json >& $OUTPUTDIR/uart1.log
 
 	# mem
 	echo "Testing mem"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test mem.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/mem.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test mem.json >& $OUTPUTDIR/mem.log
 
 	# io
 	echo "Testing io"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test io.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/io.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test io.json >& $OUTPUTDIR/io.log
 
 	# gpio
 	echo "Testing gpio"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test gpio.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/gpio.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test gpio.json >& $OUTPUTDIR/gpio.log
 
 	# efpgaio
 	echo "Testing efpgaio"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test efpgaio.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/efpgaio.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test efpgaio.json >& $OUTPUTDIR/efpgaio.log
 
 	# i2cm0
 	echo "Testing i2cm0"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test i2cm0.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/i2cm0.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test i2cm0.json >& $OUTPUTDIR/i2cm0.log
 
 	# i2cm1
 	echo "Testing i2cm1"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test i2cm1.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/i2cm1.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test i2cm1.json >& $OUTPUTDIR/i2cm1.log
 
 	# i2cs
 	echo "Testing i2cs"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test i2cs.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/i2cs.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test i2cs.json >& $OUTPUTDIR/i2cs.log
 
 	# efpga
 	echo "Testing efpga"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test efpga.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/efpga.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test efpga.json >& $OUTPUTDIR/efpga.log
 
 	# qspi
 	echo "Testing qspi"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test qspi.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/qspi.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test qspi.json >& $OUTPUTDIR/qspi.log
 
 	# cam
-	#python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test cam.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/cam.log
+	#python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test cam.json >& $OUTPUTDIR/cam.log
 
 	# advtmr
 	echo "Testing advtmr"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test advtmr.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/advtmr.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test advtmr.json >& $OUTPUTDIR/advtmr.log
 
 	# fastInterrupt
 	echo "Testing fastInterrupt"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test fastInterrupt.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/fastInterrupt.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test fastInterrupt.json >& $OUTPUTDIR/fastInterrupt.log
 
 	# FCBTest
 	echo "Testing FCBTest"
-	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test FCBTest.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/FCBTest.log
+	python3 Test.py --console $CONSOLE_UART_PORT --uart1 $UART1_UART_PORT --test FCBTest.json >& $OUTPUTDIR/FCBTest.log
 	echo "DONE. Results logged at ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/"
 else
     echo "Cannot start tests as console_uart_found_flag = $console_uart_found_flag and uart1_uart_found_flag = $uart1_uart_found_flag"
