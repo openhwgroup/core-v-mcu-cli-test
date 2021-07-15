@@ -28,6 +28,9 @@ static void i2cm_reset(const struct cli_cmd_entry *pEntry);
 static void i2c_temp(const struct cli_cmd_entry *pEntry);
 static void i2c_read_dev_id(const struct cli_cmd_entry *pEntry);
 static void i2cm_singlebyte_test(const struct cli_cmd_entry *pEntry);
+static void i2c_buffer_reset(const struct cli_cmd_entry *pEntry);
+
+static uint8_t i2c_buffer[256] = {0};
 
 // I2CM0 menu
 const struct cli_cmd_entry i2cm0_functions[] =
@@ -36,6 +39,7 @@ const struct cli_cmd_entry i2cm0_functions[] =
   CLI_CMD_WITH_ARG( "readbyte", 	i2cm_readbyte,	0, "i2c_addr reg_addr 			-- read register" ),
   CLI_CMD_WITH_ARG( "writebyte", 	i2cm_writebyte,	0, "i2c_addr reg_addr value 	-- read register" ),
   CLI_CMD_WITH_ARG( "testsinglebyte", 	i2cm_singlebyte_test,	0, "i2c_addr reg_addr	-- writes 0xA5 and then 0x5A to register and checks result" ),
+  CLI_CMD_SIMPLE ( "rbuff", i2c_buffer_reset,		    "reset i2c device application buffer"),
   CLI_CMD_TERMINATE()
 
 };
@@ -45,8 +49,10 @@ const struct cli_cmd_entry i2cm0_functions[] =
 const struct cli_cmd_entry i2cm1_functions[] =
 {
 	CLI_CMD_WITH_ARG( "readbyte", i2cm_readbyte,	1, "i2c_addr reg_addr 	-- read register" ),
+	CLI_CMD_WITH_ARG( "writebyte", 	i2cm_writebyte,	1, "i2c_addr reg_addr value 	-- read register" ),
 	CLI_CMD_SIMPLE ( "temp", i2c_temp,				   "read on board temperature"),
 	CLI_CMD_SIMPLE ( "dev_id", i2c_read_dev_id,		    "read i2c device id"),
+	CLI_CMD_SIMPLE ( "rbuff", i2c_buffer_reset,		    "reset i2c device application buffer"),
 	CLI_CMD_TERMINATE()
 };
 
@@ -56,7 +62,15 @@ const struct cli_cmd_entry i2cm1_functions[] =
 // I2CM functions
 //
 /////////////////////////////////////////////////////////////////
-static uint8_t i2c_buffer[256] = {0};
+
+static void i2c_buffer_reset(const struct cli_cmd_entry *pEntry)
+{
+	uint8_t 	lVal = 0;
+	CLI_uint8_required( "Value to fill", &lVal );
+	memset(i2c_buffer, lVal, 256);
+	dbg_str("<<DONE>>\r\n");
+}
+
 static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
@@ -138,11 +152,13 @@ static void i2cm_singlebyte_test(const struct cli_cmd_entry *pEntry)
 
 	i2c_buffer[0] = 0xA5;
 	udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
+	i2c_buffer[0] = 0xFF;
 	udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
 	dbg_str_int("First access", i2c_buffer[0]);
 	if (i2c_buffer[0] == 0xA5) {
 		i2c_buffer[0] = 0x5A;
 		udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
+		i2c_buffer[0] = 0xFF;
 		udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
 		dbg_str_int("Second access", i2c_buffer[0]);
 		if (i2c_buffer[0] == 0x5A) {
