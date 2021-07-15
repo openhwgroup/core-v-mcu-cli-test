@@ -24,6 +24,8 @@
 
 #include "hal/include/hal_udma_ctrl_reg_defs.h"
 
+#define SEMAPHORE_WAIT_TIME_IN_MS	10
+
 typedef enum {
 		kI2cmReset
 } udma_i2cm_control_type_t;
@@ -43,17 +45,17 @@ typedef enum {
 uint16_t udma_i2cm_open (uint8_t i2c_id, uint32_t i2c_clk_freq);
 uint16_t udma_i2cm_close (uint8_t i2c_id);
 uint16_t udma_i2cm_control(uint8_t i2c_id, udma_i2cm_control_type_t control_type, void* pparam);
-void udma_i2cm_write(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t write_len, uint8_t* write_data, bool more_follows);
-void udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
-void udma_i2cm_16read8(uint8_t i2c_id, uint8_t i2c_addr, uint16_t reg_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
+uint8_t udma_i2cm_write(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t write_len, uint8_t* write_data, bool more_follows);
+uint8_t udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
+uint8_t udma_i2cm_16read8(uint8_t i2c_id, uint8_t i2c_addr, uint16_t reg_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
 
 
 
 // helper functions
-void _udma_i2cm_write_addr_plus_regaddr (uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr);
-void _udma_i2cm_write_addr_plus_reg16addr (uint8_t i2c_id, uint8_t i2c_addr, uint16_t reg_addr);
-void _udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
-void _udma_i2cm_send_stop(uint8_t i2c_id);
+uint8_t _udma_i2cm_write_addr_plus_regaddr (uint8_t i2c_id, uint8_t i2c_addr, uint8_t reg_addr);
+uint8_t _udma_i2cm_write_addr_plus_reg16addr (uint8_t i2c_id, uint8_t i2c_addr, uint16_t reg_addr);
+uint8_t _udma_i2cm_read(uint8_t i2c_id, uint8_t i2c_addr, uint16_t read_len, uint8_t* read_buffer, bool more_follows);
+uint8_t _udma_i2cm_send_stop(uint8_t i2c_id);
 
 #endif /* DRIVERS_INCLUDE_UDMA_I2CM_DRIVER_H_ */
 

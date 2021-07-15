@@ -56,7 +56,7 @@ const struct cli_cmd_entry i2cm1_functions[] =
 // I2CM functions
 //
 /////////////////////////////////////////////////////////////////
-static uint8_t i2c_buffer[256];
+static uint8_t i2c_buffer[256] = {0};
 static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
@@ -74,23 +74,28 @@ static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
 		CLI_uint8_required("exp", &lExpVal);
 	}
 
-	udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
-	dbg_str_hex8("reg", (int)i2c_buffer[0]);
-
-	if( lExpValTrueOrFalse )
+	if( udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false) == pdTRUE )
 	{
-		if( i2c_buffer[0] == lExpVal )
+		dbg_str_hex8("reg", (int)i2c_buffer[0]);
+		if( lExpValTrueOrFalse )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			if( i2c_buffer[0] == lExpVal )
+			{
+				dbg_str("<<PASSED>>\r\n");
+			}
+			else
+			{
+				dbg_str("<<FAILED>>\r\n");
+			}
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("<<DONE>>\r\n");
 		}
 	}
 	else
 	{
-		dbg_str("<<DONE>>\r\n");
+		dbg_str("<<FAILED>>\r\n");
 	}
 }
 
