@@ -1,6 +1,10 @@
 {
 	"i2cm1"	: [		
-		{">console"		: "i2cm1 readbyte 0xDE 0x20\r\n"},
+        {">console"		: "io setmux 46 2\r\n"},
+		{">console"		: "io setmux 47 2\r\n"},
+		{">console"		: "i2cm1 readbyte 0x96 0x0B 0xFF\r\n"},
+		{">console"		: "io setmux 46 0\r\n"},
+		{">console"		: "io setmux 47 0\r\n"},
 		{">console"		: "i2cm1 temp\r\n"},
 		{">console"		: "i2cm1 dev_id\r\n"}
 	]
