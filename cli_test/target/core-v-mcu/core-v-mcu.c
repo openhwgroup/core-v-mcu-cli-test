@@ -32,6 +32,7 @@
 #include "target/core-v-mcu/include/core-v-mcu-properties.h"
 #include "hal/include/hal_irq.h"
 #include "hal/include/hal_soc_eu.h"
+#include "hal/include/hal_apb_soc_ctrl_reg_defs.h"
 
 #include "drivers/include/udma_uart_driver.h"
 #include "drivers/include/udma_i2cm_driver.h"
@@ -73,6 +74,8 @@ void (*isr_table[32])(uint32_t);
 int handler_count[32];
 void system_init(void)
 {
+	SocCtrl_t *soc=APB_SOC_CTRL_ADDR;
+	soc->soft_reset = 1;
 	timer_irq_disable();
 	/* init flls */
 	for (int i = 0; i < ARCHI_NB_FLL; i++) {
