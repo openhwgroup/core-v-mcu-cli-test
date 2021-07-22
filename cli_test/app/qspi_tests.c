@@ -19,9 +19,12 @@ typedef union {
 	uint8_t b[4];
 } split_4Byte_t ;
 
+extern int x_main(void);
+
 static void qspi_read(const struct cli_cmd_entry *pEntry);
 static void qspi_write(const struct cli_cmd_entry *pEntry);
 static void flash_readid (const struct cli_cmd_entry *pEntry);
+static void flash_quad (const struct cli_cmd_entry *pEntry);
 static uint8_t flash_sector_erase (const struct cli_cmd_entry *pEntry);
 static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry);
 static uint8_t flash_bulk_erase (const struct cli_cmd_entry *pEntry);
@@ -37,6 +40,7 @@ const struct cli_cmd_entry qspi_cli_tests[] =
   CLI_CMD_SIMPLE( "read", qspi_read, "qspi read" ),
   CLI_CMD_WITH_ARG( "write", qspi_write, 0, "qspi write" ),
   CLI_CMD_WITH_ARG( "flashid", flash_readid, 0, "read flash id" ),
+  CLI_CMD_WITH_ARG( "quad", flash_quad, 0, "enter into quad io mode" ),
   CLI_CMD_WITH_ARG( "flash_read", flash_read, 0, "read spi flash address, num_bytes"),
   CLI_CMD_WITH_ARG( "flash_write", flash_write, 0, "write spi flash address, data"),
   CLI_CMD_WITH_ARG( "flash_peek", flash_peek, 0, "read spi flash address, 4 bytes fixed"),
@@ -214,25 +218,57 @@ static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 		vPortFree(message);
 }
+
 static void flash_readid(const struct cli_cmd_entry *pEntry)
 {
+
 	(void)pEntry;
 	// Add functionality here
+	uint8_t lVal = 0;
 	union {
 		uint32_t w;
 		uint8_t b[4];
 	} result ;
 
+	if( CLI_is_more_args() )
+	{
+		CLI_uint8_required("value", &lVal);
+	}
+	result.w = 0;
+
 	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	result.w = udma_flash_readid(0,0);
+
+	if( lVal == 0 )
+		result.w = udma_flash_readid(0,0);
+	else if( lVal == 4 )
+		result.w = udma_flash_readid_quad(0,0);
+	else if( lVal == 5 )
+		result.w = udma_flash_readid_som(0,0);
+
 	CLI_printf("FLASH read ID results = 0x%08x %02x %02x %02x %02x\n",
 			result.w, result.b[0],result.b[1],result.b[2],result.b[3]);
 	if( result.w == 0x1019ba20 )
 		CLI_printf("<<PASSED>>\n");
 	else
 		CLI_printf("<<FAILED>>\n");
+
 }
 
+void udma_flash_enterQuadIOMode(uint8_t qspim_id, uint8_t cs );
+static void flash_quad(const struct cli_cmd_entry *pEntry)
+{
+
+	(void)pEntry;
+	// Add functionality here
+	union {
+		uint32_t w;
+		uint8_t b[4];
+	} result ;
+	result.w = 0;
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	udma_flash_enterQuadIOMode(0, 0 );
+}
 
 static void qspi_read(const struct cli_cmd_entry *pEntry)
 {
