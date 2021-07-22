@@ -1,7 +1,8 @@
 {
 	"mem"	: [
                 {">console"		: "mem start\r\n"},
-		{">console"		: "mem test check\r\n"},
+		        {">console"		: "mem test check\r\n"},
+                {">console"		: "mem test barr\r\n"},
                 {">console"             : "mem poke 0x1c01da60 0xfeedbee1\r\n"},
                 {">console"             : "mem peek 0x1c01da60 0xfeedbee1\r\n"},
                 {">console"             : "mem mw.b 0x1c01da60 0xab\r\n"},

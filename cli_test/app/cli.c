@@ -32,13 +32,10 @@
 //#include "drivers/include/udma_i2cm_driver.h"
 #include "drivers/include/udma_uart_driver.h"
 #include "hal/include/hal_fc_event.h"
+#include "barrMemTest.h"
 
 extern uint8_t gDebugEnabledFlg;
-// Sub menus
-const struct cli_cmd_entry misc_functions[];
-const struct cli_cmd_entry uart1_functions[];
-const struct cli_cmd_entry mem_functions[];
-const struct cli_cmd_entry mem_tests[];
+
 extern const struct cli_cmd_entry io_functions[];
 extern const struct cli_cmd_entry intr_functions[];
 extern const struct cli_cmd_entry adv_timer_unit_test_functions[];
@@ -70,6 +67,48 @@ static void mem_poke_8(const struct cli_cmd_entry *pEntry);
 
 // MEM tests
 static void mem_check(const struct cli_cmd_entry *pEntry);
+static void barr_mem_check(const struct cli_cmd_entry *pEntry);
+
+const struct cli_cmd_entry misc_functions[] =
+{
+		CLI_CMD_SIMPLE( "info", misc_info, "print build info" ),
+		CLI_CMD_SIMPLE( "dbg", debug_on_off, "debug prints on / off" ),
+		CLI_CMD_TERMINATE()
+};
+
+// MISC menu
+
+// UART1 menu
+const struct cli_cmd_entry uart1_functions[] =
+{
+		CLI_CMD_SIMPLE( "tx", uart1_tx, "<string>: write <string> to uart1" ),
+		CLI_CMD_TERMINATE()
+};
+
+// mem menu
+const struct cli_cmd_entry mem_tests[] =
+{
+		CLI_CMD_SIMPLE( "check", 	mem_check,         	"print start of unused memory" ),
+		CLI_CMD_SIMPLE( "barr", 	barr_mem_check,         	"print start of unused memory" ),
+		CLI_CMD_TERMINATE()
+};
+
+// mem menu
+const struct cli_cmd_entry mem_functions[] =
+{
+		CLI_CMD_SIMPLE( "start", 	mem_print_start,   	"print start of unused memory" ),
+		CLI_CMD_SIMPLE( "peek", 	mem_peek,         	"0xaddr -- print memory location " ),
+		CLI_CMD_SIMPLE( "poke",   mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
+		CLI_CMD_SIMPLE( "md.b", 	mem_peek_8,         	"0xaddr -- print 8-bit memory location " ),
+		CLI_CMD_SIMPLE( "mw.b",   mem_poke_8,         	"0xaddr 0xvalue -- write 8-bit alue to addr" ),
+		CLI_CMD_SIMPLE( "md.w", 	mem_peek_16,         	"0xaddr -- print 16-bit memory location " ),
+		CLI_CMD_SIMPLE( "mw.w",   mem_poke_16,         	"0xaddr 0xvalue -- write 16-bit value to addr" ),
+		CLI_CMD_SIMPLE( "md.l", 	mem_peek,         	"0xaddr -- print 32-bit memory location " ),
+		CLI_CMD_SIMPLE( "mw.l",   	mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
+		CLI_CMD_SUBMENU( "test", 	mem_tests, 			"tests" ),
+		CLI_CMD_TERMINATE()
+};
+
 
 
 // Main menu
@@ -94,43 +133,7 @@ const struct cli_cmd_entry my_main_menu[] = {
 
 };
 
-// MISC menu
-const struct cli_cmd_entry misc_functions[] =
-{
-		CLI_CMD_SIMPLE( "info", misc_info, "print build info" ),
-		CLI_CMD_SIMPLE( "dbg", debug_on_off, "debug prints on / off" ),
-		CLI_CMD_TERMINATE()
-};
 
-// UART1 menu
-const struct cli_cmd_entry uart1_functions[] =
-{
-		CLI_CMD_SIMPLE( "tx", uart1_tx, "<string>: write <string> to uart1" ),
-		CLI_CMD_TERMINATE()
-};
-
-// mem menu
-const struct cli_cmd_entry mem_functions[] =
-{
-		CLI_CMD_SIMPLE( "start", 	mem_print_start,   	"print start of unused memory" ),
-		CLI_CMD_SIMPLE( "peek", 	mem_peek,         	"0xaddr -- print memory location " ),
-		CLI_CMD_SIMPLE( "poke",   mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
-		CLI_CMD_SIMPLE( "md.b", 	mem_peek_8,         	"0xaddr -- print 8-bit memory location " ),
-		CLI_CMD_SIMPLE( "mw.b",   mem_poke_8,         	"0xaddr 0xvalue -- write 8-bit alue to addr" ),
-		CLI_CMD_SIMPLE( "md.w", 	mem_peek_16,         	"0xaddr -- print 16-bit memory location " ),
-		CLI_CMD_SIMPLE( "mw.w",   mem_poke_16,         	"0xaddr 0xvalue -- write 16-bit value to addr" ),
-		CLI_CMD_SIMPLE( "md.l", 	mem_peek,         	"0xaddr -- print 32-bit memory location " ),
-		CLI_CMD_SIMPLE( "mw.l",   	mem_poke,         	"0xaddr 0xvalue -- write value to addr" ),
-		CLI_CMD_SUBMENU( "test", 	mem_tests, 			"tests" ),
-		CLI_CMD_TERMINATE()
-};
-
-// mem menu
-const struct cli_cmd_entry mem_tests[] =
-{
-		CLI_CMD_SIMPLE( "check", 	mem_check,         	"print start of unused memory" ),
-		CLI_CMD_TERMINATE()
-};
 
 
 // MISC functions
@@ -232,6 +235,18 @@ static void mem_check(const struct cli_cmd_entry *pEntry)
 	}
 }
 
+static void barr_mem_check(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	if( memTest() == 0 )
+	{
+		dbg_str("<<PASSED>>\r\n");
+	}
+	else
+	{
+		dbg_str("<<FAILED>>\r\n");
+	}
+}
 static void mem_peek(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
