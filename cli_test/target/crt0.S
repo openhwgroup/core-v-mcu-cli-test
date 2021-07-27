@@ -46,8 +46,10 @@ _start:
 /* initialize stack pointer */
 	la sp, __stack_top
 
-	or a0, a0, 0
+	/*or a0, a0, 0*/
+	and a0, a0, 0
 	csrw mie, a0 // disable interrupts
+	csrr a0, mie
 /* set vector table address */
 	la a0, __vector_start
 	or a0, a0, 1 /* enable vectored mode (hardcoded anyway for RI5CY) */

@@ -161,6 +161,7 @@ int main(void)
  udma_uart_open (id,115200);
  dbg_str("\nA2 Bootloader Bootsel=");
  bootsel = psoc->bootsel & 0x1;
+
  if (bootsel == 1) dbg_str("1");
  else dbg_str("0");
  udma_qspim_open(0, 1000000);

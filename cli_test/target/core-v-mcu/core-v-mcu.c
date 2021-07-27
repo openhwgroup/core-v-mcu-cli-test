@@ -38,6 +38,10 @@
 #include "drivers/include/udma_i2cm_driver.h"
 #include "drivers/include/udma_qspi_driver.h"
 
+#include "../../app/N25Q_16Mb-1Gb_Device_Driver V2.1/N25Q.h"
+
+FLASH_DEVICE_OBJECT gFlashDeviceObject;
+
 /* test some assumptions we make about compiler settings */
 static_assert(sizeof(uintptr_t) == 4,
 	      "uintptr_t is not 4 bytes. Make sure you are using -mabi=ilp32*");
@@ -76,6 +80,7 @@ void system_init(void)
 {
 	SocCtrl_t *soc=APB_SOC_CTRL_ADDR;
 	soc->soft_reset = 1;
+	uint32_t val = 0;
 	timer_irq_disable();
 	/* init flls */
 	for (int i = 0; i < ARCHI_NB_FLL; i++) {
@@ -108,6 +113,8 @@ for (int i = 0 ; i < 32 ; i ++){
 	/* enable core level interrupt (mie) */
 	irq_clint_enable();
 
+	val = csr_read(CSR_MIE);
+
 	/* TODO: enable uart */
 	for (uint8_t id = 0; id != N_UART; id++) {
 		udma_uart_open(id, 115200);
@@ -116,6 +123,8 @@ for (int i = 0 ; i < 32 ; i ++){
 		udma_i2cm_open(id, 400000);  //200000
 	}
 	udma_qspim_open(0,5000000);
+
+	//Driver_Init(&gFlashDeviceObject);
 }
 
 void system_core_clock_update(void)

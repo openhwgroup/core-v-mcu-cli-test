@@ -243,14 +243,14 @@ if ser.isOpen():
                     ser.timeout = None # blocking reads
                     byte = ser.read(1)
                     time.sleep(1)
-                    byte = bits.read(4)
+                    byte = bits.read(32)
                     count = 0
                     while (byte != b'') :
-                        count = count + 4
+                        count = count + 32
                         byte = b'\103'+byte
                         ser.write(byte)
                         byte = ser.read(1)
-                        byte = bits.read(4)
+                        byte = bits.read(32)
                     bits.close()
                     byte = b'\172\172\172\172\172'
                     ser.write(byte)
