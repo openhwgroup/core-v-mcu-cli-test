@@ -89,7 +89,52 @@ void udma_flash_readid(uint32_t l2addr) {
 
 		while (pqspim_regs->rx_size != 0) {}
 }
+uint32_t udma_flash_reset_enable(uint8_t qspim_id, uint8_t cs)
+{
+	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
+	uint32_t*	pcmd = auccmd;
+	uint32_t result = 0;
 
+
+	pqspim_regs->cmd_cfg_b.en = 0;
+
+	pqspim_regs->cmd_cfg_b.clr = 1;
+
+	*pcmd++ = kSPIm_Cfg | aucclkdiv;
+	*pcmd++ = kSPIm_SOT | cs;
+	*pcmd++ = kSPIm_SendCmd | (0x70066); // reset enable command
+	*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+	pqspim_regs->cmd_saddr = auccmd;
+	pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+	pqspim_regs->cmd_cfg_b.en = 1;
+
+	return result;
+}
+
+uint32_t udma_flash_reset_memory(uint8_t qspim_id, uint8_t cs)
+{
+	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
+	uint32_t*	pcmd = auccmd;
+	uint32_t result = 0;
+
+
+	pqspim_regs->cmd_cfg_b.en = 0;
+
+	pqspim_regs->cmd_cfg_b.clr = 1;
+
+	*pcmd++ = kSPIm_Cfg | aucclkdiv;
+	*pcmd++ = kSPIm_SOT | cs;
+	*pcmd++ = kSPIm_SendCmd | (0x70099); // reset memory command
+
+	*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+	pqspim_regs->cmd_saddr = auccmd;
+	pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+	pqspim_regs->cmd_cfg_b.en = 1;
+
+	return result;
+}
 void udma_flash_read(uint32_t flash_addr,uint32_t l2addr,uint16_t read_len ) {
 	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM);
 	uint32_t*	pcmd = auccmd;

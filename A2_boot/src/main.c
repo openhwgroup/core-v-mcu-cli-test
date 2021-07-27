@@ -153,7 +153,7 @@ static void bootFromRom(int hyperflash, int qpi)
 
 int main(void)
 {
- int id = 1;
+ int id = 1, i = 0;
  unsigned int bootsel, flash_present;
  char tstring[8];
 
@@ -165,6 +165,10 @@ int main(void)
  if (bootsel == 1) dbg_str("1");
  else dbg_str("0");
  udma_qspim_open(0, 1000000);
+ udma_flash_reset_enable(0, 0);
+ for (i = 0; i < 10000; i++);
+ udma_flash_reset_memory(0, 0);
+ for (i = 0; i < 10000; i++);
  udma_flash_readid(tstring);
  if (tstring[0] == 0x20) flash_present = 1;
  else flash_present = 0;
