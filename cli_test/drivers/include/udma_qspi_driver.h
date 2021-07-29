@@ -55,6 +55,8 @@ uint8_t udma_flash_erase(uint8_t qspim_id, uint8_t cs, uint32_t addr, uint8_t cm
 uint32_t udma_flash_readid(uint8_t qspim_id, uint8_t cs);
 void udma_flash_read(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,uint8_t *l2addr,uint16_t read_len ) ;
 void udma_flash_write(uint8_t qspim_id, uint8_t cs, uint32_t flash_addr,uint8_t *l2addr,uint16_t write_len ) ;
+uint32_t udma_flash_reset_enable(uint8_t qspim_id, uint8_t cs);
+uint32_t udma_flash_reset_memory(uint8_t qspim_id, uint8_t cs);
 
 // helper functions
 

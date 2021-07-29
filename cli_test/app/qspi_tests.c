@@ -26,10 +26,7 @@ typedef union {
 	uint32_t w;
 	uint8_t b[4];
 } split_4Byte_t ;
-typedef union {
-	uint64_t w;
-	uint8_t b[8];
-} split_8Byte_t ;
+
 
 extern FLASH_DEVICE_OBJECT gFlashDeviceObject;
 
@@ -41,15 +38,17 @@ static void qspi_read(const struct cli_cmd_entry *pEntry);
 static void qspi_write(const struct cli_cmd_entry *pEntry);
 static void flash_readid (const struct cli_cmd_entry *pEntry);
 static void flash_init (const struct cli_cmd_entry *pEntry);
-static uint8_t flash_sector_erase (const struct cli_cmd_entry *pEntry);
-static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry);
-static uint8_t flash_bulk_erase (const struct cli_cmd_entry *pEntry);
+static void flash_sector_erase (const struct cli_cmd_entry *pEntry);
+static void flash_subsector_erase (const struct cli_cmd_entry *pEntry);
+static void flash_bulk_erase (const struct cli_cmd_entry *pEntry);
 static void flash_read (const struct cli_cmd_entry *pEntry);
 static void flash_write (const struct cli_cmd_entry *pEntry);
 static void program (const struct cli_cmd_entry *pEntry);
 static void flash_peek (const struct cli_cmd_entry *pEntry);
 static void flash_poke (const struct cli_cmd_entry *pEntry);
-
+static void flash_reset(const struct cli_cmd_entry *pEntry);
+static void flash_quad_peek (const struct cli_cmd_entry *pEntry);
+static void flash_quad_poke (const struct cli_cmd_entry *pEntry);
 // EFPGA menu
 const struct cli_cmd_entry qspi_cli_tests[] =
 {
@@ -57,10 +56,13 @@ const struct cli_cmd_entry qspi_cli_tests[] =
   CLI_CMD_WITH_ARG( "write", qspi_write, 0, "qspi write" ),
   CLI_CMD_WITH_ARG( "flashid", flash_readid, 0, "read flash id" ),
   CLI_CMD_WITH_ARG( "init", flash_init, 0, "enter into quad io mode" ),
+  CLI_CMD_WITH_ARG( "reset", flash_reset, 0, "Reset flash" ),
   CLI_CMD_WITH_ARG( "flash_read", flash_read, 0, "read spi flash address, num_bytes"),
   CLI_CMD_WITH_ARG( "flash_write", flash_write, 0, "write spi flash address, data"),
   CLI_CMD_WITH_ARG( "flash_peek", flash_peek, 0, "read spi flash address, 4 bytes fixed"),
   CLI_CMD_WITH_ARG( "flash_poke", flash_poke, 0, "write spi flash address, 4 bytes fixed"),
+  CLI_CMD_WITH_ARG( "flash_qpeek", flash_quad_peek, 0, "read spi flash address in quad mode, 4 bytes fixed"),
+  CLI_CMD_WITH_ARG( "flash_qpoke", flash_quad_poke, 0, "write spi flash address in quad mode, 4 bytes fixed"),
   CLI_CMD_WITH_ARG( "erase", flash_subsector_erase, 0, "Erase 4K subsector" ),
   CLI_CMD_WITH_ARG( "sector_erase", flash_sector_erase, 0, "Erase 64K sector" ),
   CLI_CMD_WITH_ARG( "bulk_erase", flash_bulk_erase, 0, "Erase All 32MB" ),
@@ -326,7 +328,7 @@ static void flash_read(const struct cli_cmd_entry *pEntry)
 		vPortFree(message);
 }
 
-static uint8_t flash_bulk_erase (const struct cli_cmd_entry *pEntry)
+static void flash_bulk_erase (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	    // Add functionality here
@@ -343,7 +345,7 @@ static uint8_t flash_bulk_erase (const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 		vPortFree(message);
 }
-static uint8_t flash_sector_erase (const struct cli_cmd_entry *pEntry)
+static void flash_sector_erase (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	    // Add functionality here
@@ -360,7 +362,26 @@ static uint8_t flash_sector_erase (const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 		vPortFree(message);
 }
-static uint8_t flash_subsector_erase (const struct cli_cmd_entry *pEntry)
+
+static void flash_subsector_erase (const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	    // Add functionality here
+		char *message;
+		int errors = 0;
+		int addr,i;
+		uint8_t result;
+		message  = pvPortMalloc(80);
+		CLI_uint32_required( "addr", &addr );
+		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		result = udma_flash_erase(0,0,addr,0);
+		sprintf(message,"FLASH subsector 0x%x = %s\n", addr,
+				result ? "<<PASSED>>" : "<<FAILED>>");
+		dbg_str(message);
+		vPortFree(message);
+}
+
+static void flash_subsector_erase_new (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	    // Add functionality here
@@ -390,20 +411,11 @@ static void flash_readid(const struct cli_cmd_entry *pEntry)
 		uint8_t b[4];
 	} result ;
 
-	if( CLI_is_more_args() )
-	{
-		CLI_uint8_required("value", &lVal);
-	}
 	result.w = 0;
 
 	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
-	if( lVal == 0 )
-		result.w = udma_flash_readid(0,0);
-	else if( lVal == 4 )
-		result.w = udma_flash_readid_quad(0,0);
-	else if( lVal == 5 )
-		result.w = udma_flash_readid_som(0,0);
+	result.w = udma_flash_readid(0,0);
 
 	CLI_printf("FLASH read ID results = 0x%08x %02x %02x %02x %02x\n",
 			result.w, result.b[0],result.b[1],result.b[2],result.b[3]);
@@ -432,21 +444,32 @@ static void flash_quad(const struct cli_cmd_entry *pEntry)
 
 
 void udma_flash_enterQuadIOMode(uint8_t qspim_id, uint8_t cs );
+
 static void flash_init(const struct cli_cmd_entry *pEntry)
 {
 
 	(void)pEntry;
 	// Add functionality here
-	union {
-		uint32_t w;
-		uint8_t b[4];
-	} result ;
-	result.w = 0;
 
 	Driver_Init(&gFlashDeviceObject);
-	//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	//udma_flash_enterQuadIOMode(0, 0 );
+
+	dbg_str("<<DONE>>\r\n");
 }
+
+static void flash_reset(const struct cli_cmd_entry *pEntry)
+{
+	int i = 0;
+	(void)pEntry;
+	// Add functionality here
+
+	udma_flash_reset_enable(0, 0);
+	for (i = 0; i < 10000; i++);
+	udma_flash_reset_memory(0, 0);
+	for (i = 0; i < 10000; i++);
+
+	dbg_str("<<DONE>>\r\n");
+}
+
 
 static void qspi_read(const struct cli_cmd_entry *pEntry)
 {
@@ -497,8 +520,108 @@ static void qspi_write(const struct cli_cmd_entry *pEntry)
 		vPortFree(message);
 }
 
-
 static void flash_peek(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	split_4Byte_t	xValue;
+	split_4Byte_t    lExpVal;
+	uint8_t 	lExpValTrueOrFalse = 0;
+	uint32_t	lAddress = 0;
+	uint8_t lMuxSelSaveBuf[8] = {0};
+	uint8_t i = 0;
+
+	xValue.w = 0;
+	lExpVal.w = 0;
+
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+	}
+
+	for(i=0; i<8; i++ )
+	{
+		//set pin muxes
+		hal_setpinmux(13+i, 0);
+	}
+
+	CLI_uint32_required( "addr", &lAddress );
+
+	if( CLI_is_more_args() ){
+		lExpValTrueOrFalse = 1;
+		CLI_uint32_required("exp", &lExpVal);
+	}
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	dbg_str("Qspi Flash Read\n");
+	udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
+	CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
+
+	if( lExpValTrueOrFalse )
+	{
+		if( xValue.w == lExpVal.w )
+		{
+			dbg_str("<<PASSED>>\r\n");
+		}
+		else
+		{
+			dbg_str("<<FAILED>>\r\n");
+		}
+	}
+	else
+	{
+		dbg_str("<<DONE>>\r\n");
+	}
+
+	//Restore pin muxes
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+	}
+}
+
+static void flash_poke(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	split_4Byte_t	xValue;
+	uint32_t	lAddress = 0;
+	uint8_t i = 0;
+	uint8_t lMuxSelSaveBuf[8] = {0};
+
+	xValue.w = 0;
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+	}
+
+	for(i=0; i<8; i++ )
+	{
+		//set pin muxes
+		hal_setpinmux(13+i, 0);
+	}
+
+	CLI_uint32_required( "addr", &lAddress );
+	CLI_uint32_required( "value", &xValue.w);
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	dbg_str("Qspi Flash write\n");
+	udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
+
+	dbg_str("<<DONE>>\r\n");
+
+	//Restore pin muxes
+	for(i=0; i<8; i++ )
+	{
+		//Save pin muxes
+		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+	}
+}
+
+static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
@@ -569,7 +692,7 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 }
 uint8_t gBuf[32] = {0};
 
-static void flash_poke(const struct cli_cmd_entry *pEntry)
+static void flash_quad_poke(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
@@ -603,8 +726,8 @@ static void flash_poke(const struct cli_cmd_entry *pEntry)
 	//udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
 
 	//flashWrite_Micron(lAddress, &xValue.b[0], 4);
-	//flashQuadInputFastProgram_Micron(lAddress, &xValue.b[0], 4);
-	flashQuadInputFastProgram_Micron(0, gBuf, 32);
+	flashQuadInputFastProgram_Micron(lAddress, &xValue.b[0], 4);
+	//flashQuadInputFastProgram_Micron(0, gBuf, 32);
 	dbg_str("<<DONE>>\r\n");
 
 	//Restore pin muxes
