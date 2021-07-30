@@ -557,3 +557,106 @@ uint8_t test;
 		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
 		configASSERT( xSemaphoreGive( shSemaphoreHandle) == pdTRUE );
 }
+
+/*
+ * https://forums.xilinx.com/t5/Processor-System-Design-and-AXI/QSPI-flash-programming-how-to-activate-qspi-in-quad-mode/td-p/871253
+ * to enable the quad mode
+1. send ENTER QUAD INPUT/OUTPUT MODE command 0x35h
+2. send write enable cmd 0x06
+3. to write into enhanced volatile configuration register - send  0x61 command.
+4. 0x7F is written in the above register to activate in quad mode
+5. poll the configuration register i.e read the enhanced volatile config register command is 0x65 and wait untill it
+becomes 0X7F
+6. then configure the controller in quad mode and send the multiple read id code 0XAF to read the ID code on all the four lines.
+ */
+void udma_flash_enterQuadIOMode(uint8_t qspim_id, uint8_t cs )
+{
+	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
+	uint32_t*	pcmd = auccmd;
+	uint8_t test = 0;
+	uint8_t l2addr[4] = {0};
+
+	SemaphoreHandle_t shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+	//shSemaphoreHandle = qspim_semaphores_tx[qspim_id];
+	//configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+	pqspim_regs->rx_cfg_b.en = 0;
+	pqspim_regs->tx_cfg_b.en = 0;
+	pqspim_regs->cmd_cfg_b.en = 0;
+
+	*pcmd++ = kSPIm_Cfg | aucclkdiv;
+	*pcmd++ = kSPIm_SOT | cs;
+	*pcmd++ = kSPIm_SendCmd | (0x70035) ; // Enter QUAD command
+	*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+	pqspim_regs->cmd_saddr = auccmd;
+	pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+	pqspim_regs->cmd_cfg_b.en = 1;
+
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+	*pcmd++ = kSPIm_Cfg | aucclkdiv;
+	*pcmd++ = kSPIm_SOT | cs;
+	*pcmd++ = kSPIm_SendCmd | (0x70006) ; // write enable command
+	*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+	pqspim_regs->cmd_saddr = auccmd;
+	pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+	pqspim_regs->cmd_cfg_b.en = 1;
+
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+	*pcmd++ = kSPIm_Cfg | aucclkdiv;
+	*pcmd++ = kSPIm_SOT | cs;
+	*pcmd++ = kSPIm_SendCmd | (0x70061) ; // write Enhanced volatile register 0x61
+	*pcmd++ = kSPIm_SendCmd | (0x7007F) ;
+	*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+	pqspim_regs->cmd_saddr = auccmd;
+	pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+	pqspim_regs->cmd_cfg_b.en = 1;
+
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+
+	while ((test & 0xFF) != 0x7F) {
+		pqspim_regs->rx_cfg_b.en = 0;
+		pqspim_regs->tx_cfg_b.en = 0;
+		pqspim_regs->cmd_cfg_b.en = 0;
+		pcmd = auccmd;
+		*pcmd++ = kSPIm_Cfg | aucclkdiv;
+		*pcmd++ = kSPIm_SOT | cs;
+		*pcmd++ = kSPIm_SendCmd | (0x70065); // read status register
+		*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved
+		*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+		pqspim_regs->rx_saddr = l2addr;
+		pqspim_regs->rx_size = 4;
+		pqspim_regs->rx_cfg_b.en = 1;
+
+		pqspim_regs->cmd_saddr = auccmd;
+		pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+		pqspim_regs->cmd_cfg_b.en = 1;
+		configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+		test = l2addr[0] & 0xff;
+	}
+	pqspim_regs->rx_cfg_b.en = 0;
+	pqspim_regs->tx_cfg_b.en = 0;
+	pqspim_regs->cmd_cfg_b.en = 0;
+
+	pcmd = auccmd;
+	*pcmd++ = kSPIm_Cfg | aucclkdiv;
+	*pcmd++ = kSPIm_SOT | cs;
+	*pcmd++ = kSPIm_SendCmd | (0x70004) ; // write disable command
+	*pcmd++ = kSPIm_EOT  | 1; // generate event
+
+	pqspim_regs->cmd_saddr = auccmd;
+	pqspim_regs->cmd_size = (uint32_t)(pcmd - auccmd)*4;
+	pqspim_regs->cmd_cfg_b.en = 1;
+
+	shSemaphoreHandle = qspim_semaphores_eot[qspim_id];
+	configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	configASSERT( xSemaphoreGive( shSemaphoreHandle) == pdTRUE );
+}
+

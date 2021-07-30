@@ -32,6 +32,8 @@ extern FLASH_DEVICE_OBJECT gFlashDeviceObject;
 
 extern int x_main(void);
 
+extern int x_main(void);
+
 static void qspi_read(const struct cli_cmd_entry *pEntry);
 static void qspi_write(const struct cli_cmd_entry *pEntry);
 static void flash_readid (const struct cli_cmd_entry *pEntry);
@@ -423,6 +425,25 @@ static void flash_readid(const struct cli_cmd_entry *pEntry)
 		CLI_printf("<<FAILED>>\n");
 
 }
+
+void udma_flash_enterQuadIOMode(uint8_t qspim_id, uint8_t cs );
+static void flash_quad(const struct cli_cmd_entry *pEntry)
+{
+
+	(void)pEntry;
+	// Add functionality here
+	union {
+		uint32_t w;
+		uint8_t b[4];
+	} result ;
+	result.w = 0;
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	udma_flash_enterQuadIOMode(0, 0 );
+}
+
+
+void udma_flash_enterQuadIOMode(uint8_t qspim_id, uint8_t cs );
 
 static void flash_init(const struct cli_cmd_entry *pEntry)
 {

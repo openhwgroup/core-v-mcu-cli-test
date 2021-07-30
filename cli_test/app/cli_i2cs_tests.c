@@ -21,10 +21,13 @@
 #include "hal/include/hal_apb_i2cs_reg_defs.h"
 #include "hal/include/hal_apb_i2cs.h"
 
+
 static void i2cs_readSlaveAddress(const struct cli_cmd_entry *pEntry);
 static void i2cs_writeSlaveAddress(const struct cli_cmd_entry *pEntry);
 static void i2cs_on(const struct cli_cmd_entry *pEntry);
 static void i2cs_off(const struct cli_cmd_entry *pEntry);
+static void i2cs_runI2cToApbFIFOTests(const struct cli_cmd_entry *pEntry);
+static void i2cs_runApbToI2cFIFOTests(const struct cli_cmd_entry *pEntry);
 
 static void i2cs_runI2cToApbMsgTests(const struct cli_cmd_entry *pEntry);
 static void i2cs_runApbToI2cMsgTests(const struct cli_cmd_entry *pEntry);
@@ -213,7 +216,6 @@ static void i2cs_runI2cToApbFIFOTests (const struct cli_cmd_entry *pEntry)
 		}
 	}
 }
-
 
 static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 {
@@ -495,3 +497,4 @@ static void i2cs_runApbToI2cFIFOWatermarkLevelTests (const struct cli_cmd_entry 
 		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
 
 }
+
