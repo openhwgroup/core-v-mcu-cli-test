@@ -19,26 +19,31 @@
 #include "semphr.h"	// Required for configASSERT
 #include "libs/utils/include/dbg_uart.h"
 #include "hal/include/hal_apb_i2cs_reg_defs.h"
-
-extern uint8_t hal_get_apb_i2cs_slave_address(void);
-extern void hal_set_apb_i2cs_slave_address(uint8_t aSlaveAddress);
-extern uint8_t hal_set_apb_i2cs_slave_on_off(uint8_t aStatus);
+#include "hal/include/hal_apb_i2cs.h"
 
 static void i2cs_readSlaveAddress(const struct cli_cmd_entry *pEntry);
 static void i2cs_writeSlaveAddress(const struct cli_cmd_entry *pEntry);
 static void i2cs_on(const struct cli_cmd_entry *pEntry);
 static void i2cs_off(const struct cli_cmd_entry *pEntry);
+
+static void i2cs_runI2cToApbMsgTests(const struct cli_cmd_entry *pEntry);
+static void i2cs_runApbToI2cMsgTests(const struct cli_cmd_entry *pEntry);
 static void i2cs_runI2cToApbFIFOTests(const struct cli_cmd_entry *pEntry);
 static void i2cs_runApbToI2cFIFOTests(const struct cli_cmd_entry *pEntry);
-
+static void i2cs_runI2cToApbFIFOWatermarkLevelTests(const struct cli_cmd_entry *pEntry);
+static void i2cs_runApbToI2cFIFOWatermarkLevelTests(const struct cli_cmd_entry *pEntry);
 const struct cli_cmd_entry i2cs_functions[] =
 {
 	CLI_CMD_SIMPLE ( "on", i2cs_on,		"switch ON i2c slave"),
 	CLI_CMD_SIMPLE ( "off", i2cs_off,	"switch OFF i2c slave"),
 	CLI_CMD_SIMPLE ( "rdaddr", i2cs_readSlaveAddress,	"read i2c slave address"),
 	CLI_CMD_WITH_ARG( "wraddr", i2cs_writeSlaveAddress,	1, 	"write i2c slave address"),
+	CLI_CMD_WITH_ARG( "i2c2apbmsg", i2cs_runI2cToApbMsgTests,	1, 	"Run I2C slave single msg tests"),
+	CLI_CMD_WITH_ARG( "apb2i2cmsg", i2cs_runApbToI2cMsgTests,	1, 	"Run I2C slave single msg tests"),
 	CLI_CMD_WITH_ARG( "i2c2apbfifo", i2cs_runI2cToApbFIFOTests,	1, 	"Run I2C slave FIFO tests"),
 	CLI_CMD_WITH_ARG( "apb2i2cfifo", i2cs_runApbToI2cFIFOTests,	1, 	"Run I2C slave FIFO tests"),
+	CLI_CMD_WITH_ARG( "i2c2apbfifowm", i2cs_runI2cToApbFIFOWatermarkLevelTests,	1, 	"Run I2C slave FIFO water mark level tests"),
+	CLI_CMD_WITH_ARG( "apb2i2cfifowm", i2cs_runApbToI2cFIFOWatermarkLevelTests,	1, 	"Run I2C slave FIFO water mark level tests"),
 	CLI_CMD_TERMINATE()
 };
 
@@ -181,14 +186,14 @@ static void i2cs_runI2cToApbFIFOTests (const struct cli_cmd_entry *pEntry)
 			{
 				if( gsI2CRxBuf[0] == 0x01 )
 				{
-					dbg_str("<<PASSED>>\r\n");
+					dbg_str("0. <<PASSED>>\r\n");
 					//APB reads out the written data.
 					//If the read FIFO is not empty
 					if( hal_get_i2cs_fifo_i2c_apb_read_flags() != 0 )
 					{
 						if( hal_get_i2cs_fifo_i2c_apb_read_data_port() == lTestByte )
 						{
-							dbg_str("<<PASSED>>\r\n");
+							dbg_str("1. <<PASSED>>\r\n");
 						}
 						else
 						{
@@ -240,7 +245,7 @@ static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 		//Ensure that the FIFO write happened by checking if the write count increased
 		if(hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x01 )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. <<PASSED>>\r\n");
 			//I2C master reads out the written data.
 			//If the APB2I2C read FIFO is not empty
 			gsI2CRxBuf[0] = 0;
@@ -253,7 +258,7 @@ static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 					{
 						if( gsI2CRxBuf[0] == lTestByte )
 						{
-							dbg_str("<<PASSED>>\r\n");
+							dbg_str("1. <<PASSED>>\r\n");
 						}
 						else
 						{
@@ -274,4 +279,219 @@ static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 	}
 }
 
+static void i2cs_runI2cToApbMsgTests (const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	uint8_t lTestByte = 0x34;
 
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+
+	gsI2CTxBuf[0] = lTestByte;
+
+	if( udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, 1, gsI2CTxBuf,  false) == pdTRUE )
+	{
+		gsI2CRxBuf[0] = 0;
+		//Ensuring from the I2C side that the APB side gets the correct status
+		if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB_STATUS, 1, gsI2CRxBuf, false) == pdTRUE )
+		{
+			if( gsI2CRxBuf[0] == 1 )
+			{
+				//now check from APB side that a byte msg is received.
+				if( hal_get_i2cs_msg_i2c_apb_status() == 1 )
+				{
+					if( hal_get_i2cs_msg_i2c_apb() == lTestByte )
+					{
+						dbg_str("0. <<PASSED>>\r\n");
+						//When the Message register (offset 0x10) has been read by the APB interface, this bit will be automatically cleared.
+						//Checking this condition
+						if( hal_get_i2cs_msg_i2c_apb_status() == 0 )
+						{
+							dbg_str("1. <<PASSED>>\r\n");
+						}
+						else
+						{
+							dbg_str("0. <<FAILED>>\r\n");
+						}
+					}
+					else
+					{
+						dbg_str("1. <<FAILED>>\r\n");
+					}
+				}
+				else
+				{
+					dbg_str("2. <<FAILED>>\r\n");
+				}
+			}
+			else
+			{
+				dbg_str("3. <<FAILED>>\r\n");
+			}
+		}
+		else
+		{
+			dbg_str("4. <<FAILED>>\r\n");
+		}
+	}
+	else
+	{
+		dbg_str("5. <<FAILED>>\r\n");
+	}
+}
+
+static void i2cs_runApbToI2cMsgTests (const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	uint8_t lTestByte = 0x56;
+
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+
+
+	hal_set_i2cs_msg_apb_i2c(lTestByte);
+	//Ensuring from the APB side that the I2C side gets the correct status
+
+	if( hal_get_i2cs_msg_apb_i2c_status() == 1 )
+	{
+		//now check from I2C side that a byte msg is received.
+		gsI2CRxBuf[0] = 0;
+		if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C_STATUS, 1, gsI2CRxBuf, false) == pdTRUE )
+		{
+			if( gsI2CRxBuf[0] == 1 )
+			{
+				gsI2CRxBuf[0] = 0;
+				if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C, 1, gsI2CRxBuf, false) == pdTRUE )
+				{
+					if( gsI2CRxBuf[0] == lTestByte )
+					{
+						dbg_str("0. <<PASSED>>\r\n");
+						if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C_STATUS, 1, gsI2CRxBuf, false) == pdTRUE )
+						{
+							if( gsI2CRxBuf[0] == 0 )
+							{
+								dbg_str("1. <<PASSED>>\r\n");
+							}
+							else
+							{
+								dbg_str("0. <<FAILED>>\r\n");
+							}
+						}
+						else
+						{
+							dbg_str("1. <<FAILED>>\r\n");
+						}
+					}
+					else
+					{
+						dbg_str("2. <<FAILED>>\r\n");
+					}
+				}
+				else
+				{
+					dbg_str("3. <<FAILED>>\r\n");
+				}
+			}
+			else
+			{
+				dbg_str("4. <<FAILED>>\r\n");
+			}
+		}
+		else
+		{
+			dbg_str("5. <<FAILED>>\r\n");
+		}
+	}
+	else
+	{
+		dbg_str("6. <<FAILED>>\r\n");
+	}
+}
+
+
+static void i2cs_runI2cToApbFIFOWatermarkLevelTests (const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	uint16_t i = 0;
+
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+#if 0
+	//Temporarily using this to flush all the contents of the I2C2APB FIFO
+	while( hal_get_i2cs_fifo_i2c_apb_read_flags() != 0 )
+		hal_get_i2cs_fifo_i2c_apb_read_data_port();
+
+	gsI2CRxBuf[0] = 0;
+	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+	{
+		if( gsI2CRxBuf[0] == 0x0 )	//128+ bytes left in FIFO
+		{
+			//Write 128 bytes into I2C2APB FIFO
+			for( i=0; i<128; i++ )
+			{
+				gsI2CTxBuf[0] = i;
+				if( udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_DATA_PORT, 1, gsI2CTxBuf,  false) == pdTRUE )
+				{
+
+				}
+			}
+			gsI2CRxBuf[0] = 0;
+			if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+			{
+				if( gsI2CRxBuf[0] == 0x1 )	//64 - 127 bytes left in FIFO
+				{
+					for( i=0; i<64; i++ )
+					{
+						gsI2CTxBuf[0] = i;
+						if( udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_DATA_PORT, 1, gsI2CTxBuf,  false) == pdTRUE )
+						{
+						}
+					}
+				}
+				gsI2CRxBuf[0] = 0;
+				if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+				{
+					if( gsI2CRxBuf[0] == 0x2 )	//32-63 spaces available
+					{
+						for( i=0; i<32; i++ )
+						{
+							gsI2CTxBuf[0] = i;
+							if( udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_DATA_PORT, 1, gsI2CTxBuf,  false) == pdTRUE )
+							{
+
+							}
+						}
+					}
+					gsI2CRxBuf[0] = 0;
+					if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+					{
+						if( gsI2CRxBuf[0] == 0x3 )	//32-63 spaces available
+						{
+							for( i=0; i<32; i++ )
+							{
+								gsI2CTxBuf[0] = i;
+								if( udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_DATA_PORT, 1, gsI2CTxBuf,  false) == pdTRUE )
+								{
+
+								}
+							}
+						}
+					}
+				}
+
+#endif
+}
+
+static void i2cs_runApbToI2cFIFOWatermarkLevelTests (const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	uint8_t lTestByte = 0x56;
+
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+
+}

@@ -63,6 +63,36 @@ uint8_t hal_get_i2cs_fifo_apb_i2c_write_flags(void)
 	return (uint8_t )apbI2cSlave->i2cs_fifo_apb_i2c_write_flags;
 }
 
+uint8_t hal_get_i2cs_msg_i2c_apb(void)
+{
+
+	ApbI2cs_t *apbI2cSlave = (ApbI2cs_t*) I2CS_START_ADDR;
+	return (apbI2cSlave->i2cs_msg_i2c_apb);
+}
+
+uint8_t hal_get_i2cs_msg_i2c_apb_status(void)
+{
+
+	ApbI2cs_t *apbI2cSlave = (ApbI2cs_t*)I2CS_START_ADDR;
+	return (uint8_t )apbI2cSlave->i2cs_msg_i2c_apb_status;
+}
+
+
+void hal_set_i2cs_msg_apb_i2c(uint8_t aData)
+{
+
+	ApbI2cs_t *apbI2cSlave = (ApbI2cs_t*) I2CS_START_ADDR;
+	apbI2cSlave->i2cs_msg_apb_i2c = aData;
+}
+
+uint8_t hal_get_i2cs_msg_apb_i2c_status(void)
+{
+
+	ApbI2cs_t *apbI2cSlave = (ApbI2cs_t*)I2CS_START_ADDR;
+	return (uint8_t )apbI2cSlave->i2cs_msg_apb_i2c_status;
+}
+
+
 
 uint8_t hal_i2cs_fifo_i2c_apb_flush(void)
 {
