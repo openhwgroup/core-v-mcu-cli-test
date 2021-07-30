@@ -170,7 +170,7 @@ int main(void)
  udma_flash_reset_memory(0, 0);
  for (i = 0; i < 10000; i++);
  udma_flash_readid(tstring);
- if (tstring[0] == 0x20) flash_present = 1;
+ if (tstring[0] != 0xFF) flash_present = 1;
  else flash_present = 0;
  if (bootsel == 0)
 	 tstring[0] = '.';

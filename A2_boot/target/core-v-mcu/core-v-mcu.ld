@@ -48,10 +48,6 @@ SECTIONS
 	*(.eh_frame*)
 	*(.data);
 	*(.data.*)
-	*(.bss)
-	*(.bss.*)
-	*(.sbss)
-	*(.sbss.*)
 	*(COMMON)
 	. = ALIGN(4);
 	_bss_start = .;
@@ -66,6 +62,10 @@ SECTIONS
      {
 	*(.ram)
 	*(.heapl2ram)
+	*(.bss)
+	*(.bss.*)
+	*(.sbss)
+	*(.sbss.*)
      } > L2
 
      .stack :
