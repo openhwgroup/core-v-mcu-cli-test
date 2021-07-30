@@ -104,6 +104,7 @@ static __attribute__((noreturn)) void loadBinaryAndStart(boot_code_t *data)
   }
   dbg_str("\nJumping to ");
   dbg_hex32(data->header.entry);
+  dbg_str(" ");
   jump_to_entry(&data->header);
 }
 

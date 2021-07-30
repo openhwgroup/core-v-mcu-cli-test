@@ -9,7 +9,7 @@
 #define WORD_LINE_COUNT 	336
 #define TOTAL_WORD_COUNT	( ( BIT_LINE_COUNT ) * ( WORD_LINE_COUNT ) )
 
-uint32_t fb_cfg_data[TOTAL_WORD_COUNT] = {0};
+uint32_t *fb_cfg_data[]; //[TOTAL_WORD_COUNT] = {0};
 
 void programFPGA()
 {
@@ -19,6 +19,9 @@ void programFPGA()
     int tot_word_cnt = bit_line_count * word_line_count;
     int tot_byte_cnt = bit_line_count * word_line_count * 4; //0x038700
     int i;
+
+    *fb_cfg_data = (uint32_t*)0x1c000000;
+
     // ArcticPro(TM) 2 eFPGA configuration setup programming
     FCBAPB_BL_PW_CFG_0 =0xff; // required
     FCBAPB_BL_PW_CFG_1 =0xff; // required
