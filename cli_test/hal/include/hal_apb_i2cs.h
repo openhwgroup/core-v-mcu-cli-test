@@ -28,6 +28,7 @@ void hal_set_apb_i2cs_slave_address(uint8_t aSlaveAddress);
 uint8_t hal_set_apb_i2cs_slave_on_off(uint8_t aStatus);
 uint8_t hal_get_i2cs_fifo_i2c_apb_read_data_port(void);
 void hal_set_i2cs_fifo_apb_i2c_write_data_port(uint8_t aData);
+uint8_t hal_get_i2cs_fifo_i2c_apb_write_flags(void);
 uint8_t hal_get_i2cs_fifo_i2c_apb_read_flags(void);
 uint8_t hal_get_i2cs_fifo_apb_i2c_read_flags(void);
 uint8_t hal_get_i2cs_fifo_apb_i2c_write_flags(void);

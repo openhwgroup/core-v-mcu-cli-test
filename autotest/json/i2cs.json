@@ -1,8 +1,11 @@
 {
 	"i2cs"	: [		
 		{">console"		: "i2cs on\r\n"},
-		{">console"		: "i2cs wraddr 0xEF\r\n"},
-		{">console"		: "i2cs rdaddr\r\n"},
-		{">console"		: "i2cs off\r\n"}
+		{">console"		: "i2cs i2c2apbmsg\r\n"},
+		{">console"		: "i2cs apb2i2cmsg\r\n"},
+		{">console"		: "i2cs i2c2apbfifo\r\n"},
+        {">console"		: "i2cs apb2i2cfifo\r\n"},
+        {">console"		: "i2cs i2c2apbfifowm\r\n"},
+        {">console"		: "i2cs apb2i2cfifowm\r\n"}
 	]
 }
