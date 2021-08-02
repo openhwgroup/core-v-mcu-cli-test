@@ -62,6 +62,7 @@ uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	}
 	/* Enable reset and enable uart clock */
 	pudma_ctrl->reg_rst |= (UDMA_CTRL_UART0_CLKEN << uart_id);
+	pudma_ctrl->reg_rst &= ~(UDMA_CTRL_UART0_CLKEN << uart_id);
 	pudma_ctrl->reg_cg |= (UDMA_CTRL_UART0_CLKEN << uart_id);
 
 	/* Set semaphore */
