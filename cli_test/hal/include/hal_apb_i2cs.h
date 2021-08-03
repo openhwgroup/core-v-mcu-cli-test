@@ -36,8 +36,8 @@ uint8_t hal_get_i2cs_msg_i2c_apb(void);
 uint8_t hal_get_i2cs_msg_i2c_apb_status(void);
 void hal_set_i2cs_msg_apb_i2c(uint8_t aData);
 uint8_t hal_get_i2cs_msg_apb_i2c_status(void);
-uint8_t hal_i2cs_fifo_i2c_apb_flush(void);
-
+void hal_i2cs_fifo_i2c_apb_FIFO_flush(void);
+void hal_i2cs_fifo_apb_i2c_FIFO_flush(void);
 
 
 #endif // __HAL_APB_I2CS_H__

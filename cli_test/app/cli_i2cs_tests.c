@@ -69,6 +69,11 @@ static void i2cs_runI2cToApbFIFOTests(const struct cli_cmd_entry *pEntry);
 static void i2cs_runApbToI2cFIFOTests(const struct cli_cmd_entry *pEntry);
 static void i2cs_runI2cToApbFIFOWatermarkTests(const struct cli_cmd_entry *pEntry);
 static void i2cs_runApbToI2cFIFOWatermarkTests(const struct cli_cmd_entry *pEntry);
+
+static void i2cs_runI2cToApbFIFOFlushTests(const struct cli_cmd_entry *pEntry);
+static void i2cs_runApbToI2cFIFOFlushTests(const struct cli_cmd_entry *pEntry);
+
+
 const struct cli_cmd_entry i2cs_functions[] =
 {
 	CLI_CMD_SIMPLE ( "on", i2cs_on,		"switch ON i2c slave"),
@@ -81,6 +86,8 @@ const struct cli_cmd_entry i2cs_functions[] =
 	CLI_CMD_WITH_ARG( "apb2i2cfifo", i2cs_runApbToI2cFIFOTests,	1, 	"Run I2C slave FIFO tests"),
 	CLI_CMD_WITH_ARG( "i2c2apbfifowm", i2cs_runI2cToApbFIFOWatermarkTests,	1, 	"Run I2C slave FIFO water mark level tests"),
 	CLI_CMD_WITH_ARG( "apb2i2cfifowm", i2cs_runApbToI2cFIFOWatermarkTests,	1, 	"Run I2C slave FIFO water mark level tests"),
+	CLI_CMD_WITH_ARG( "i2c2apbflush", i2cs_runI2cToApbFIFOFlushTests,	1, 	"Run I2C slave FIFO flush test"),
+	CLI_CMD_WITH_ARG( "apb2i2cflush", i2cs_runApbToI2cFIFOFlushTests,	1, 	"Run I2C slave FIFO flush test"),
 	CLI_CMD_TERMINATE()
 };
 
@@ -150,6 +157,192 @@ static void i2cs_writeSlaveAddress (const struct cli_cmd_entry *pEntry)
 	}
 }
 
+static void i2cs_runI2cToApbFIFOFlushTests (const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	uint8_t lTestByte = 0x12;
+	int i = 0;
+
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+
+	//ensure that all the data is read out
+	while( hal_get_i2cs_fifo_i2c_apb_read_flags() != 0 )
+			hal_get_i2cs_fifo_i2c_apb_read_data_port();
+
+
+	//I2C master checks if space is available to write into the FIFO
+	gsI2CRxBuf[0] = 0;
+	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+	{
+		if( gsI2CRxBuf[0] != 0x07 )	//FIFO is not full, at least one byte space is available to write into the FIFO,
+		{
+			gsI2CTxBuf[0] = lTestByte;
+			if( udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_DATA_PORT, 1, gsI2CTxBuf,  false) == pdTRUE )
+			{
+
+			}
+			else
+			{
+
+			}
+			gsI2CRxBuf[0] = 0;
+			//Ensure that the FIFO write happened by checking if the write count increased
+			if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+			{
+				if( gsI2CRxBuf[0] == 0x01 )
+				{
+					dbg_str("0. <<PASSED>>\r\n");
+					//Flush I2C2APB FIFO flush from APB side.
+					hal_i2cs_fifo_i2c_apb_FIFO_flush();
+					gsI2CRxBuf[0] = 0xFF;gsI2CRxBuf[1] = 0xFF;
+					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, &gsI2CRxBuf[0], false);
+					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, &gsI2CRxBuf[1], false);
+					if( (gsI2CRxBuf[0] == 0x00 ) && ( gsI2CRxBuf[1] == 0x00 ) )
+					{
+						dbg_str("1. <<PASSED>>\r\n");
+					}
+					else
+					{
+						dbg_str("1. <<FAILED>>\r\n");
+					}
+
+				}
+				else
+				{
+					dbg_str("0. <<FAILED>>\r\n");
+				}
+			}
+		}
+	}
+
+	gsI2CRxBuf[0] = 0;
+	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+	{
+		if( gsI2CRxBuf[0] != 0x07 )	//FIFO is not full, at least one byte space is available to write into the FIFO,
+		{
+			gsI2CTxBuf[0] = lTestByte;
+			if( udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_DATA_PORT, 1, gsI2CTxBuf,  false) == pdTRUE )
+			{
+
+			}
+			else
+			{
+
+			}
+			gsI2CRxBuf[0] = 0;
+			//Ensure that the FIFO write happened by checking if the write count increased
+			if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
+			{
+				if( gsI2CRxBuf[0] == 0x01 )
+				{
+					dbg_str("2. <<PASSED>>\r\n");
+
+					//Flush I2C2APB FIFO flush from I2C side.
+					gsI2CTxBuf[0] = 1;
+					udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_FLUSH, 1, gsI2CTxBuf,  false);
+					for(i=0; i<100; i++);
+					gsI2CTxBuf[0] = 0;
+					udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_FLUSH, 1, gsI2CTxBuf,  false);
+
+					gsI2CRxBuf[0] = 0xFF; gsI2CRxBuf[1] = 0xFF;
+					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false);
+					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false);
+					if( ( gsI2CRxBuf[0] == 0x00 ) && ( gsI2CRxBuf[1] == 0x00 ) )
+					{
+						dbg_str("3. <<PASSED>>\r\n");
+					}
+					else
+					{
+						dbg_str("3. <<FAILED>>\r\n");
+					}
+
+				}
+				else
+				{
+					dbg_str("2. <<FAILED>>\r\n");
+				}
+			}
+		}
+	}
+}
+
+static void i2cs_runApbToI2cFIFOFlushTests (const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	int i = 0;
+	uint8_t lTestByte = 0x12;
+
+
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+
+	do{
+		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
+		gsI2CRxBuf[0] = 0;
+		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false);
+	}while(gsI2CRxBuf[0] != 0);
+
+	//APB checks if space is available to write into the FIFO
+	if( hal_get_i2cs_fifo_apb_i2c_write_flags() != 0x07 )	//FIFO is not full, at least one byte space is available to write into the FIFO,
+	{
+		hal_set_i2cs_fifo_apb_i2c_write_data_port(lTestByte);
+
+		//Ensure that the FIFO write happened by checking if the write count increased
+		if(hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x01 )
+		{
+			dbg_str("0. <<PASSED>>\r\n");
+			//Flush APB2I2C FIFO flush from APB side.
+			hal_i2cs_fifo_apb_i2c_FIFO_flush();
+
+			if( ( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x0 ) && ( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x00 ) )
+			{
+				dbg_str("1. <<PASSED>>\r\n");
+			}
+			else
+			{
+				dbg_str("1. <<FAILED>>\r\n");
+			}
+		}
+		else
+		{
+			dbg_str("0. <<FAILED>>\r\n");
+		}
+	}
+
+	if( hal_get_i2cs_fifo_apb_i2c_write_flags() != 0x07 )	//FIFO is not full, at least one byte space is available to write into the FIFO,
+	{
+		hal_set_i2cs_fifo_apb_i2c_write_data_port(lTestByte);
+
+		//Ensure that the FIFO write happened by checking if the write count increased
+		if(hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x01)
+		{
+			dbg_str("2. <<PASSED>>\r\n");
+			//Flush APB2I2C FIFO flush from I2C side.
+
+			gsI2CTxBuf[0] = 1;
+			udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_FLUSH, 1, gsI2CTxBuf,  false);
+			for(i=0; i<100; i++);
+			gsI2CTxBuf[0] = 0;
+			udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_FLUSH, 1, gsI2CTxBuf,  false);
+
+			if( ( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x0 ) && ( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x00 ) )
+			{
+				dbg_str("3. <<PASSED>>\r\n");
+			}
+			else
+			{
+				dbg_str("3. <<FAILED>>\r\n");
+			}
+		}
+		else
+		{
+			dbg_str("2. <<FAILED>>\r\n");
+		}
+	}
+}
 
 static void i2cs_runI2cToApbFIFOTests (const struct cli_cmd_entry *pEntry)
 {
@@ -160,16 +353,6 @@ static void i2cs_runI2cToApbFIFOTests (const struct cli_cmd_entry *pEntry)
 	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
 		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
 
-
-	//I2C master flushes the I2C2APB FIFO first.
-	//gsI2CTxBuf[0] = 1;
-	//udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_FLUSH, 1, gsI2CTxBuf,  false);
-	//vTaskDelay(10);
-	//gsI2CTxBuf[0] = 0;
-	//udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_FLUSH, 1, gsI2CTxBuf,  false);
-	//vTaskDelay(10);
-
-	//hal_i2cs_fifo_i2c_apb_flush();
 	//I2C master checks if space is available to write into the FIFO
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
@@ -229,19 +412,7 @@ static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
 
 
-	//I2C master flushes the I2C2APB FIFO first.
-	//gsI2CTxBuf[0] = 1;
-	//udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_FLUSH, 1, gsI2CTxBuf,  false);
-	//vTaskDelay(10);
-	//gsI2CTxBuf[0] = 0;
-	//udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_FLUSH, 1, gsI2CTxBuf,  false);
-	//vTaskDelay(10);
-
-	//hal_i2cs_fifo_i2c_apb_flush();
-	//I2C master checks if space is available to write into the FIFO
-
-
-
+	//APB checks if space is available to write into the FIFO
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() != 0x07 )	//FIFO is not full, at least one byte space is available to write into the FIFO,
 	{
 		hal_set_i2cs_fifo_apb_i2c_write_data_port(lTestByte);

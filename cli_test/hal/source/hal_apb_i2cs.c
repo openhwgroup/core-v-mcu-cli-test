@@ -102,12 +102,22 @@ uint8_t hal_get_i2cs_msg_apb_i2c_status(void)
 }
 
 
-uint8_t hal_i2cs_fifo_i2c_apb_flush(void)
+void hal_i2cs_fifo_i2c_apb_FIFO_flush(void)
 {
 	int i = 0;
 	ApbI2cs_t *apbI2cSlave = (ApbI2cs_t*)I2CS_START_ADDR;
 	apbI2cSlave->i2cs_fifo_i2c_apb_flush_b.enable = 1;
 	for( i=0; i<1000; i++);
 	apbI2cSlave->i2cs_fifo_i2c_apb_flush_b.enable = 0;
+	for( i=0; i<1000; i++);
+}
+
+void hal_i2cs_fifo_apb_i2c_FIFO_flush(void)
+{
+	int i = 0;
+	ApbI2cs_t *apbI2cSlave = (ApbI2cs_t*)I2CS_START_ADDR;
+	apbI2cSlave->i2cs_fifo_apb_i2c_flush_b.enable = 1;
+	for( i=0; i<1000; i++);
+	apbI2cSlave->i2cs_fifo_apb_i2c_flush_b.enable = 0;
 	for( i=0; i<1000; i++);
 }

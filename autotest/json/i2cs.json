@@ -6,6 +6,8 @@
 		{">console"		: "i2cs i2c2apbfifo\r\n"},
         {">console"		: "i2cs apb2i2cfifo\r\n"},
         {">console"		: "i2cs i2c2apbfifowm\r\n"},
-        {">console"		: "i2cs apb2i2cfifowm\r\n"}
+        {">console"		: "i2cs apb2i2cfifowm\r\n"},
+        {">console"		: "i2cs i2c2apbflush\r\n"},
+        {">console"		: "i2cs apb2i2cflush\r\n"}
 	]
 }
