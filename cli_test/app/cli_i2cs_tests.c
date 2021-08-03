@@ -247,8 +247,8 @@ static void i2cs_runI2cToApbFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 					udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_FLUSH, 1, gsI2CTxBuf,  false);
 
 					gsI2CRxBuf[0] = 0xFF; gsI2CRxBuf[1] = 0xFF;
-					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false);
-					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false);
+					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, &gsI2CRxBuf[0], false);
+					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, &gsI2CRxBuf[1], false);
 					if( ( gsI2CRxBuf[0] == 0x00 ) && ( gsI2CRxBuf[1] == 0x00 ) )
 					{
 						dbg_str("3. <<PASSED>>\r\n");
