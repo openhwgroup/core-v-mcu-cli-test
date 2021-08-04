@@ -6,47 +6,49 @@ length = len(sys.argv)
 args = sys.argv
 JsonFolder = []
 
-def autorun(length=length, console=sys.argv[1], uart=sys.argv[2], Type=sys.argv[3], args=args):
-    test = '.'
-    JSON = './json/'
+def autorun(length=length, Reg_Prog=sys.argv[1], console=sys.argv[2], uart=sys.argv[3], Type=sys.argv[4], args=args):
+    arnold = '/home/qlblue/NightlyBuild/arnold2/'
+    test = arnold + 'core-v-mcu-cli-test/autotest/'
+    outputs = test + 'TestOutputs/'
 
+    # determine if to run Regression or Progression folder
+    if Reg_Prog == 'regression':
+        JSON = test + 'regression/'
+        outlog = outputs + 'regression/'
+
+    if Reg_Prog == 'progression':
+        JSON = test + 'progression/'
+        outlog = outputs + 'progression/'
     # run all json files if argument = all
-    # need to make sure cam is not present in folder
     if Type == 'all':
         JsonFolder = os.listdir(JSON)
         for json in JsonFolder:
             os.chdir(test) # location of Test.py
             name= json[0:-5]
-	
-            command = 'python3 Test.py --console ' + console + ' --uart1 ' + uart + ' --test ' + json + ' >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/' + name + '.log'
+            command = 'python3 Test.py --console /dev/ttyUSB3' + ' --uart1 /dev/ttyUSB0' + ' --test ' + json + ' >& ' + outlog + name + '.log --jloc ' + Reg_Prog 
             process = subprocess.call(command, shell=True)
-            #print(command)
     
     # run only the specified apps
     if Type == '-s':
-        i = 4
+        i = 5
         while i < length:
             os.chdir(test)
-            command = 'python3 Test.py --console ' + console + ' --uart1 ' + uart + ' --test ' + args[i] + '.json >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/' + args[i] + '.log'
+            command = 'python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test ' + args[i] + '.json >& ' + outlog + args[i] + '.log --jloc ' + Reg_Prog
             process = subprocess.call(command, shell=True)
-            #print(command)
             i += 1
 
     # run all except specified logs
     if Type == '-e':
         JsonFolder = os.listdir(JSON)
-
-        i = 4
+        i = 5
         while i < length:
             jfile = args[i] + '.json'
             JsonFolder.remove(jfile)
             i += 1
         for json in JsonFolder:
-            print("Testing " + json[0:-5] )
             os.chdir(test) # location of Test.py
-            command = 'python3 Test.py --console ' + console + ' --uart1 ' + uart + ' --test ' + json + ' >& ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/' + json[0:-5] + '.log'
+            command = 'python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test ' + json + ' >& ' + outlog + json[0:-5] + '.log --jloc ' + Reg_Prog
             process = subprocess.call(command, shell=True)
-            #print(command)
 
 
 if __name__ == "__main__":

@@ -21,6 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("--console", metavar="/dev/ttyUSB?", help="port associated with the console", required=True);
 parser.add_argument("--uart1", metavar="/dev/ttyUSB?", help="port associated with the uart1", required=True);
 parser.add_argument("--test", metavar="?", help=".json file to be tested", required=True);
+parser.add_argument("--jloc", metavar="?", help="regression or progression", required=True);
 args = parser.parse_args()
 
 ##############################
@@ -31,13 +32,15 @@ args = parser.parse_args()
 fail_count = 0
 pass_count = 0
 no_status_count = 0
+Json = '/home/qlblue/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/'
 with serial.Serial(args.console, 115200) as console:
     print("Opened console(" + args.console + ")")
     with serial.Serial(args.uart1, 115200) as uart1:
         print("Opened uart1(" + args.uart1 + ")")
-        json_loc = './json/'
+        json_loc = Json + args.jloc
         os.chdir(json_loc)
         with open(args.test) as ftest:
+            print("ftest = ", args.test)
             script = json.load(ftest)
             for test in script:
                 print("*** " + test + " ***")
