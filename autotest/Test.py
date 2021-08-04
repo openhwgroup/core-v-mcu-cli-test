@@ -110,6 +110,7 @@ with serial.Serial(args.console, 115200) as console:
                                 print("ERROR: Command did not return status")
                                 no_status_count = no_status_count + 1
                         elif item == '<uart1':
+                            time.sleep(0.01)
                             if uart1.in_waiting != len(command["<uart1"]):
                                 print("<<FAILED>>: uart1 length does not match")
                                 fail_count = fail_count + 1
