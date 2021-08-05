@@ -26,7 +26,8 @@ if [ $console_uart_found_flag == 1 ] && [ $uart1_uart_found_flag == 1 ]
 then
     echo "Both UART ports found"
     # run all tests
-	python3 autorun.py $CONSOLE_UART_PORT $UART1_UART_PORT -e cam >& autoo.log
+    python3 autorun.py regression $CONSOLE_UART_PORT $UART1_UART_PORT all
+    python3 autorun.py progression $CONSOLE_UART_PORT $UART1_UART_PORT -e cam
 	echo "DONE. Results logged at ~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs/"
 else
     echo "Cannot start tests as console_uart_found_flag = $console_uart_found_flag and uart1_uart_found_flag = $uart1_uart_found_flag"
