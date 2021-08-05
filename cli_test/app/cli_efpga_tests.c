@@ -417,6 +417,8 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 		unsigned int errors = 0;
 		unsigned int i, test_type, exp_data_out, data_out;
 		unsigned int mlt_type;
+		uint32_t lOperandData = 0;
+		uint32_t lCoefficientData = 0;
 		message  = pvPortMalloc(80);
 		test_type = 1;
 	do{
@@ -428,8 +430,28 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				*mctl->m_ctl = 0x0;
 				errors = 0;
 
-				*mctl->m_odata = 0x2;
-				*mctl->m_cdata = 0x3;
+				if( mlt_type == 0 )	//1 32-bit multiplier
+				{
+					lOperandData = 0x00000002;
+					lCoefficientData = 0x00000003;
+				}
+				else if( mlt_type == 1 ) //2 16-bit multiplier
+				{
+					lOperandData = 0x00020002;
+					lCoefficientData = 0x00030003;
+				}
+				else if( mlt_type == 2 )	//4 8-bit multiplier
+				{
+					lOperandData = 0x02020202;
+					lCoefficientData = 0x03030303;
+				}
+				else if( mlt_type == 3 )	//8 4-bit multiplier
+				{
+					lOperandData = 0x22222222;
+					lCoefficientData = 0x33333333;
+				}
+				*mctl->m_odata = lOperandData; //0x2;
+				*mctl->m_cdata = lCoefficientData; //0x3;
 				*mctl->m_ctl = (0x40000 | ((mlt_type & 0x3) << 12));
 				exp_data_out = (*mctl->m_odata) * (*mctl->m_cdata);
 				if ((*mctl->m_data_out) != 0x0) errors ++;
@@ -465,9 +487,29 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				*mctl->m_ctl = 0x80000000;
 				*mctl->m_ctl = 0x0;
 				errors = 0;
+				if( mlt_type == 0 )	//1 32-bit multiplier
+				{
+					lOperandData = 0x00000004;
+					lCoefficientData = 0x00000005;
+				}
+				else if( mlt_type == 1 ) //2 16-bit multiplier
+				{
+					lOperandData = 0x00040004;
+					lCoefficientData = 0x00050005;
+				}
+				else if( mlt_type == 2 )	//4 8-bit multiplier
+				{
+					lOperandData = 0x04040404;
+					lCoefficientData = 0x05050505;
+				}
+				else if( mlt_type == 3 )	//8 4-bit multiplier
+				{
+					lOperandData = 0x44444444;
+					lCoefficientData = 0x55555555;
+				}
 
-				ram_adr1->w[0] = 0x4;
-				ram_adr2->w[0] = 0x5;
+				ram_adr1->w[0] = lOperandData; //0x4;
+				ram_adr2->w[0] = lCoefficientData; //0x5;
 				*mctl->m_ctl = (0x4c000 | ((mlt_type & 0x3) << 12));
 				exp_data_out = (ram_adr1->w[0]) * (ram_adr2->w[0]);
 				if ((*mctl->m_data_out) != 0x0) errors ++;

@@ -32,7 +32,7 @@ args = parser.parse_args()
 fail_count = 0
 pass_count = 0
 no_status_count = 0
-Json = '/home/qlblue/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/'
+Json = os.path.expanduser("~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/")
 with serial.Serial(args.console, 115200) as console:
     print("Opened console(" + args.console + ")")
     with serial.Serial(args.uart1, 115200) as uart1:
