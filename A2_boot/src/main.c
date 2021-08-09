@@ -160,17 +160,18 @@ int main(void)
  //TODO: FLL clock settings need to be taken care in the actual chip.
  //TODO: 5000000 to be changed to #define PERIPHERAL_CLOCK_FREQ_IN_HZ
  volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;
+ bootsel = psoc->bootsel & 0x1;
+
  udma_uart_open (id,115200);
  dbg_str("\nA2 Bootloader Bootsel=");
- bootsel = psoc->bootsel & 0x1;
 
  if (bootsel == 1) dbg_str("1");
  else dbg_str("0");
  udma_qspim_open(0, 1000000);
- //udma_flash_reset_enable(0, 0);
- for (i = 0; i < 10000; i++);
- //udma_flash_reset_memory(0, 0);
- for (i = 0; i < 10000; i++);
+ udma_flash_reset_enable(0, 0);
+ //for (i = 0; i < 10000; i++);
+ udma_flash_reset_memory(0, 0);
+ //for (i = 0; i < 10000; i++);
  udma_flash_readid(tstring);
  if (tstring[0] != 0xFF) flash_present = 1;
  else flash_present = 0;
