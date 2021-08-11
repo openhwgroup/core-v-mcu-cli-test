@@ -186,8 +186,8 @@ module fpga_bootrom
   170: value <= 32'h0537C845;
   171: value <= 32'h05131A00;
   172: value <= 32'h3D0D6A85;
-  173: value <= 32'h002625B7;
-  174: value <= 32'h5A058593;
+  173: value <= 32'h004C55B7;
+  174: value <= 32'hB4058593;
   175: value <= 32'h28F14501;
   176: value <= 32'h45014581;
   177: value <= 32'h45812A69;
