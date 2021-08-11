@@ -167,7 +167,7 @@ int main(void)
 
  if (bootsel == 1) dbg_str("1");
  else dbg_str("0");
- udma_qspim_open(0, 1000000);
+ udma_qspim_open(0, 2500000);
  udma_flash_reset_enable(0, 0);
  //for (i = 0; i < 10000; i++);
  udma_flash_reset_memory(0, 0);
