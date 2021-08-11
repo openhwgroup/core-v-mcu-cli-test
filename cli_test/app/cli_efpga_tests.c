@@ -40,6 +40,10 @@ extern uint8_t gDebugEnabledFlg;
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
 static void m_mltiply_test(const struct cli_cmd_entry *pEntry);
+static void mathUnit0Multiplier0_test(const struct cli_cmd_entry *pEntry);
+static void mathUnit0Multiplier1_test(const struct cli_cmd_entry *pEntry);
+static void mathUnit1Multiplier0_test(const struct cli_cmd_entry *pEntry);
+static void mathUnit1Multiplier1_test(const struct cli_cmd_entry *pEntry);
 static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry);
 static void tcdm_task_start(const struct cli_cmd_entry *pEntry);
 static void tcdm_task_stop(const struct cli_cmd_entry *pEntry);
@@ -55,6 +59,10 @@ const struct cli_cmd_entry efpga_cli_tests[] =
   CLI_CMD_SIMPLE( "tcdm_status", tcdm_task_status, "Tcdm delete task" ),
   CLI_CMD_SIMPLE( "ram", ram_test, "32 bit ram tests" ),
   CLI_CMD_SIMPLE ( "mlt", m_mltiply_test ,"mltiply_test"),
+  CLI_CMD_SIMPLE ( "math0mult0", mathUnit0Multiplier0_test ,"math unit 0 multiplier 0 test"),
+  CLI_CMD_SIMPLE ( "math0mult1", mathUnit0Multiplier1_test ,"math unit 0 multiplier 1 test"),
+  CLI_CMD_SIMPLE ( "math1mult0", mathUnit1Multiplier0_test ,"math unit 1 multiplier 0 test"),
+  CLI_CMD_SIMPLE ( "math1mult1", mathUnit1Multiplier1_test ,"math unit 1 multiplier 0 test"),
   CLI_CMD_SIMPLE( "rw", ram_32bit_16bit_8bit_test, "ram_rw_tests" ),
   CLI_CMD_SIMPLE( "auto", efpga_autotest, "autotest" ),
 
@@ -407,20 +415,14 @@ static void ram_32bit_16bit_8bit_test(const struct cli_cmd_entry *pEntry)
 	vPortFree(message);
 }
 
-
-
-
 static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ctl *mctl)
 {
-
-		char *message;
-		unsigned int errors = 0;
-		unsigned int i, test_type, exp_data_out, data_out;
-		unsigned int mlt_type;
-		uint32_t lOperandData = 0;
-		uint32_t lCoefficientData = 0;
-		message  = pvPortMalloc(80);
-		test_type = 1;
+	char *message;
+	unsigned int errors = 0;
+	unsigned int i, test_type, exp_data_out, data_out;
+	unsigned int mlt_type;
+	message  = pvPortMalloc(80);
+	test_type = 1;
 	do{
 		switch(test_type) {
 		case 1:
@@ -430,28 +432,8 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				*mctl->m_ctl = 0x0;
 				errors = 0;
 
-				if( mlt_type == 0 )	//1 32-bit multiplier
-				{
-					lOperandData = 0x00000002;
-					lCoefficientData = 0x00000003;
-				}
-				else if( mlt_type == 1 ) //2 16-bit multiplier
-				{
-					lOperandData = 0x00020002;
-					lCoefficientData = 0x00030003;
-				}
-				else if( mlt_type == 2 )	//4 8-bit multiplier
-				{
-					lOperandData = 0x02020202;
-					lCoefficientData = 0x03030303;
-				}
-				else if( mlt_type == 3 )	//8 4-bit multiplier
-				{
-					lOperandData = 0x22222222;
-					lCoefficientData = 0x33333333;
-				}
-				*mctl->m_odata = lOperandData; //0x2;
-				*mctl->m_cdata = lCoefficientData; //0x3;
+				*mctl->m_odata = 0x2;
+				*mctl->m_cdata = 0x3;
 				*mctl->m_ctl = (0x40000 | ((mlt_type & 0x3) << 12));
 				exp_data_out = (*mctl->m_odata) * (*mctl->m_cdata);
 				if ((*mctl->m_data_out) != 0x0) errors ++;
@@ -487,29 +469,9 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				*mctl->m_ctl = 0x80000000;
 				*mctl->m_ctl = 0x0;
 				errors = 0;
-				if( mlt_type == 0 )	//1 32-bit multiplier
-				{
-					lOperandData = 0x00000004;
-					lCoefficientData = 0x00000005;
-				}
-				else if( mlt_type == 1 ) //2 16-bit multiplier
-				{
-					lOperandData = 0x00040004;
-					lCoefficientData = 0x00050005;
-				}
-				else if( mlt_type == 2 )	//4 8-bit multiplier
-				{
-					lOperandData = 0x04040404;
-					lCoefficientData = 0x05050505;
-				}
-				else if( mlt_type == 3 )	//8 4-bit multiplier
-				{
-					lOperandData = 0x44444444;
-					lCoefficientData = 0x55555555;
-				}
 
-				ram_adr1->w[0] = lOperandData; //0x4;
-				ram_adr2->w[0] = lCoefficientData; //0x5;
+				ram_adr1->w[0] = 0x4;
+				ram_adr2->w[0] = 0x5;
 				*mctl->m_ctl = (0x4c000 | ((mlt_type & 0x3) << 12));
 				exp_data_out = (ram_adr1->w[0]) * (ram_adr2->w[0]);
 				if ((*mctl->m_data_out) != 0x0) errors ++;
@@ -550,6 +512,984 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 	vPortFree(message);
 	return errors;
 }
+static void enableMultiplyOperation(uint32_t *aReg)
+{
+	if( aReg )
+		*aReg = 0x0f;	//Any write to the clock enable register will enable a multiply operation.
+}
+
+#define MATH_UNIT0_MULTIPLIER_0		0
+#define MATH_UNIT0_MULTIPLIER_1		1
+#define MATH_UNIT1_MULTIPLIER_0		2
+#define MATH_UNIT1_MULTIPLIER_1		3
+
+
+
+uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
+{
+	// Add functionality here
+	uint8_t mlt_type = 0;
+	uint32_t i = 0, lOperandSource = 0;
+	uint32_t lErrorCount = 0, lCount = 0;
+	uint32_t lPattern = 0;
+	uint32_t lCumulativeMultiplierOutput = 0;
+	uint32_t lHigherOrderCumulativeMultiplierOutput = 0;
+	uint32_t lIndividualMultiplierOutput = 0;
+	uint32_t lOperandData = 0;
+	uint32_t lCoefficientData = 0;
+	uint64_t lExpectedData = 0;
+
+	uint32_t *m_ctl = (uint32_t *)NULL;
+	uint32_t *m_clken = (uint32_t *)NULL;
+	uint32_t *m_odata = (uint32_t *)NULL;
+	uint32_t *m_cdata = (uint32_t *)NULL;
+	uint32_t *m_data_out = (uint32_t *)NULL;
+	ram_word *ram_addr1 = (ram_word *)NULL;
+	ram_word *ram_addr2 = (ram_word *)NULL;
+
+	apb_soc_ctrl_typedef* soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
+
+	if( aMathMultNum == MATH_UNIT0_MULTIPLIER_0 )
+	{
+		m_ctl = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M0_CONTROL);
+		m_clken = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M0_CLKEN);
+		m_odata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M0_ODATA);
+		m_cdata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M0_CDATA);
+		m_data_out = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M0_MULTOUT);
+		ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER0);
+		ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
+	}
+	else if( aMathMultNum == MATH_UNIT0_MULTIPLIER_1 )
+	{
+		m_ctl = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M1_CONTROL);
+		m_clken = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M1_CLKEN);
+		m_odata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M1_ODATA);
+		m_cdata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M1_CDATA);
+		m_data_out = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_M1_MULTOUT);
+		ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_OPER1);
+		ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M0_COEF);
+	}
+	else if( aMathMultNum == MATH_UNIT1_MULTIPLIER_0 )
+	{
+		m_ctl = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M0_CONTROL);
+		m_clken = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M0_CLKEN);
+		m_odata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M0_ODATA);
+		m_cdata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M0_CDATA);
+		m_data_out = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M0_MULTOUT);
+		ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER0);
+		ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
+	}
+	else if( aMathMultNum == MATH_UNIT1_MULTIPLIER_1 )
+	{
+		m_ctl = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M1_CONTROL);
+		m_clken = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M1_CLKEN);
+		m_odata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M1_ODATA);
+		m_cdata = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M1_CDATA);
+		m_data_out = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_M1_MULTOUT);
+		ram_addr1 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_OPER1);
+		ram_addr2 = (ram_word *)(EFPGA_BASE_ADDR + REG_M1_COEF);
+	}
+
+	soc_ctrl->rst_efpga = 0xf;  //release efpga reset
+	soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
+
+	/*----------------------------------------------------------------------------------------------*/
+	//To test 4 bit multiplication (8 4-bit multipliers will be there)
+	//1. Basic multiplication which does not need more than 4 bit accumulator. For ex 2*3 = 6 which can be represented in 4 bits.
+	mlt_type = 3;	//Set mode to 4 bit multiplier mode.
+	lOperandData = 0x11111111;			//8 multiplications will happen. 1*0, 1*1, 1*2, 1*3, 1*4, 1*5, 1*6, 1*7
+	lCoefficientData = 0x76543210;
+
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<8; i++ )
+		{
+			lPattern = (0x0000000F << ( i*4 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*4 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*4 ) ) );
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 4 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//2. Basic multiplication which needs more than 4 bit accumulator, but with saturation bit enabled
+	lOperandData = 0x88888833;			//8 multiplications will happen. 3*7, 3*6, 8*2, 8*3, 8*4, 8*5, 8*6, 8*7
+	lCoefficientData = 0x76543267;
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x00040000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<8; i++ )
+		{
+			lPattern = (0x0000000F << ( i*4 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*4 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*4 ) ) );
+			if( lExpectedData > 15 )
+				lExpectedData = 15;		//Since we are testing the multiplier with saturation bit enabled, we also limit the output of our multiplication operation.
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 4 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//3. Basic multiplication which needs more than 4 bit accumulator, but with saturation bit disabled
+	lOperandData = 0xF8888833;			//8 multiplications will happen. 3*7, 3*6, 8*2, 8*3, 8*4, 8*5, 8*6, 15*15
+	lCoefficientData = 0xF6543267;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			//Disable saturation bit.
+			*m_ctl = (uint32_t)(0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			//Disable saturation bit.
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+
+		//Select outsel to give the next higher 4 bits of the accumulator.
+		*m_ctl |= 0x04;
+		lHigherOrderCumulativeMultiplierOutput = *m_data_out;
+
+		//check all multiplier outputs
+		for(i=0; i<8; i++ )
+		{
+			lPattern = (0x0000000F << ( i*4 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*4 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*4 ) ) );
+			lIndividualMultiplierOutput = ( ( lHigherOrderCumulativeMultiplierOutput & lPattern ) >> ( i * 4 ));
+			lIndividualMultiplierOutput <<= 4;
+			lIndividualMultiplierOutput |= ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 4 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+
+	//4. "Do not Accumulate result" test
+	mlt_type = 3;	//Set mode to 4 bit multiplier mode.
+	lOperandData = 0x11111111;			//8 multiplications will happen. 1*0, 1*1, 1*2, 1*3, 1*4, 1*5, 1*6, 1*7
+	lCoefficientData = 0x76543210;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+
+		for(lCount=0; lCount<3; lCount++)
+		{
+			*m_ctl |= (1 << 17);
+			//Enable multiplier.
+			enableMultiplyOperation(m_clken);
+			lCumulativeMultiplierOutput = *m_data_out;
+			//check all multiplier outputs
+			for(i=0; i<8; i++ )
+			{
+				lPattern = (0x0000000F << ( i*4 ) );
+				lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*4 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*4 ) ) );
+				lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 4 ));
+				if( lExpectedData != (lIndividualMultiplierOutput) )
+				{
+					lErrorCount++;
+				}
+				lPattern = 0;
+			}
+		}
+	}
+
+
+	//5. Round bit
+	//A = 2, B = 3, OUT_SEL = 2 (0010 will be added to the output), RND_BIT = 1
+	//MULTIPLY
+	//2*3 = 6 + 0010 (2) = 8. (0000 1000)
+	//MAC_OUT = 2 will be given, since OUT_SEL [5:2] is selected (0010)  - - This is the case as OUT_SEL = 2
+
+	mlt_type = 3;	//Set mode to 4 bit multiplier mode.
+	lOperandData = 0x00000002;
+	lCoefficientData = 0x00000003;
+
+	*m_ctl = 0x80000000;	//Reset accumulator
+	*m_ctl = 0x0;
+
+	*m_odata = lOperandData;
+	*m_cdata = lCoefficientData;
+	*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+	*m_ctl |= (1 << 16);
+	//Select outsel to add 20'b0000_0000_0000_0000_0010 to result
+	*m_ctl |= 0x02;
+	if (*m_data_out != 0x0)
+		lErrorCount ++;
+	//Enable multiplier.
+	enableMultiplyOperation(m_clken);
+	lCumulativeMultiplierOutput = *m_data_out;
+	if( lCumulativeMultiplierOutput != 2 )
+	{
+		lErrorCount++;
+	}
+
+	//A = 0, B = 0, OUT_SEL = 3 (0100 will be added to the output), RND_BIT = 1
+	//MULTIPLY
+	//0*0 = 0 + 0100 (4) = 4. (0000 0100)
+	//MAC_OUT = 0 will be given, since OUT_SEL = 3, [6:3] is selected (0000)  - - This is the case as OUT_SEL = 3
+
+	mlt_type = 3;	//Set mode to 4 bit multiplier mode.
+	lOperandData = 0x00000000;
+	lCoefficientData = 0x00000000;
+
+	*m_ctl = 0x80000000;	//Reset accumulator
+	*m_ctl = 0x0;
+
+	*m_odata = lOperandData;
+	*m_cdata = lCoefficientData;
+	*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+	*m_ctl |= (1 << 16);
+	//Select outsel to give the next higher 4 bits of the accumulator.
+	*m_ctl |= 0x03;
+	//Enable multiplier.
+	enableMultiplyOperation(m_clken);
+	lCumulativeMultiplierOutput = *m_data_out;
+	if( lCumulativeMultiplierOutput != 0 )
+	{
+		lErrorCount++;
+	}
+
+/*---------------------------------------------------------------------------------------------------------------------------------*/
+	//To test 8 bit multiplication (4 8-bit multipliers will be there)
+	//1. Basic multiplication which does not need more than 4 bit accumulator. For ex 2*3 = 6 which can be represented in 4 bits.
+	mlt_type = 2;	//Set mode to 8 bit multiplier mode.
+	lOperandData = 0x01010101;			//4 multiplications will happen. 1*0, 1*1, 1*2, 1*3
+	lCoefficientData = 0x03020100;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<4; i++ )
+		{
+			lPattern = (0x000000FF << ( i*8 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*8 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*8 ) ) );
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 8 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//2. Basic multiplication which needs more than 8 bit accumulator, but with saturation bit enabled
+	lOperandData = 0x0A0A0A0A;			//4 multiplications will happen. 10*29, 10*28, 10*27, 10*26
+	lCoefficientData = 0x1D1C1B1A;
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x00040000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<4; i++ )
+		{
+			lPattern = (0x000000FF << ( i*8 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*8 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*8 ) ) );
+			if( lExpectedData > 0xFF )
+				lExpectedData = 0xFF;		//Since we are testing the multiplier with saturation bit enabled, we also limit the output of our multiplication operation.
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 8 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//3. Basic multiplication which needs more than 8 bit accumulator, but with saturation bit disabled
+	lOperandData = 0xFFA20AF0;			//8 multiplications will happen. 240*15, 10*182,162*10 255*255
+	lCoefficientData = 0xFF0AB60F;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			//Disable saturation bit.
+			*m_ctl = (uint32_t)(0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			//Disable saturation bit.
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+
+		//Select outsel to give the next higher 4 bits of the accumulator.
+		*m_ctl |= 0x08;
+		lHigherOrderCumulativeMultiplierOutput = *m_data_out;
+
+		//check all multiplier outputs
+		for(i=0; i<4; i++ )
+		{
+			lPattern = (0x000000FF << ( i*8 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*8 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*8 ) ) );
+			lIndividualMultiplierOutput = ( ( lHigherOrderCumulativeMultiplierOutput & lPattern ) >> ( i * 8 ));
+			lIndividualMultiplierOutput <<= 8;
+			lIndividualMultiplierOutput |= ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 8 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//4. "Do not Accumulate result" test
+	mlt_type = 2;	//Set mode to 8 bit multiplier mode.
+	lOperandData = 0x01010101;			//4 multiplications will happen. 1*0, 1*1, 1*2, 1*3
+	lCoefficientData = 0x03020100;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+
+		for(lCount=0; lCount<3; lCount++)
+		{
+			*m_ctl |= (1 << 17);
+			//Enable multiplier.
+			enableMultiplyOperation(m_clken);
+			lCumulativeMultiplierOutput = *m_data_out;
+			//check all multiplier outputs
+			for(i=0; i<4; i++ )
+			{
+				lPattern = (0x000000FF << ( i*8 ) );
+				lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*8 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*8 ) ) );
+				lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 8 ));
+				if( lExpectedData != (lIndividualMultiplierOutput) )
+				{
+					lErrorCount++;
+				}
+				lPattern = 0;
+			}
+		}
+	}
+
+	//5. Round bit
+	//A = 2, B = 3, OUT_SEL = 2 (0010 will be added to the output), RND_BIT = 1
+	//MULTIPLY
+	//2*3 = 6 + 0010 (2) = 8. (0000 1000)
+	//MAC_OUT = 2 will be given, since OUT_SEL [5:2] is selected (0010)  - - This is the case as OUT_SEL = 2
+
+	mlt_type = 2;	//Set mode to 8 bit multiplier mode.
+	lOperandData = 0x00000002;
+	lCoefficientData = 0x00000003;
+
+	*m_ctl = 0x80000000;	//Reset accumulator
+	*m_ctl = 0x0;
+
+	*m_odata = lOperandData;
+	*m_cdata = lCoefficientData;
+	*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+	*m_ctl |= (1 << 16);
+	//Select outsel to add 24'b0000_0000_0000_0000_0000_0010 to result
+	*m_ctl |= 0x02;
+	if (*m_data_out != 0x0)
+		lErrorCount ++;
+	//Enable multiplier.
+	enableMultiplyOperation(m_clken);
+	lCumulativeMultiplierOutput = *m_data_out;
+	if( lCumulativeMultiplierOutput != 2 )
+	{
+		lErrorCount++;
+	}
+
+	//A = 0, B = 0, OUT_SEL = 3 (0100 will be added to the output), RND_BIT = 1
+	//MULTIPLY
+	//0*0 = 0 + 0100 (4) = 4. (0000 0100)
+	//MAC_OUT = 0 will be given, since OUT_SEL = 3, [6:3] is selected (0000)  - - This is the case as OUT_SEL = 3
+
+	mlt_type = 2;	//Set mode to 8 bit multiplier mode.
+	lOperandData = 0x00000000;
+	lCoefficientData = 0x00000000;
+
+	*m_ctl = 0x80000000;	//Reset accumulator
+	*m_ctl = 0x0;
+
+	*m_odata = lOperandData;
+	*m_cdata = lCoefficientData;
+	*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+	*m_ctl |= (1 << 16);
+	//Select outsel to add 24'b0000_0000_0000_0000_0000_0100 to result
+	*m_ctl |= 0x03;
+	//Enable multiplier.
+	enableMultiplyOperation(m_clken);
+	lCumulativeMultiplierOutput = *m_data_out;
+	if( lCumulativeMultiplierOutput != 0 )
+	{
+		lErrorCount++;
+	}
+
+	/*---------------------------------------------------------------------------------------------------------------------------------*/
+	//To test 16 bit multiplication (2 16-bit multipliers will be there)
+	//1. Basic multiplication which does not need more than 4 bit accumulator. For ex 2*3 = 6 which can be represented in 4 bits.
+	mlt_type = 1;	//Set mode to 16 bit multiplier mode.
+	lOperandData = 0x001A0003;			//2 multiplications will happen. 1*0, 1*1
+	lCoefficientData = 0x00230004;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<2; i++ )
+		{
+			lPattern = (0x0000FFFF << ( i*16 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*16 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*16 ) ) );
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 16 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//2. Basic multiplication which needs more than 16 bit accumulator, but with saturation bit enabled
+	lOperandData = 0x8CA08CA0;			//4 multiplications will happen. 10*29, 10*28, 10*27, 10*26
+	lCoefficientData = 0x00030002;
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x00040000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<2; i++ )
+		{
+			lPattern = (0x0000FFFF << ( i*16 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*16 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*16 ) ) );
+			if( lExpectedData > 0xFFFF )
+				lExpectedData = 0xFFFF;		//Since we are testing the multiplier with saturation bit enabled, we also limit the output of our multiplication operation.
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 16 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//3. Basic multiplication which needs more than 16 bit accumulator, but with saturation bit disabled
+	lOperandData = 0xFFFF8CA0;			//2 multiplications will happen. 36000*2, 65535*65535
+	lCoefficientData = 0xFFFF000F;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			//Disable saturation bit.
+			*m_ctl = (uint32_t)(0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			//Disable saturation bit.
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+
+		//Select outsel to give the next higher 4 bits of the accumulator.
+		*m_ctl |= 0x10;	//16
+		lHigherOrderCumulativeMultiplierOutput = *m_data_out;
+
+		//check all multiplier outputs
+		for(i=0; i<2; i++ )
+		{
+			lPattern = (0x0000FFFF << ( i*16 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*16 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*16 ) ) );
+			lIndividualMultiplierOutput = ( ( lHigherOrderCumulativeMultiplierOutput & lPattern ) >> ( i * 16 ));
+			lIndividualMultiplierOutput <<= 16;
+			lIndividualMultiplierOutput |= ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 16 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//4. "Do not Accumulate result" test
+	mlt_type = 1;	//Set mode to 16 bit multiplier mode.
+	lOperandData = 0x00010001;			//2 multiplications will happen. 1*4, 1*3
+	lCoefficientData = 0x00030004;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+
+		for(lCount=0; lCount<3; lCount++)
+		{
+			*m_ctl |= (1 << 17);
+			//Enable multiplier.
+			enableMultiplyOperation(m_clken);
+			lCumulativeMultiplierOutput = *m_data_out;
+			//check all multiplier outputs
+			for(i=0; i<2; i++ )
+			{
+				lPattern = (0x0000FFFF << ( i*16 ) );
+				lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*16 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*16 ) ) );
+				lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 16 ));
+				if( lExpectedData != (lIndividualMultiplierOutput) )
+				{
+					lErrorCount++;
+				}
+				lPattern = 0;
+			}
+		}
+	}
+
+	//5. Round bit
+	//A = 2, B = 3, OUT_SEL = 2 (0010 will be added to the output), RND_BIT = 1
+	//MULTIPLY
+	//2*3 = 6 + 0010 (2) = 8. (0000 1000)
+	//MAC_OUT = 2 will be given, since OUT_SEL [17:2] is selected (0010)  - - This is the case as OUT_SEL = 2
+
+	mlt_type = 1;	//Set mode to 16 bit multiplier mode.
+	lOperandData = 0x00000002;
+	lCoefficientData = 0x00000003;
+
+	*m_ctl = 0x80000000;	//Reset accumulator
+	*m_ctl = 0x0;
+
+	*m_odata = lOperandData;
+	*m_cdata = lCoefficientData;
+	*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+	*m_ctl |= (1 << 16);
+	//Select outsel to add 40'b0000_0000_0000_0000_0000_0000_0000_0000_0000_0010 to result
+	*m_ctl |= 0x02;
+	if (*m_data_out != 0x0)
+		lErrorCount ++;
+	//Enable multiplier.
+	enableMultiplyOperation(m_clken);
+	lCumulativeMultiplierOutput = *m_data_out;
+	if( lCumulativeMultiplierOutput != 2 )
+	{
+		lErrorCount++;
+	}
+
+	//A = 0, B = 0, OUT_SEL = 3 (0100 will be added to the output), RND_BIT = 1
+	//MULTIPLY
+	//0*0 = 0 + 0100 (4) = 4. (0000 0100)
+	//MAC_OUT = 0 will be given, since OUT_SEL = 3, [18:3] is selected (0000)  - - This is the case as OUT_SEL = 3
+
+	mlt_type = 1;	//Set mode to 16 bit multiplier mode.
+	lOperandData = 0x00000000;
+	lCoefficientData = 0x00000000;
+
+	*m_ctl = 0x80000000;	//Reset accumulator
+	*m_ctl = 0x0;
+
+	*m_odata = lOperandData;
+	*m_cdata = lCoefficientData;
+	*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+	*m_ctl |= (1 << 16);
+	//Select outsel to add 40'b0000_0000_0000_0000_0000_0000_0000_0000_0000_0100 to result
+	*m_ctl |= 0x03;
+	//Enable multiplier.
+	enableMultiplyOperation(m_clken);
+	lCumulativeMultiplierOutput = *m_data_out;
+	if( lCumulativeMultiplierOutput != 0 )
+	{
+		lErrorCount++;
+	}
+
+	/*---------------------------------------------------------------------------------------------------------------------------------*/
+	//To test 32 bit multiplication (1 32-bit multipliers will be there)
+	//1. Basic multiplication which does not need more than 32 bit accumulator. For ex 2*3 = 6 which can be represented in 4 bits.
+	mlt_type = 0;	//Set mode to 32 bit multiplier mode.
+	lOperandData = 0x1A001A00;			//1 multiplications will happen.
+	lCoefficientData = 0x00000002;
+
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			*m_ctl = (0x00000000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<1; i++ )
+		{
+			lPattern = (0xFFFFFFFF << ( i*32 ) );
+			lExpectedData = ( ( ( lOperandData & lPattern ) >> ( i*32 ) ) * ( ( lCoefficientData & lPattern ) >> ( i*32 ) ) );
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 32 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	//2. Basic multiplication which needs more than 32 bit accumulator, but with saturation bit enabled
+	lOperandData = 0xFFFFFFFE;			//1 multiplications will happen. 0xFFFFFFFE * 2
+	lCoefficientData = 0x00000002;
+	for(lOperandSource = 0; lOperandSource < 2; lOperandSource++)
+	{
+		*m_ctl = 0x80000000;	//Reset accumulator
+		*m_ctl = 0x0;
+		if( lOperandSource == 0 )	//Select the operand source as efpga register.
+		{
+			*m_odata = lOperandData;
+			*m_cdata = lCoefficientData;
+			ram_addr1->w[0] = 0x0;
+			ram_addr2->w[0] = 0x0;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x00040000 | ((mlt_type & 0x3) << 12));
+		}
+		else if( lOperandSource == 1 )	//Select the operand source as efpga RAM.
+		{
+			*m_odata = 0x0;
+			*m_cdata = 0x0;
+			ram_addr1->w[0] = lOperandData;
+			ram_addr2->w[0] = lCoefficientData;
+			//Enable saturation bit.
+			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
+		}
+		if (*m_data_out != 0x0)
+			lErrorCount ++;
+		//Enable multiplier.
+		enableMultiplyOperation(m_clken);
+		lCumulativeMultiplierOutput = *m_data_out;
+		//check all multiplier outputs
+		for(i=0; i<1; i++ )
+		{
+			lPattern = (0xFFFFFFFF << ( i*32 ) );
+
+			lExpectedData = 0xFFFFFFFF;		//Since we are testing the multiplier with saturation bit enabled, we also limit the output of our multiplication operation.
+			lIndividualMultiplierOutput = ( ( lCumulativeMultiplierOutput & lPattern ) >> ( i * 32 ));
+			if( lExpectedData != (lIndividualMultiplierOutput) )
+			{
+				lErrorCount++;
+			}
+			lPattern = 0;
+		}
+	}
+
+	return lErrorCount;
+}
+
+static void mathUnit0Multiplier0_test(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	uint32_t lSts = 0;
+	lSts = mathUnitMultiplierTest(MATH_UNIT0_MULTIPLIER_0);
+	if( lSts == 0 )
+		dbg_str("<<PASSED>>\r\n");
+	else
+		dbg_str("<<FAILED>>\r\n");
+}
+
+static void mathUnit0Multiplier1_test(const struct cli_cmd_entry *pEntry)
+{
+
+	(void)pEntry;
+	uint32_t lSts = 0;
+	lSts = mathUnitMultiplierTest(MATH_UNIT0_MULTIPLIER_1);
+	if( lSts == 0 )
+		dbg_str("<<PASSED>>\r\n");
+	else
+		dbg_str("<<FAILED>>\r\n");
+
+}
+
+static void mathUnit1Multiplier0_test(const struct cli_cmd_entry *pEntry)
+{
+
+	(void)pEntry;
+	uint32_t lSts = 0;
+	lSts = mathUnitMultiplierTest(MATH_UNIT1_MULTIPLIER_0);
+	if( lSts == 0 )
+		dbg_str("<<PASSED>>\r\n");
+	else
+		dbg_str("<<FAILED>>\r\n");
+
+}
+
+static void mathUnit1Multiplier1_test(const struct cli_cmd_entry *pEntry)
+{
+
+	(void)pEntry;
+	uint32_t lSts = 0;
+	lSts = mathUnitMultiplierTest(MATH_UNIT1_MULTIPLIER_1);
+	if( lSts == 0 )
+		dbg_str("<<PASSED>>\r\n");
+	else
+		dbg_str("<<FAILED>>\r\n");
+
+}
+
 static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 {
 
