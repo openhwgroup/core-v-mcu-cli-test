@@ -7,7 +7,7 @@ args = sys.argv
 JsonFolder = []
 
 def autorun(length=length, Reg_Prog=sys.argv[1], console=sys.argv[2], uart=sys.argv[3], Type=sys.argv[4], args=args):
-    arnold = '/home/qlblue/NightlyBuild/arnold2/'
+    arnold = os.path.expanduser("~/NightlyBuild/arnold2/")
     test = arnold + 'core-v-mcu-cli-test/autotest/'
     outputs = test + 'TestOutputs/'
 
@@ -25,7 +25,7 @@ def autorun(length=length, Reg_Prog=sys.argv[1], console=sys.argv[2], uart=sys.a
         for json in JsonFolder:
             os.chdir(test) # location of Test.py
             name= json[0:-5]
-            command = 'python3 Test.py --console /dev/ttyUSB3' + ' --uart1 /dev/ttyUSB0' + ' --test ' + json + ' >& ' + outlog + name + '.log --jloc ' + Reg_Prog 
+            command = 'python3 Test.py --console ' + console + ' --uart1 ' + uart + ' --test ' + json + ' >& ' + outlog + name + '.log --jloc ' + Reg_Prog 
             process = subprocess.call(command, shell=True)
     
     # run only the specified apps
@@ -33,7 +33,7 @@ def autorun(length=length, Reg_Prog=sys.argv[1], console=sys.argv[2], uart=sys.a
         i = 5
         while i < length:
             os.chdir(test)
-            command = 'python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test ' + args[i] + '.json >& ' + outlog + args[i] + '.log --jloc ' + Reg_Prog
+            command = 'python3 Test.py --console ' + console + ' --uart1 ' + uart + ' --test ' + args[i] + '.json >& ' + outlog + args[i] + '.log --jloc ' + Reg_Prog
             process = subprocess.call(command, shell=True)
             i += 1
 
@@ -47,7 +47,7 @@ def autorun(length=length, Reg_Prog=sys.argv[1], console=sys.argv[2], uart=sys.a
             i += 1
         for json in JsonFolder:
             os.chdir(test) # location of Test.py
-            command = 'python3 Test.py --console /dev/ttyUSB3 --uart1 /dev/ttyUSB0 --test ' + json + ' >& ' + outlog + json[0:-5] + '.log --jloc ' + Reg_Prog
+            command = 'python3 Test.py --console ' + console + ' --uart1 ' + uart + ' --test ' + json + ' >& ' + outlog + json[0:-5] + '.log --jloc ' + Reg_Prog
             process = subprocess.call(command, shell=True)
 
 

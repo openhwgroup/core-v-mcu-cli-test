@@ -32,7 +32,7 @@ args = parser.parse_args()
 fail_count = 0
 pass_count = 0
 no_status_count = 0
-Json = '/home/qlblue/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/'
+Json = os.path.expanduser("~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/")
 with serial.Serial(args.console, 115200) as console:
     print("Opened console(" + args.console + ")")
     with serial.Serial(args.uart1, 115200) as uart1:
@@ -113,6 +113,7 @@ with serial.Serial(args.console, 115200) as console:
                                 print("ERROR: Command did not return status")
                                 no_status_count = no_status_count + 1
                         elif item == '<uart1':
+                            time.sleep(0.01)
                             if uart1.in_waiting != len(command["<uart1"]):
                                 print("<<FAILED>>: uart1 length does not match")
                                 fail_count = fail_count + 1
