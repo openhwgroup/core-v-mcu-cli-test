@@ -2,6 +2,10 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+typedef union {
+	uint32_t w;
+	uint8_t b[4];
+} split_4Byte_t ;
 
 int main(int argc, char *argv[])
 {
@@ -16,7 +20,7 @@ int main(int argc, char *argv[])
     long int lBinFileSize = 0;
     long int lReadByteCount = 0;
     uint8_t lData = 0;
-    uint32_t i = 0;
+    uint32_t i = 0, j=0;
 
     uint32_t lCol0FileStartOffset = 0;
     uint32_t lCol1FileStartOffset = 0;
@@ -28,6 +32,9 @@ int main(int argc, char *argv[])
     uint32_t lCol2FileEndOffset = 0;
     uint32_t lCol3FileEndOffset = 0;
 
+    split_4Byte_t l4ByteData;
+
+    l4ByteData.w = 0;
     if(argc < 2 )
     {
         printf("Usage: bin2ilram <input.bin>\n");
@@ -63,37 +70,34 @@ int main(int argc, char *argv[])
             lCol2FileEndOffset = lBinFileSize - 8;
             lCol3FileEndOffset = lBinFileSize - 4;
 
-            for(i=0; i<32768; i++)
-            {
-                fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
-                lReadByteCount++;
-                fprintf(lPrivateBank0FileWritePtr, "%02X",lData);
-                if( i )
-                {
-                    if( ( i % 4 ) == 3 )
-                    {
-                        fprintf(lPrivateBank0FileWritePtr, "\n");
-                        fflush(lPrivateBank0FileWritePtr);
-                    }
-                }
+            for(i=0; i<(2048/4); i++)
+                fprintf(lPrivateBank0FileWritePtr,"00000000\n");
 
+            for(i=0; i<(32768-2048);)
+            {
+                for(j=0; j< 4; j++ )
+                {
+                    fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
+                    lReadByteCount++;
+                    l4ByteData.b[j] = lData;
+                }
+                i+=4;
+                fprintf(lPrivateBank0FileWritePtr, "%08X\n",l4ByteData.w);
+                fflush(lPrivateBank0FileWritePtr);
             }
 
             fseek(lBinFileReadPtr, 32768, SEEK_SET); //
-            for(i=0; i<32768; i++)
+            for(i=0; i<32768; )
             {
-                fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
-                lReadByteCount++;
-                fprintf(lPrivateBank1FileWritePtr, "%02X",lData);
-                if( i )
+                for(j=0; j< 4; j++ )
                 {
-                    if( ( i % 4 ) == 3 )
-                    {
-                        fprintf(lPrivateBank1FileWritePtr, "\n");
-                        fflush(lPrivateBank1FileWritePtr);
-                    }
+                    fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
+                    lReadByteCount++;
+                    l4ByteData.b[j] = lData;
                 }
-
+                i+= 4;
+                fprintf(lPrivateBank1FileWritePtr, "%08X\n",l4ByteData.w);
+                fflush(lPrivateBank1FileWritePtr);
             }
 
             while( lCol0FileStartOffset <= lCol0FileEndOffset )
@@ -103,9 +107,9 @@ int main(int argc, char *argv[])
                 {
                     fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
                     lReadByteCount++;
-                    fprintf(lCol0FileWritePtr, "%02X",lData);
+                    l4ByteData.b[i] = lData;
                 }
-                fprintf(lCol0FileWritePtr, "\n");
+                fprintf(lCol0FileWritePtr, "%08X\n",l4ByteData.w);
                 fflush(lCol0FileWritePtr);
 
                 lCol0FileStartOffset += 16;
@@ -118,9 +122,9 @@ int main(int argc, char *argv[])
                 {
                     fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
                     lReadByteCount++;
-                    fprintf(lCol1FileWritePtr, "%02X",lData);
+                    l4ByteData.b[i] = lData;
                 }
-                fprintf(lCol1FileWritePtr, "\n");
+                fprintf(lCol1FileWritePtr, "%08X\n",l4ByteData.w);
                 fflush(lCol1FileWritePtr);
 
                 lCol1FileStartOffset += 16;
@@ -133,9 +137,9 @@ int main(int argc, char *argv[])
                 {
                     fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
                     lReadByteCount++;
-                    fprintf(lCol2FileWritePtr, "%02X",lData);
+                    l4ByteData.b[i] = lData;
                 }
-                fprintf(lCol2FileWritePtr, "\n");
+                fprintf(lCol2FileWritePtr, "%08X\n",l4ByteData.w);
                 fflush(lCol2FileWritePtr);
 
                 lCol2FileStartOffset += 16;
@@ -149,9 +153,9 @@ int main(int argc, char *argv[])
                 {
                     fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
                     lReadByteCount++;
-                    fprintf(lCol3FileWritePtr, "%02X",lData);
+                    l4ByteData.b[i] = lData;
                 }
-                fprintf(lCol3FileWritePtr, "\n");
+                fprintf(lCol3FileWritePtr, "%08X\n",l4ByteData.w);
                 fflush(lCol3FileWritePtr);
 
                 lCol3FileStartOffset += 16;
@@ -176,3 +180,4 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
