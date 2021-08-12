@@ -60,10 +60,10 @@ int main(int argc, char *argv[])
             fseek(lBinFileReadPtr, 0, SEEK_SET); // seek back to beginning of file
             printf("File [%s] is of %ld bytes\n",argv[1], lBinFileSize);
 
-            lCol0FileStartOffset = 0x00010000 + 0;
-            lCol1FileStartOffset = 0x00010000 + 4;
-            lCol2FileStartOffset = 0x00010000 + 8;
-            lCol3FileStartOffset = 0x00010000 + 12;
+            lCol0FileStartOffset = 0x0000F800 + 0;
+            lCol1FileStartOffset = 0x0000F800 + 4;
+            lCol2FileStartOffset = 0x0000F800 + 8;
+            lCol3FileStartOffset = 0x0000F800 + 12;
 
             lCol0FileEndOffset = lBinFileSize - 16;
             lCol1FileEndOffset = lBinFileSize - 12;
@@ -86,7 +86,7 @@ int main(int argc, char *argv[])
                 fflush(lPrivateBank0FileWritePtr);
             }
 
-            fseek(lBinFileReadPtr, 32768, SEEK_SET); //
+            fseek(lBinFileReadPtr, (32768-2048), SEEK_SET); //
             for(i=0; i<32768; )
             {
                 for(j=0; j< 4; j++ )
