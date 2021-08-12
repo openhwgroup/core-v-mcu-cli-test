@@ -1,0 +1,6 @@
+# depslib dependency file v1.0
+1628710620 source:/home/somesh/codeBlocksWkSpace/InterleavedRAMFileGen/main.c
+	<stdio.h>
+	<stdlib.h>
+	<stdint.h>
+

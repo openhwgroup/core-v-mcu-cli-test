@@ -1,0 +1,5 @@
+# depslib dependency file v1.0
+1628525912 source:/home/somesh/codeBlocksWkSpace/bin2txt/main.c
+	<stdio.h>
+	<stdlib.h>
+
