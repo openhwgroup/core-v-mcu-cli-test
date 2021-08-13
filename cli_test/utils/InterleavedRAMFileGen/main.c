@@ -44,12 +44,12 @@ int main(int argc, char *argv[])
         printf("Converting %s.\n", argv[1]);
 
         lBinFileReadPtr = fopen(argv[1],"rb");  // r for read, b for binary
-        lPrivateBank0FileWritePtr = fopen ("privateBank0.mem","w");
-        lPrivateBank1FileWritePtr = fopen ("privateBank1.mem","w");
-        lCol0FileWritePtr = fopen ("col0.mem","w");
-        lCol1FileWritePtr = fopen ("col1.mem","w");
-        lCol2FileWritePtr = fopen ("col2.mem","w");
-        lCol3FileWritePtr = fopen ("col3.mem","w");
+        lPrivateBank0FileWritePtr = fopen ("../../../memoryInitFiles/privateBank0.mem","w");
+        lPrivateBank1FileWritePtr = fopen ("../../../memoryInitFiles/privateBank1.mem","w");
+        lCol0FileWritePtr = fopen ("../../../memoryInitFiles/col0.mem","w");
+        lCol1FileWritePtr = fopen ("../../../memoryInitFiles/col1.mem","w");
+        lCol2FileWritePtr = fopen ("../../../memoryInitFiles/col2.mem","w");
+        lCol3FileWritePtr = fopen ("../../../memoryInitFiles/col3.mem","w");
 
         if(  ( lBinFileReadPtr ) && ( lPrivateBank0FileWritePtr ) && ( lPrivateBank1FileWritePtr ) && ( lCol0FileWritePtr )
             && (lCol1FileWritePtr ) && (lCol2FileWritePtr) && (lCol3FileWritePtr)
