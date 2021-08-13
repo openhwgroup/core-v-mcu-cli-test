@@ -8,9 +8,9 @@ echo "Done."
 echo "Generating interleaved RAM initalization files for simulation testing"
 cd ../utils/InterleavedRAMFileGen/bin/Debug
 ./InterleavedRAMFileGen ../../../../Default/cli_test.bin
-echo "Done."
+echo "Done. Generated files are in cli_test/utils/memoryInitFiles"
 
 echo "Generating memory initialization file for simulated flash model"
 cd ../../../bin2txt/bin/Debug
-./bin2txt ../../../../Default/cli_sim.bin cli_sim.txt
-echo "Done."
+./bin2txt ../../../../Default/cli_sim.bin
+echo "Done. Generated file is in cli_test/utils/memoryInitFiles"

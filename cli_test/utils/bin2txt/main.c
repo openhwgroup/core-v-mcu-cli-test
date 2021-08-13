@@ -10,16 +10,16 @@ int main(int argc, char *argv[])
     long int lBinFileSize = 0;
     uint8_t lData = 0;
 
-    if(argc < 2 )
+    if(argc < 1 )
     {
-        printf("Usage: bin2txt <input.bin> <output.txt>\n");
+        printf("Usage: bin2txt <input.bin>\n");
     }
     else
     {
         printf("Converting %s to %s file.\n", argv[1], argv[2]);
 
         lBinFileReadPtr = fopen(argv[1],"rb");  // r for read, b for binary
-        lTxtFileWritePtr = fopen (argv[2],"w");
+        lTxtFileWritePtr = fopen ("../../../memoryInitFiles/cli_sim.txt","w");
 
         if(  ( lBinFileReadPtr ) && ( lTxtFileWritePtr ) )
         {
