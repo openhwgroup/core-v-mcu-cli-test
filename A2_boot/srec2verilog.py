@@ -28,7 +28,7 @@ def main (argv) :
         sys.exit(2)
     sys.stdout = outfile
     element = int(0);
-    print ("module fpga_bootrom")
+    print ("module a2_bootrom")
     print(" #(")
     print(" parameter ADDR_WIDTH=32,")
     print(" parameter DATA_WIDTH=32")

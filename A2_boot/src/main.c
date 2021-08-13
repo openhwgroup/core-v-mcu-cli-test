@@ -160,6 +160,7 @@ int main(void)
  //TODO: FLL clock settings need to be taken care in the actual chip.
  //TODO: 5000000 to be changed to #define PERIPHERAL_CLOCK_FREQ_IN_HZ
  volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;
+ bootsel = *(volatile int*)0x1c010000;
  bootsel = psoc->bootsel & 0x1;
 
  udma_uart_open (id,115200);
