@@ -34,12 +34,109 @@
 #include "SDKConfig.h"
 #include <setjmp.h>
 #include "libs/utils/include/dbg_uart.h"
-
+#include "string.h"
 /* These are PLATFORM specific functions that the CLI code requires */
 
 struct cli CLI_common;
 extern const char *SOFTWARE_VERSION_STR;
+void CLI_dispatch(void);
+extern uint8_t gSimulatorEnabledFlg;
+uint8_t gSimulatorCmdTableIndex = 0;
 
+const char *gSimulatorCmdTable[] = {
+		"exit",
+		"misc info",
+		"i2cs on",
+		"advtmr all",
+		"efpga tcdm",
+		"efpga tcdm_st",
+		"efpga math0mult0",
+		"efpga math0mult1",
+		"efpga math1mult0",
+		"efpga math1mult1",
+		"efpga ram",
+		"efpga mlt",
+		"efpga rw",
+		"efpga auto",
+		"efpgaio all",
+		"fcb pgm",
+		"gpio event",
+		"gpio evnt",
+		"gpio all",
+		"io setmux 23 2",
+		"io setmux 24 2",
+		"i2cm0 writebyte 0xDE 0x10 0x3D",
+		"i2cm0 readbyte 0xDE 0x10 0xFF",
+		"i2cm0 writebyte 0xC4 0x10 0x5C",
+		"i2cm0 readbyte 0xC4 0x10 0xFF",
+		"io setmux 23 0",
+		"io setmux 24 0",
+		"i2cm0 writebyte 0xDE 0x10 0x5C",
+		"i2cm0 readbyte 0xDE 0x10 0x5C",
+		"i2cm0 testsinglebyte 0xDE 0x10",
+		"i2cm0 writebyte 0xC4 0x10 0x5C",
+		"i2cm0 readbyte 0xC4 0x10 0x5C",
+		"i2cm0 testsinglebyte 0xC4 0x10",
+		"io setmux 46 2",
+		"io setmux 47 2",
+		"i2cm1 readbyte 0x96 0x0B 0xFF",
+		"io setmux 46 0",
+		"io setmux 47 0",
+		"i2cm1 temp",
+		"i2cm1 dev_id",
+		"io setmux 11 2",
+		"mem start",
+		"mem test check",
+		"mem test barr",
+		"qspi flashid",
+		"qspi erase 0x00100000",
+		"qspi init",
+		"qspi flash_qpoke 0x00100000 0x01234567",
+		"qspi flash_qpeek 0x00100000 0x01234567",
+		"qspi flash_qpoke 0x00100004 0x89ABCDEF",
+		"qspi flash_qpeek 0x00100004 0x89ABCDEF",
+		"qspi flash_qpoke 0x00100008 0xDEADCAFE",
+		"qspi flash_qpeek 0x00100008 0xDEADCAFE",
+		"qspi flash_qpoke 0x0010000C 0xDEADBEEF",
+		"qspi flash_qpeek 0x0010000C 0xDEADBEEF",
+		"qspi flash_qpoke 0x00100010 0xAAAAAAAA",
+		"qspi flash_qpeek 0x00100010 0xAAAAAAAA",
+		"qspi flash_qpoke 0x00100014 0x55555555",
+		"qspi flash_qpeek 0x00100014 0x55555555",
+		"qspi reset",
+		"qspi erase 0x00100000",
+		"qspi flash_poke 0x00100000 0x01000000",
+		"qspi flash_peek 0x00100000 0x01000000",
+		"qspi flash_poke 0x00100004 0x02000000",
+		"qspi flash_peek 0x00100004 0x02000000",
+		"qspi flash_poke 0x00100008 0x04000000",
+		"qspi flash_peek 0x00100008 0x04000000",
+		"qspi flash_poke 0x0010000C 0x08000000",
+		"qspi flash_peek 0x0010000C 0x08000000",
+		"qspi flash_poke 0x00100010 0x10000000",
+		"qspi flash_peek 0x00100010 0x10000000",
+		"qspi flash_poke 0x00100014 0x20000000",
+		"qspi flash_peek 0x00100014 0x20000000",
+		"intr all",
+		"i2cs i2c2apbmsg",
+		"i2cs apb2i2cmsg",
+		"i2cs i2c2apbfifo",
+		"i2cs apb2i2cfifo",
+		"i2cs i2c2apbfifowm",
+		"i2cs apb2i2cfifowm",
+		"i2cs i2c2apbflush",
+		"i2cs apb2i2cflush",
+		"uart1 tx abcdefghijklmnopqrstuvwxyz",
+		"uart1 tx `~!@#$%^&*()_-=+",
+		"uart1 tx []{};':",
+		"uart1 tx <>,.?",
+		"uart1 tx 0123456789",
+		"uart1 tx hello",
+		"uart1 tx hello.this.is.a.test.",
+		"efpga tcdm_status",
+		"efpga tcdm_sp",
+		NULL
+};
 #ifdef DISABLE_UART_PRINTS
 #define uart_tx(x,y)		do{}while(0);
 #else
@@ -130,11 +227,38 @@ void CLI_task( void *pParameter )
     CLI_printf("#*******************\n");
     CLI_print_prompt();
     for(;;){
-        k = CLI_getkey( 10*1000 );
-        if( k == EOF ){
-            continue;
-        }
-        CLI_rx_byte( k );
+    	if( gSimulatorEnabledFlg == 0 )
+    	{
+			k = CLI_getkey( 10*1000 );
+			if( k == EOF ){
+				continue;
+			}
+			CLI_rx_byte( k );
+    	}
+    	else
+    	{
+    		if( gSimulatorCmdTable[gSimulatorCmdTableIndex] != NULL )
+    		{
+    			memcpy( (void *)(&CLI_common.cmdline[0]), gSimulatorCmdTable[gSimulatorCmdTableIndex], strlen(gSimulatorCmdTable[gSimulatorCmdTableIndex]) );
+    			CLI_dispatch();
+				/*
+				 * NOTE: Above dispatch() call might not return!
+				 * If an error occurs, the long jump will occur.
+				 */
+    			/* clean up from last */
+				memset( (void *)(&CLI_common.cmdline[0]), 0, sizeof(CLI_common.cmdline) );
+    			gSimulatorCmdTableIndex++;
+    		}
+    		else
+    		{
+    			gSimulatorEnabledFlg = 0;
+    			CLI_cmd_stack_clear();
+				memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );
+				CLI_printf("Simul Done\n");
+				CLI_print_prompt();
+    		}
+    	}
+
     }
 }
 

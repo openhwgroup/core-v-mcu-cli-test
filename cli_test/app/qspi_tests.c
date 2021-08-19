@@ -264,7 +264,7 @@ char*  pzArg = NULL;
 				if (type != 'z')
 					udma_uart_writeraw(1,1,&lChar);
 			}
-			dbg_str_hex32("\r\nReceived Bytes",count);
+			CLI_printf("Received Bytes 0x%08x\n",count);
 	}
 }
 
@@ -562,11 +562,11 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 	{
 		if( xValue.w == lExpVal.w )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			CLI_printf("peek 0x%08x <<PASSED>>\n",lAddress);
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			CLI_printf("peek 0x%08x <<FAILED>>\n",lAddress);
 		}
 	}
 	else
@@ -671,16 +671,16 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 	{
 		if( xValue.w == lExpVal.w )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			CLI_printf("qpeek 0x%08x <<PASSED>>\n",lAddress);
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			CLI_printf("qpeek 0x%08x <<FAILED>>\n",lAddress);
 		}
 	}
 	else
 	{
-		dbg_str("<<DONE>>\r\n");
+		dbg_str("qpeek <<DONE>>\r\n");
 	}
 
 	//Restore pin muxes
@@ -728,7 +728,7 @@ static void flash_quad_poke(const struct cli_cmd_entry *pEntry)
 	//flashWrite_Micron(lAddress, &xValue.b[0], 4);
 	flashQuadInputFastProgram_Micron(lAddress, &xValue.b[0], 4);
 	//flashQuadInputFastProgram_Micron(0, gBuf, 32);
-	dbg_str("<<DONE>>\r\n");
+	dbg_str("qpoke <<DONE>>\r\n");
 
 	//Restore pin muxes
 	for(i=0; i<8; i++ )

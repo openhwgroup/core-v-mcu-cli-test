@@ -35,6 +35,8 @@
 #include "barrMemTest.h"
 
 extern uint8_t gDebugEnabledFlg;
+extern uint8_t gSimulatorEnabledFlg;
+extern uint8_t gSimulatorCmdTableIndex;
 
 extern const struct cli_cmd_entry io_functions[];
 extern const struct cli_cmd_entry intr_functions[];
@@ -53,6 +55,7 @@ extern const struct cli_cmd_entry cam_tests[];
 // MISC functions
 static void misc_info(const struct cli_cmd_entry *pEntry);
 static void debug_on_off(const struct cli_cmd_entry *pEntry);
+static void simulator_on_off(const struct cli_cmd_entry *pEntry);
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry);
 
@@ -73,6 +76,7 @@ const struct cli_cmd_entry misc_functions[] =
 {
 		CLI_CMD_SIMPLE( "info", misc_info, "print build info" ),
 		CLI_CMD_SIMPLE( "dbg", debug_on_off, "debug prints on / off" ),
+		CLI_CMD_SIMPLE( "simul", simulator_on_off, "debug prints on / off" ),
 		CLI_CMD_TERMINATE()
 };
 
@@ -164,8 +168,8 @@ static void misc_info(const struct cli_cmd_entry *pEntry)
 	pzTemp[14] += (char)((xval >> 12) & 0xFU);
 	pzTemp[15] += (char)((xval >>  8) & 0xFU);
 
-	dbg_str_str("build_info", pzTemp);
-	dbg_str("<<PASSED>>");
+	CLI_printf("HW build_info %s\n", pzTemp);
+	dbg_str("<<DONE>>\r\n");
 }
 
 static void debug_on_off(const struct cli_cmd_entry *pEntry)
@@ -174,9 +178,24 @@ static void debug_on_off(const struct cli_cmd_entry *pEntry)
 	// Add functionality here
 	uint32_t	lDbgStatus = 0;
 
-	CLI_uint32_required( "debug flag", &lDbgStatus );
+	CLI_uint8_required( "debug flag", &lDbgStatus );
 	gDebugEnabledFlg = lDbgStatus;
-	dbg_str("<<PASSED>>");
+	dbg_str("<<DONE>>\r\n");
+}
+
+static void simulator_on_off(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint32_t	lSimulatorStatus = 0;
+
+	CLI_uint8_required("Simul flag", &lSimulatorStatus );
+	gSimulatorEnabledFlg = lSimulatorStatus;
+	if( lSimulatorStatus == 1 )
+		gSimulatorCmdTableIndex = 0;
+	CLI_cmd_stack_clear();
+	memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );
+	dbg_str("<<DONE>>\r\n");
 }
 
 // UART functions
@@ -193,7 +212,7 @@ static void uart1_tx(const struct cli_cmd_entry *pEntry)
 		udma_uart_writeraw(1, strlen(pzArg), pzArg);
 	}
 	udma_uart_writeraw(1, 2, "\r\n");
-	dbg_str("<<DONE>>");
+	dbg_str("<<DONE>>\r\n");
 	return;
 }
 
@@ -203,8 +222,8 @@ static void mem_print_start(const struct cli_cmd_entry *pEntry)
 	(void)pEntry;
 	// Add functionality here
 	extern char __l2_shared_end;
-	dbg_str_hex32("l2_shared_end", (uint32_t)(&__l2_shared_end));
-	dbg_str("<<DONE>>");
+	CLI_printf("l2_shared_end 0x%08x\n", (uint32_t)(&__l2_shared_end));
+	dbg_str("<<DONE>>\r\n");
 }
 
 static void mem_check(const struct cli_cmd_entry *pEntry)
@@ -222,16 +241,16 @@ static void mem_check(const struct cli_cmd_entry *pEntry)
 
 	for (pl = (uint32_t*)(&__l2_shared_end); (uint32_t)pl < 0x1c080000; pl++) {
 		if (*pl != (uint32_t)pl) {
-			dbg_str_hex32("mem check fail at", (uint32_t)pl);
-			dbg_str_hex32("read back        ", *pl);
+			CLI_printf("mem check fail at 0x%08x\n", (uint32_t)pl);
+			CLI_printf("read back        0x%08x\n", *pl);
 			fPassed = false;
 			break;
 		}
 	}
 	if (fPassed) {
-		dbg_str("<<PASSED>>");
+		dbg_str("mem check <<PASSED>>\r\n");
 	} else {
-		dbg_str("<<FAILED>>");
+		dbg_str("mem check <<FAILED>>\r\n");
 	}
 }
 
@@ -240,11 +259,11 @@ static void barr_mem_check(const struct cli_cmd_entry *pEntry)
 	(void)pEntry;
 	if( memTest() == 0 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("BARR <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("BARR <<FAILED>>\r\n");
 	}
 }
 static void mem_peek(const struct cli_cmd_entry *pEntry)
@@ -266,23 +285,23 @@ static void mem_peek(const struct cli_cmd_entry *pEntry)
 
 	pAddr = (uint32_t*)lAddress;
 	xValue = *pAddr;
-	dbg_str_hex32("value", xValue);
+	CLI_printf("value 0x%08x\n", xValue);
 
 
 	if( lExpValTrueOrFalse )
 	{
 		if( xValue == lExpVal )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			CLI_printf("mem peek 0x%08x <<PASSED>>\n",lAddress);
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			CLI_printf("mem peek 0x%08x <<FAILED>>\n",lAddress);
 		}
 	}
 	else
 	{
-		dbg_str("<<DONE>>\r\n");
+		dbg_str("<<mem peek DONE>>\r\n");
 	}
 
 }
@@ -300,7 +319,7 @@ static void mem_poke(const struct cli_cmd_entry *pEntry)
 	pAddr = (uint32_t*)lAddress;
 
 	*pAddr = xValue;
-	dbg_str("<<DONE>>\r\n");
+	dbg_str("mem poke <<DONE>>\r\n");
 
 }
 
@@ -318,22 +337,22 @@ static void mem_peek_16(const struct cli_cmd_entry *pEntry)
 		CLI_uint16_required("exp", &lExpVal);
 	}
 	xValue = *pAddr;
-	dbg_str_hex16("value", xValue);
+	CLI_printf("value 0x%04x\n", xValue);
 
 	if( lExpValTrueOrFalse )
 	{
 		if( xValue == lExpVal )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			CLI_printf("mem peek 16 0x%08x <<PASSED>>\n",pAddr);
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			CLI_printf("mem peek 16 0x%08x <<FAILED>>\n",pAddr);
 		}
 	}
 	else
 	{
-		dbg_str("<<DONE>>");
+		dbg_str("mem peek 16 <<DONE>>\r\n");
 	}
 }
 
@@ -347,7 +366,7 @@ static void mem_poke_16(const struct cli_cmd_entry *pEntry)
 	CLI_uint32_required( "addr", &pAddr );
 	CLI_uint16_required( "value", &xValue);
 	*pAddr = xValue;
-	dbg_str("<<DONE>>");
+	dbg_str("mem poke 16 <<DONE>>\r\n");
 }
 
 static void mem_peek_8(const struct cli_cmd_entry *pEntry)
@@ -365,21 +384,21 @@ static void mem_peek_8(const struct cli_cmd_entry *pEntry)
 	}
 
 	xValue = *pAddr;
-	dbg_str_hex8("value", xValue);
+	CLI_printf("value 0x%02x\n", xValue);
 	if( lExpValTrueOrFalse )
 	{
 		if( xValue == lExpVal )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			CLI_printf("mem peek 8 0x%08x <<PASSED>>\n",pAddr);
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			CLI_printf("mem peek 8 0x%08x <<FAILED>>\n",pAddr);
 		}
 	}
 	else
 	{
-		dbg_str("<<DONE>>");
+		dbg_str("mem peek 8 <<DONE>>\r\n");
 	}
 }
 
@@ -393,5 +412,5 @@ static void mem_poke_8(const struct cli_cmd_entry *pEntry)
 	CLI_uint32_required( "addr", &pAddr );
 	CLI_uint32_required( "value", &xValue);
 	*pAddr = xValue;
-	dbg_str("<<DONE>>");
+	dbg_str("mem peek 8 <<DONE>>\r\n");
 }

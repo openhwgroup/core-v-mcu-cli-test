@@ -88,7 +88,7 @@ static void csr_mstatus_reg_read(const struct cli_cmd_entry *pEntry)
 	//hal_setpinmux(ionum, mux_sel);
 
 	RegReadVal = csr_read(CSR_MSTATUS);
-	dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+	CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -105,7 +105,7 @@ static void csr_mstatus_reg_set(const struct cli_cmd_entry *pEntry)
 
 	csr_read_set(CSR_MSTATUS, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MSTATUS);
-	dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+	CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -122,7 +122,7 @@ static void csr_mstatus_reg_clear(const struct cli_cmd_entry *pEntry)
 
 	csr_read_clear(CSR_MSTATUS, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MSTATUS);
-	dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+	CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -138,7 +138,7 @@ static void csr_mie_reg_read(const struct cli_cmd_entry *pEntry)
 
 	val = csr_read(CSR_MIE);
 
-	dbg_str_hex32("CSR_MIE", val);
+	CLI_printf("CSR_MIE 0x%08x\n", val);
 	dbg_str("<<DONE>>");
 }
 
@@ -155,7 +155,7 @@ static void csr_mie_reg_set(const struct cli_cmd_entry *pEntry)
 
 	csr_read_set(CSR_MIE, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIE);
-	dbg_str_hex32("CSR_MIE", RegReadVal);
+	CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -172,7 +172,7 @@ static void csr_mie_reg_clear(const struct cli_cmd_entry *pEntry)
 
 	csr_read_clear(CSR_MIE, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIE);
-	dbg_str_hex32("CSR_MIE", RegReadVal);
+	CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -188,7 +188,7 @@ static void csr_mip_reg_read(const struct cli_cmd_entry *pEntry)
 
 	val = csr_read(CSR_MIP);
 
-	dbg_str_hex32("CSR_MIP", val);
+	CLI_printf("CSR_MIP 0x%08x\n", val);
 	dbg_str("<<DONE>>");
 }
 
@@ -205,7 +205,7 @@ static void csr_mip_reg_set(const struct cli_cmd_entry *pEntry)
 
 	csr_read_set(CSR_MIP, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIP);
-	dbg_str_hex32("CSR_MIP", RegReadVal);
+	CLI_printf("CSR_MIP 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -222,7 +222,7 @@ static void csr_mip_reg_clear(const struct cli_cmd_entry *pEntry)
 
 	csr_read_clear(CSR_MIP, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIP);
-	dbg_str_hex32("CSR_MIP", RegReadVal);
+	CLI_printf("CSR_MIP 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -301,7 +301,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 			//enable global interrupt.
 			csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 			RegReadVal = csr_read(CSR_MSTATUS);
-			dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+			CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 			dbg_str("<<DONE>>\r\n");
 
 		}
@@ -316,7 +316,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 			//open the event interrupt mask.
 			csr_read_set(CSR_MIE, BIT(aEventNum));
 			RegReadVal = csr_read(CSR_MIE);
-			dbg_str_hex32("CSR_MIE", RegReadVal);
+			CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 			dbg_str("<<DONE>>\r\n");
 
 		}
@@ -541,7 +541,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 			//close the event interrupt mask.
 			csr_read_clear(CSR_MIE, BIT(aEventNum));
 			RegReadVal = csr_read(CSR_MIE);
-			dbg_str_hex32("CSR_MIE", RegReadVal);
+			CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 			dbg_str("<<DONE>>\r\n");
 		}
 	}

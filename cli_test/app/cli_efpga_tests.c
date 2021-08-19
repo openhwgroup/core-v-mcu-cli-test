@@ -1498,9 +1498,9 @@ static void mathUnit0Multiplier0_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT0_MULTIPLIER_0);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA0-MU0 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA0-MU0 <<FAILED>>\r\n");
 }
 
 static void mathUnit0Multiplier1_test(const struct cli_cmd_entry *pEntry)
@@ -1510,9 +1510,9 @@ static void mathUnit0Multiplier1_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT0_MULTIPLIER_1);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA0-MU1 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA0-MU1 <<FAILED>>\r\n");
 
 }
 
@@ -1523,9 +1523,9 @@ static void mathUnit1Multiplier0_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT1_MULTIPLIER_0);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA1-MU0 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA1-MU0 <<FAILED>>\r\n");
 
 }
 
@@ -1536,9 +1536,9 @@ static void mathUnit1Multiplier1_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT1_MULTIPLIER_1);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA1-MU1 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA1-MU1 <<FAILED>>\r\n");
 
 }
 

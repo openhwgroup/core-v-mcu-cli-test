@@ -299,7 +299,7 @@ void CLI_verror( const char *fmt, va_list ap )
 }
 
 
-static void CLI_dispatch(void)
+void CLI_dispatch(void)
 {
     int x;
     int old_stack;

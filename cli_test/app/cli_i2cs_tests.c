@@ -23,8 +23,7 @@
 
 static uint8_t gsI2CTxBuf[32] = {0};
 static uint8_t gsI2CRxBuf[32] = {0};
-#define MY_I2C_SLAVE_ADDRESS 		0x62
-#define MY_I2C_SLAVE_ADDRESS_7BIT 	(0x62 << 1)
+
 
 #define I2C_MASTER_REG_DEV_ADDRESS								0x00
 #define I2C_MASTER_REG_ENABLE									0x01
@@ -98,11 +97,11 @@ static void i2cs_on (const struct cli_cmd_entry *pEntry)
 	status = hal_set_apb_i2cs_slave_on_off(1);
 	if( status == 1 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("I2Cs On <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("I2Cs On <<FAILED>>\r\n");
 	}
 
 }
@@ -115,11 +114,11 @@ static void i2cs_off (const struct cli_cmd_entry *pEntry)
 	status = hal_set_apb_i2cs_slave_on_off(0);
 	if( status == 0 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("I2Cs Off <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("I2Cs Off <<FAILED>>\r\n");
 	}
 }
 
@@ -129,7 +128,7 @@ static void i2cs_readSlaveAddress (const struct cli_cmd_entry *pEntry)
 	uint8_t address = 0;
 	address = hal_get_apb_i2cs_slave_address();
 
-	dbg_str_hex8("Slave Address", address);
+	CLI_printf("Slave Address 0x%02x\n", address);
 	dbg_str("<<DONE>>\r\n");
 
 }
@@ -149,11 +148,11 @@ static void i2cs_writeSlaveAddress (const struct cli_cmd_entry *pEntry)
 	CLI_printf("Setting I2C Slave address to 0x%02x\n", address);
 	if( lReadAddress == address )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("I2Cs write slave addr <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("I2Cs write slave addr <<FAILED>>\r\n");
 	}
 }
 
@@ -193,7 +192,7 @@ static void i2cs_runI2cToApbFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 			{
 				if( gsI2CRxBuf[0] == 0x01 )
 				{
-					dbg_str("0. <<PASSED>>\r\n");
+					dbg_str("0. i2cs_runI2cToApbFIFOFlushTests <<PASSED>>\r\n");
 					//Flush I2C2APB FIFO flush from APB side.
 					hal_i2cs_fifo_i2c_apb_FIFO_flush();
 					gsI2CRxBuf[0] = 0xFF;gsI2CRxBuf[1] = 0xFF;
@@ -201,17 +200,17 @@ static void i2cs_runI2cToApbFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, &gsI2CRxBuf[1], false);
 					if( (gsI2CRxBuf[0] == 0x00 ) && ( gsI2CRxBuf[1] == 0x00 ) )
 					{
-						dbg_str("1. <<PASSED>>\r\n");
+						dbg_str("1. i2cs_runI2cToApbFIFOFlushTests <<PASSED>>\r\n");
 					}
 					else
 					{
-						dbg_str("1. <<FAILED>>\r\n");
+						dbg_str("1. i2cs_runI2cToApbFIFOFlushTests <<FAILED>>\r\n");
 					}
 
 				}
 				else
 				{
-					dbg_str("0. <<FAILED>>\r\n");
+					dbg_str("0. i2cs_runI2cToApbFIFOFlushTests <<FAILED>>\r\n");
 				}
 			}
 		}
@@ -237,7 +236,7 @@ static void i2cs_runI2cToApbFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 			{
 				if( gsI2CRxBuf[0] == 0x01 )
 				{
-					dbg_str("2. <<PASSED>>\r\n");
+					dbg_str("2. i2cs_runI2cToApbFIFOFlushTests <<PASSED>>\r\n");
 
 					//Flush I2C2APB FIFO flush from I2C side.
 					gsI2CTxBuf[0] = 1;
@@ -251,17 +250,17 @@ static void i2cs_runI2cToApbFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 					udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, &gsI2CRxBuf[1], false);
 					if( ( gsI2CRxBuf[0] == 0x00 ) && ( gsI2CRxBuf[1] == 0x00 ) )
 					{
-						dbg_str("3. <<PASSED>>\r\n");
+						dbg_str("3. i2cs_runI2cToApbFIFOFlushTests <<PASSED>>\r\n");
 					}
 					else
 					{
-						dbg_str("3. <<FAILED>>\r\n");
+						dbg_str("3. i2cs_runI2cToApbFIFOFlushTests <<FAILED>>\r\n");
 					}
 
 				}
 				else
 				{
-					dbg_str("2. <<FAILED>>\r\n");
+					dbg_str("2. i2cs_runI2cToApbFIFOFlushTests <<FAILED>>\r\n");
 				}
 			}
 		}
@@ -273,7 +272,7 @@ static void i2cs_runApbToI2cFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 	(void)pEntry;
 	int i = 0;
 	uint8_t lTestByte = 0x12;
-
+	uint16_t lAttemptCnt = 0;
 
 	hal_set_apb_i2cs_slave_on_off(1);
 	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
@@ -283,7 +282,8 @@ static void i2cs_runApbToI2cFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false);
-	}while(gsI2CRxBuf[0] != 0);
+		lAttemptCnt++;
+	}while( ( gsI2CRxBuf[0] != 0) && ( lAttemptCnt < 1000 ) );
 
 	//APB checks if space is available to write into the FIFO
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() != 0x07 )	//FIFO is not full, at least one byte space is available to write into the FIFO,
@@ -293,22 +293,22 @@ static void i2cs_runApbToI2cFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 		//Ensure that the FIFO write happened by checking if the write count increased
 		if(hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x01 )
 		{
-			dbg_str("0. <<PASSED>>\r\n");
+			dbg_str("0. i2cs_runApbToI2cFIFOFlushTests <<PASSED>>\r\n");
 			//Flush APB2I2C FIFO flush from APB side.
 			hal_i2cs_fifo_apb_i2c_FIFO_flush();
 
 			if( ( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x0 ) && ( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x00 ) )
 			{
-				dbg_str("1. <<PASSED>>\r\n");
+				dbg_str("1. i2cs_runApbToI2cFIFOFlushTests <<PASSED>>\r\n");
 			}
 			else
 			{
-				dbg_str("1. <<FAILED>>\r\n");
+				dbg_str("1. i2cs_runApbToI2cFIFOFlushTests <<FAILED>>\r\n");
 			}
 		}
 		else
 		{
-			dbg_str("0. <<FAILED>>\r\n");
+			dbg_str("0. i2cs_runApbToI2cFIFOFlushTests <<FAILED>>\r\n");
 		}
 	}
 
@@ -319,7 +319,7 @@ static void i2cs_runApbToI2cFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 		//Ensure that the FIFO write happened by checking if the write count increased
 		if(hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x01)
 		{
-			dbg_str("2. <<PASSED>>\r\n");
+			dbg_str("2. i2cs_runApbToI2cFIFOFlushTests <<PASSED>>\r\n");
 			//Flush APB2I2C FIFO flush from I2C side.
 
 			gsI2CTxBuf[0] = 1;
@@ -330,16 +330,16 @@ static void i2cs_runApbToI2cFIFOFlushTests (const struct cli_cmd_entry *pEntry)
 
 			if( ( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x0 ) && ( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x00 ) )
 			{
-				dbg_str("3. <<PASSED>>\r\n");
+				dbg_str("3. i2cs_runApbToI2cFIFOFlushTests <<PASSED>>\r\n");
 			}
 			else
 			{
-				dbg_str("3. <<FAILED>>\r\n");
+				dbg_str("3. i2cs_runApbToI2cFIFOFlushTests <<FAILED>>\r\n");
 			}
 		}
 		else
 		{
-			dbg_str("2. <<FAILED>>\r\n");
+			dbg_str("2. i2cs_runApbToI2cFIFOFlushTests <<FAILED>>\r\n");
 		}
 	}
 }
@@ -374,24 +374,24 @@ static void i2cs_runI2cToApbFIFOTests (const struct cli_cmd_entry *pEntry)
 			{
 				if( gsI2CRxBuf[0] == 0x01 )
 				{
-					dbg_str("0. <<PASSED>>\r\n");
+					dbg_str("0. i2cs_runI2cToApbFIFOTests <<PASSED>>\r\n");
 					//APB reads out the written data.
 					//If the read FIFO is not empty
 					if( hal_get_i2cs_fifo_i2c_apb_read_flags() != 0 )
 					{
 						if( hal_get_i2cs_fifo_i2c_apb_read_data_port() == lTestByte )
 						{
-							dbg_str("1. <<PASSED>>\r\n");
+							dbg_str("1. i2cs_runI2cToApbFIFOTests <<PASSED>>\r\n");
 						}
 						else
 						{
-							dbg_str("<<FAILED>>\r\n");
+							dbg_str("1. i2cs_runI2cToApbFIFOTests <<FAILED>>\r\n");
 						}
 					}
 				}
 				else
 				{
-					dbg_str("<<FAILED>>\r\n");
+					dbg_str("0. i2cs_runI2cToApbFIFOTests <<FAILED>>\r\n");
 				}
 			}
 		}
@@ -420,7 +420,7 @@ static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 		//Ensure that the FIFO write happened by checking if the write count increased
 		if(hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x01 )
 		{
-			dbg_str("0. <<PASSED>>\r\n");
+			dbg_str("0. i2cs_runApbToI2cFIFOTests <<PASSED>>\r\n");
 			//I2C master reads out the written data.
 			//If the APB2I2C read FIFO is not empty
 			gsI2CRxBuf[0] = 0;
@@ -433,11 +433,11 @@ static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 					{
 						if( gsI2CRxBuf[0] == lTestByte )
 						{
-							dbg_str("1. <<PASSED>>\r\n");
+							dbg_str("1. i2cs_runApbToI2cFIFOTests <<PASSED>>\r\n");
 						}
 						else
 						{
-							dbg_str("<<FAILED>>\r\n");
+							dbg_str("1. i2cs_runApbToI2cFIFOTests <<FAILED>>\r\n");
 						}
 					}
 				}
@@ -445,7 +445,7 @@ static void i2cs_runApbToI2cFIFOTests (const struct cli_cmd_entry *pEntry)
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. i2cs_runApbToI2cFIFOTests <<FAILED>>\r\n");
 		}
 	}
 	else
@@ -478,41 +478,41 @@ static void i2cs_runI2cToApbMsgTests (const struct cli_cmd_entry *pEntry)
 				{
 					if( hal_get_i2cs_msg_i2c_apb() == lTestByte )
 					{
-						dbg_str("0. <<PASSED>>\r\n");
+						dbg_str("0. i2cs_runI2cToApbMsgTests <<PASSED>>\r\n");
 						//When the Message register (offset 0x10) has been read by the APB interface, this bit will be automatically cleared.
 						//Checking this condition
 						if( hal_get_i2cs_msg_i2c_apb_status() == 0 )
 						{
-							dbg_str("1. <<PASSED>>\r\n");
+							dbg_str("1. i2cs_runI2cToApbMsgTests <<PASSED>>\r\n");
 						}
 						else
 						{
-							dbg_str("0. <<FAILED>>\r\n");
+							dbg_str("1. i2cs_runI2cToApbMsgTests <<FAILED>>\r\n");
 						}
 					}
 					else
 					{
-						dbg_str("1. <<FAILED>>\r\n");
+						dbg_str("0. i2cs_runI2cToApbMsgTests <<FAILED>>\r\n");
 					}
 				}
 				else
 				{
-					dbg_str("2. <<FAILED>>\r\n");
+					dbg_str("2. i2cs_runI2cToApbMsgTests <<FAILED>>\r\n");
 				}
 			}
 			else
 			{
-				dbg_str("3. <<FAILED>>\r\n");
+				dbg_str("3. i2cs_runI2cToApbMsgTests <<FAILED>>\r\n");
 			}
 		}
 		else
 		{
-			dbg_str("4. <<FAILED>>\r\n");
+			dbg_str("4. i2cs_runI2cToApbMsgTests <<FAILED>>\r\n");
 		}
 	}
 	else
 	{
-		dbg_str("5. <<FAILED>>\r\n");
+		dbg_str("5. i2cs_runI2cToApbMsgTests <<FAILED>>\r\n");
 	}
 }
 
@@ -542,46 +542,46 @@ static void i2cs_runApbToI2cMsgTests (const struct cli_cmd_entry *pEntry)
 				{
 					if( gsI2CRxBuf[0] == lTestByte )
 					{
-						dbg_str("0. <<PASSED>>\r\n");
+						dbg_str("0. i2cs_runApbToI2cMsgTests <<PASSED>>\r\n");
 						if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C_STATUS, 1, gsI2CRxBuf, false) == pdTRUE )
 						{
 							if( gsI2CRxBuf[0] == 0 )
 							{
-								dbg_str("1. <<PASSED>>\r\n");
+								dbg_str("1. i2cs_runApbToI2cMsgTests <<PASSED>>\r\n");
 							}
 							else
 							{
-								dbg_str("0. <<FAILED>>\r\n");
+								dbg_str("1. i2cs_runApbToI2cMsgTests <<FAILED>>\r\n");
 							}
 						}
 						else
 						{
-							dbg_str("1. <<FAILED>>\r\n");
+							dbg_str("1.1. i2cs_runApbToI2cMsgTests <<FAILED>>\r\n");
 						}
 					}
 					else
 					{
-						dbg_str("2. <<FAILED>>\r\n");
+						dbg_str("0. i2cs_runApbToI2cMsgTests <<FAILED>>\r\n");
 					}
 				}
 				else
 				{
-					dbg_str("3. <<FAILED>>\r\n");
+					dbg_str("3. i2cs_runApbToI2cMsgTests <<FAILED>>\r\n");
 				}
 			}
 			else
 			{
-				dbg_str("4. <<FAILED>>\r\n");
+				dbg_str("4. i2cs_runApbToI2cMsgTests <<FAILED>>\r\n");
 			}
 		}
 		else
 		{
-			dbg_str("5. <<FAILED>>\r\n");
+			dbg_str("5. i2cs_runApbToI2cMsgTests <<FAILED>>\r\n");
 		}
 	}
 	else
 	{
-		dbg_str("6. <<FAILED>>\r\n");
+		dbg_str("6. i2cs_runApbToI2cMsgTests <<FAILED>>\r\n");
 	}
 }
 
@@ -614,52 +614,48 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 				}
 				else
 				{
-					dbg_str("0. <<FAILED>>\r\n");
+					dbg_str("0. i2cs_runI2cToApbFIFOWatermarkTests <<FAILED>>\r\n");
 				}
 			}
 			gsI2CRxBuf[0] = 0;
 			if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 			{
-				dbg_str("0. I2C I/F WR FULL. ");
 				if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Write Flags should show full
 				{
-					dbg_str("<<PASSED>>\r\n");
+					dbg_str("0. I2C I/F WR FULL. <<PASSED>>\r\n");
 				}
 				else
 				{
-					dbg_str("<<FAILED>>\r\n");
+					dbg_str("0. I2C I/F WR FULL. <<FAILED>>\r\n");
 				}
 			}
-			dbg_str("1. APB I/F WR FULL. ");
 			if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x07 )
 			{
-				dbg_str("<<PASSED>>\r\n");
+				dbg_str("1. APB I/F WR FULL. <<PASSED>>\r\n");
 			}
 			else
 			{
-				dbg_str("<<FAILED>>\r\n");
+				dbg_str("1. APB I/F WR FULL. <<FAILED>>\r\n");
 			}
 
 			if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 			{
-				dbg_str("2. I2C I/F RD 128+ items. ");
 				if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 				{
-					dbg_str("<<PASSED>>\r\n");
+					dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 				}
 				else
 				{
-					dbg_str("<<FAILED>>\r\n");
+					dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 				}
 			}
-			dbg_str("3. APB I/F RD 128+ items. ");
 			if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 			{
-				dbg_str("<<PASSED>>\r\n");
+				dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 			}
 			else
 			{
-				dbg_str("<<FAILED>>\r\n");
+				dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 			}
 		}
 	}
@@ -667,92 +663,84 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	hal_get_i2cs_fifo_i2c_apb_read_data_port();
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 1 SPACE LEFT. ");
 		if( gsI2CRxBuf[0] == 0x06 )	//FIFO I2CtoAPB Write Flags should show 1 space left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 1 SPACE LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 1 SPACE LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 1 SPACE LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x06 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 1 SPACE LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 1 SPACE LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 
 	//Read out 1 more byte from FIFO through APB interface. Check the flag register statuses
 	hal_get_i2cs_fifo_i2c_apb_read_data_port();
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 2 SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x05 )	//FIFO I2CtoAPB Write Flags should show 2 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 2 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 2 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 2 SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x05 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 2 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 2 SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 
 	//Read out 2 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -762,46 +750,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 4 SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x04 )	//FIFO I2CtoAPB Write Flags should show 4 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 4 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 4 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 4 SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x04 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 4 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 4 SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 
 	//Read out 4 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -811,46 +795,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 8 SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x03 )	//FIFO I2CtoAPB Write Flags should show 8 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 8 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 8 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 8 SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x03 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 8 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 8 SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 
 	//Read out 24 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -860,46 +840,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 32 SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x02 )	//FIFO I2CtoAPB Write Flags should show 32 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 32 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 32 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 32 SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x02 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 32 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 32 SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 
 	//Read out 32 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -909,46 +885,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 64 SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x01 )	//FIFO I2CtoAPB Write Flags should show 64 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 64 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 64 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 64 SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x01 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 64 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 64 SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 
 	//Read out 64 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -958,46 +930,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 
 	//Read out 64 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -1007,46 +975,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 64-127 items. ");
 		if( gsI2CRxBuf[0] == 0x06 )	//FIFO I2CtoAPB Read Flags should show 64-127 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 64-127 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 64-127 items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 64-127 items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x06 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 64-127 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 64-127 items. <<FAILED>>\r\n");
 	}
 
 	//Read out 32 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -1056,46 +1020,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 32-63 items. ");
 		if( gsI2CRxBuf[0] == 0x05 )	//FIFO I2CtoAPB Read Flags should show 32-63 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 32-63 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 32-63 items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 32-63 items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x05 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 32-63 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 32-63 items. <<FAILED>>\r\n");
 	}
 
 	//Read out 24 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -1105,46 +1065,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 8-31 items. ");
 		if( gsI2CRxBuf[0] == 0x04 )	//FIFO I2CtoAPB Read Flags should show 8-31 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 8-31 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 8-31 items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 8-31 items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x04 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 8-31 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 8-31 items. <<FAILED>>\r\n");
 	}
 
 	//Read out 4 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -1154,46 +1110,42 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 4-7 items. ");
 		if( gsI2CRxBuf[0] == 0x03 )	//FIFO I2CtoAPB Read Flags should show 4-7 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 4-7 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 4-7 items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 4-7 items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x03 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 4-7 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 4-7 items. <<FAILED>>\r\n");
 	}
 
 	//Read out 2 more bytes from FIFO through APB interface. Check the flag register statuses
@@ -1203,138 +1155,126 @@ static void i2cs_runI2cToApbFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 2-3 items. ");
 		if( gsI2CRxBuf[0] == 0x02 )	//FIFO I2CtoAPB Read Flags should show 2-3 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 2-3 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 2-3 items. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 2-3 items. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x02 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 2-3 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 2-3 items. <<FAILED>>\r\n");
 	}
 
 	//Read out 1 more bytes from FIFO through APB interface. Check the flag register statuses
 	hal_get_i2cs_fifo_i2c_apb_read_data_port();
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 1 item. ");
 		if( gsI2CRxBuf[0] == 0x01 )	//FIFO I2CtoAPB Read Flags should show 2-3 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 1 item. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 1 item. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 1 item. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x01 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 1 item. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 1 item. <<FAILED>>\r\n");
 	}
 
 	//Read out 1 more bytes from FIFO through APB interface. Check the flag register statuses
 	hal_get_i2cs_fifo_i2c_apb_read_data_port();
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("0. I2C I/F WR 128+ SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Write Flags should show 128 spaces left
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("1. APB I/F WR 128+ SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_i2c_apb_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("1. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_I2C_APB_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("2. I2C I/F RD 0 item. ");
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Read Flags should show 2-3 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. I2C I/F RD 0 item. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. I2C I/F RD 0 item. <<FAILED>>\r\n");
 		}
 	}
-	dbg_str("3. APB I/F RD 0 item. ");
 	if( hal_get_i2cs_fifo_i2c_apb_read_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("3. APB I/F RD 0 item. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("3. APB I/F RD 0 item. <<FAILED>>\r\n");
 	}
 }
 
@@ -1342,6 +1282,7 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 {
 	(void)pEntry;
 	uint16_t i = 0;
+	uint16_t lAttemptCnt = 0;
 
 	hal_set_apb_i2cs_slave_on_off(1);
 	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
@@ -1352,7 +1293,8 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false);
-	}while(gsI2CRxBuf[0] != 0);
+		lAttemptCnt++;
+	}while( ( gsI2CRxBuf[0] != 0) && ( lAttemptCnt < 1000 ) );
 
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )	//128+ spaces (bytes) available in the FIFO.
 	{
@@ -1361,49 +1303,44 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 			//Write 256 bytes into APB2I2C FIFO
 			hal_set_i2cs_fifo_apb_i2c_write_data_port((uint8_t)i);
 		}
-		dbg_str("0. APB I/F WR FULL. ");
 		if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x07 )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("0. APB I/F WR FULL. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("0. APB I/F WR FULL. <<FAILED>>\r\n");
 		}
 		gsI2CRxBuf[0] = 0;
 		if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 		{
-			dbg_str("1. I2C I/F WR FULL. ");
 			if( gsI2CRxBuf[0] == 0x7 )	//FIFO APBtoI2C Write Flags should show full
 			{
-				dbg_str("<<PASSED>>\r\n");
+				dbg_str("1. I2C I/F WR FULL. <<PASSED>>\r\n");
 			}
 			else
 			{
-				dbg_str("<<FAILED>>\r\n");
+				dbg_str("1. I2C I/F WR FULL. <<FAILED>>\r\n");
 			}
 		}
-
-		dbg_str("2. APB I/F RD 128+ items. ");
 		if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 		gsI2CRxBuf[0] = 0;
 		if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 		{
-			dbg_str("3. I2C I/F RD 128+ items. ");
 			if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 			{
-				dbg_str("<<PASSED>>\r\n");
+				dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 			}
 			else
 			{
-				dbg_str("<<FAILED>>\r\n");
+				dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 			}
 		}
 	}
@@ -1411,50 +1348,45 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	//Read out 1 byte from FIFO through I2C interface. Check the flag register statuses
 	gsI2CRxBuf[0] = 0;
 	udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
-
-	dbg_str("0. APB I/F WR 1 SPACE LEFT. ");
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x06 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 1 SPACE LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 1 SPACE LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 1 SPACE LEFT. ");
 		if( gsI2CRxBuf[0] == 0x6 )	//FIFO APBtoI2C Write Flags should show 1 space available
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 1 SPACE LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 1 SPACE LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1462,49 +1394,45 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	gsI2CRxBuf[0] = 0;
 	udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 
-	dbg_str("0. APB I/F WR 2 SPACES LEFT. ");
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x05 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 2 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 2 SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 2 SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x5 )	//FIFO APBtoI2C Write Flags should show 2-3 spaces available
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 2 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 2 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 128+ items. ");
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 128+ items. ");
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1512,49 +1440,48 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	gsI2CRxBuf[0] = 0;
 	udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
-	dbg_str("0. APB I/F WR 4 SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x04 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 4 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 4 SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 4 SPACES LEFT. ");
 		if( gsI2CRxBuf[0] == 0x4 )	//FIFO APBtoI2C Write Flags should show 4-7 spaces available
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 4 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 4 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 128+ items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 128+ items. ");
+
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1564,49 +1491,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 8 SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x03 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 8 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 8 SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 8 SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x3 )	//FIFO APBtoI2C Write Flags should show 8-31 spaces available
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 8 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 8 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 128+ items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 128+ items. ");
+
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1616,49 +1543,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 32 SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x02 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 32 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 32 SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 32 SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x2 )	//FIFO APBtoI2C Write Flags should show 32-63 spaces available
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 32 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 32 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 128+ items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 128+ items. ");
+
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1668,49 +1595,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 64 SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x01 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 64 SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 64 SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 64 SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x1 )	//FIFO APBtoI2C Write Flags should show 64-127 spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 64 SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 64 SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 128+ items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 128+ items. ");
+
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1720,49 +1647,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 128+ items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x07 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 128+ items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 128+ items. ");
+
 		if( gsI2CRxBuf[0] == 0x7 )	//FIFO I2CtoAPB Read Flags should show 128+ items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 128+ items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1772,49 +1699,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 64-127 items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x06 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 64-127 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 64-127 items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 64-127 items. ");
+
 		if( gsI2CRxBuf[0] == 0x6 )	//FIFO I2CtoAPB Read Flags should show 64-127 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 64-127 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 64-127 items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1824,49 +1751,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+		dbg_str(" ");
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT.<<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT.<<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 32-63 items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x05 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 32-63 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 32-63 items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 32-63 items. ");
+
 		if( gsI2CRxBuf[0] == 0x5 )	//FIFO I2CtoAPB Read Flags should show 32-63 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 32-63 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 32-63 items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1876,49 +1803,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 8-31 items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x04 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 8-31 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 8-31 items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 8-31 items. ");
+
 		if( gsI2CRxBuf[0] == 0x4 )	//FIFO I2CtoAPB Read Flags should show 8-31 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 8-31 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 8-31 items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1928,49 +1855,49 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 4-7 items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x03 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 4-7 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 4-7 items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 4-7 items. ");
+
 		if( gsI2CRxBuf[0] == 0x03 )	//FIFO I2CtoAPB Read Flags should show 4-7 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 4-7 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 4-7 items. <<FAILED>>\r\n");
 		}
 	}
 
@@ -1980,147 +1907,147 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 		gsI2CRxBuf[0] = 0;
 		udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
 	}
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 2-3 items. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x02 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 2-3 items. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 2-3 items. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 2-3 items. ");
+
 		if( gsI2CRxBuf[0] == 0x02 )	//FIFO I2CtoAPB Read Flags should show 4-7 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 2-3 items. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 2-3 items. <<FAILED>>\r\n");
 		}
 	}
 
 	//Read out another 1 byte from FIFO through I2C interface. Check the flag register statuses
 	gsI2CRxBuf[0] = 0;
 	udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 1 item. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x01 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 1 item. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 1 item. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 1 item. ");
+
 		if( gsI2CRxBuf[0] == 0x01 )	//FIFO I2CtoAPB Read Flags should show 4-7 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 1 item. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 1 item. <<FAILED>>\r\n");
 		}
 	}
 
 	//Read out another 1 byte from FIFO through I2C interface. Check the flag register statuses
 	gsI2CRxBuf[0] = 0;
 	udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, 1, gsI2CRxBuf, false);
-	dbg_str("0. APB I/F WR 128+ SPACES LEFT. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_write_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("0. APB I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_WRITE_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("1. I2C I/F WR 128+ SPACES LEFT. ");
+
 		if( gsI2CRxBuf[0] == 0x0 )	//FIFO APBtoI2C Write Flags should show 128+ spaces available in the FIFO.
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("1. I2C I/F WR 128+ SPACES LEFT. <<FAILED>>\r\n");
 		}
 	}
 
-	dbg_str("2. APB I/F RD 0 item. ");
+
 	if( hal_get_i2cs_fifo_apb_i2c_read_flags() == 0x00 )
 	{
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("2. APB I/F RD 0 item. <<PASSED>>\r\n");
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("2. APB I/F RD 0 item. <<FAILED>>\r\n");
 	}
 	gsI2CRxBuf[0] = 0;
 	if( udma_i2cm_read(0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, 1, gsI2CRxBuf, false) == pdTRUE )
 	{
-		dbg_str("3. I2C I/F RD 0 item. ");
+
 		if( gsI2CRxBuf[0] == 0x00 )	//FIFO I2CtoAPB Read Flags should show 4-7 items
 		{
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("3. I2C I/F RD 0 item. <<PASSED>>\r\n");
 		}
 		else
 		{
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("3. I2C I/F RD 0 item. <<FAILED>>\r\n");
 		}
 	}
 }

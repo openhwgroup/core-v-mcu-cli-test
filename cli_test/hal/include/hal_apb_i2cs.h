@@ -23,6 +23,9 @@
 
 #include "stdint.h"
 
+#define MY_I2C_SLAVE_ADDRESS 		0x62
+#define MY_I2C_SLAVE_ADDRESS_7BIT 	(0x62 << 1)
+
 uint8_t hal_get_apb_i2cs_slave_address(void);
 void hal_set_apb_i2cs_slave_address(uint8_t aSlaveAddress);
 uint8_t hal_set_apb_i2cs_slave_on_off(uint8_t aStatus);
