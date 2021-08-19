@@ -2167,9 +2167,23 @@ static void tcdm_task_stop(const struct cli_cmd_entry *pEntry)
 static void tcdm_task_status(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
-	CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
-	CLI_printf("TCDM TASK STATUS <<PASSED>>\n");
+	if( gTCDMWriteStatus.totalFailedCount == 0 )
+	{
+		CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d] <<PASSED>>\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
+	}
+	else
+	{
+		CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d] <<FAILED>>\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
+	}
+
+	if( gTCDMReadStatus.totalFailedCount == 0 )
+	{
+		CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d] <<PASSED>>\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
+	}
+	else
+	{
+		CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d] <<FAILED>>\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
+	}
 }
 
 
