@@ -20,7 +20,7 @@
 #include "string.h"
 
 uint8_t checkIfFailedStringIsPresent(char *aBuf);
-extern uint8_t gSimulatorEnabledFlg;
+extern uint8_t gFilterPrintMsgFlg;
 /* make 1 to help debug key sequence decode */
 #define DEBUG_KEYS 0
 
@@ -478,7 +478,7 @@ void CLI_vprintf( const char *fmt, va_list ap )
     vsnprintf( outbuf, sizeof(outbuf)-1, fmt, ap );
     outbuf[ sizeof(outbuf) - 1 ] = 0;
     memcpy(gsTmpBuf, outbuf, sizeof(outbuf));
-    if( gSimulatorEnabledFlg == 1 )
+    if( gFilterPrintMsgFlg == 1 )
     {
     	if( checkIfFailedStringIsPresent(gsTmpBuf) == 0 )	//If failed string is not present, no need to print it on UART
     	{

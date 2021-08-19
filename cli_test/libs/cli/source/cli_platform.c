@@ -41,6 +41,7 @@ struct cli CLI_common;
 extern const char *SOFTWARE_VERSION_STR;
 void CLI_dispatch(void);
 extern uint8_t gSimulatorEnabledFlg;
+extern uint8_t gFilterPrintMsgFlg;
 uint8_t gSimulatorCmdTableIndex = 0;
 
 const char *gSimulatorCmdTable[] = {
@@ -252,6 +253,9 @@ void CLI_task( void *pParameter )
     		else
     		{
     			gSimulatorEnabledFlg = 0;
+    			if( gFilterPrintMsgFlg == 1 )
+    				gFilterPrintMsgFlg = 0;
+
     			CLI_cmd_stack_clear();
 				memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );
 				CLI_printf("Simul Done\n");

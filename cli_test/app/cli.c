@@ -36,6 +36,7 @@
 
 extern uint8_t gDebugEnabledFlg;
 extern uint8_t gSimulatorEnabledFlg;
+extern uint8_t gFilterPrintMsgFlg;
 extern uint8_t gSimulatorCmdTableIndex;
 
 extern const struct cli_cmd_entry io_functions[];
@@ -187,11 +188,15 @@ static void simulator_on_off(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
 	// Add functionality here
-	uint32_t	lSimulatorStatus = 0;
+	uint8_t	lSimulatorFlg = 0;
+	uint8_t	lFilterPrintMsgFlg = 0;
 
-	CLI_uint8_required("Simul flag", &lSimulatorStatus );
-	gSimulatorEnabledFlg = lSimulatorStatus;
-	if( lSimulatorStatus == 1 )
+	CLI_uint8_required("Simul flag", &lSimulatorFlg );
+	CLI_uint8_required("Msg filter flag", &lFilterPrintMsgFlg );
+	gSimulatorEnabledFlg = lSimulatorFlg;
+	gFilterPrintMsgFlg = lFilterPrintMsgFlg;
+
+	if( lSimulatorFlg == 1 )
 		gSimulatorCmdTableIndex = 0;
 	CLI_cmd_stack_clear();
 	memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );

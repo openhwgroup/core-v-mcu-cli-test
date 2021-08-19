@@ -59,7 +59,7 @@ __attribute__((always_inline)) static inline void __disable_irq(void)
 volatile int __debug_fatal__ = 0;
 uint8_t gDebugEnabledFlg = 1;
 uint8_t gSimulatorEnabledFlg = 0;
-
+uint8_t gFilterPrintMsgFlg = 0;
 static void
 __debug_lockup( void )
 {
@@ -164,7 +164,7 @@ void dbg_str(const char *s)
 {
     const char *cp;
     memcpy(gsDbgStrTmpBuf, s, (strlen(s) + 1));
-    if( gSimulatorEnabledFlg == 1 )
+    if( gFilterPrintMsgFlg == 1 )
 	{
 		if( checkIfFailedStringIsPresent(gsDbgStrTmpBuf) == 0 )	//If failed string is not present, no need to print it on UART
 		{
