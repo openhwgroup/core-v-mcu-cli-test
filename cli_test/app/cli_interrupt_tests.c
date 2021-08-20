@@ -27,15 +27,19 @@
 #include "target/core-v-mcu/include/core-v-mcu-config.h"
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
+#include "drivers/include/udma_i2cm_driver.h"
 #include "hal/include/hal_apb_soc_ctrl_regs.h"
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_fc_event.h"
 #include "hal/include/efpga_template_reg_defs.h"
 #include "hal/include/adv_timer_unit_reg_defs.h"
-
+#include "hal/include/hal_apb_i2cs.h"
 #include "include/efpga_tests.h"
+#include "hal/include/hal_apb_i2cs_reg_defs.h"
+#include "hal/include/hal_apb_event_cntrl_reg_defs.h"
 
 extern uint8_t gDebugEnabledFlg;
+uint32_t gpio_event_test_forevent31(void);
 
 static void csr_mstatus_reg_read(const struct cli_cmd_entry *pEntry);
 static void csr_mstatus_reg_set(const struct cli_cmd_entry *pEntry);
@@ -88,7 +92,7 @@ static void csr_mstatus_reg_read(const struct cli_cmd_entry *pEntry)
 	//hal_setpinmux(ionum, mux_sel);
 
 	RegReadVal = csr_read(CSR_MSTATUS);
-	dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+	CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -105,7 +109,7 @@ static void csr_mstatus_reg_set(const struct cli_cmd_entry *pEntry)
 
 	csr_read_set(CSR_MSTATUS, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MSTATUS);
-	dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+	CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -122,7 +126,7 @@ static void csr_mstatus_reg_clear(const struct cli_cmd_entry *pEntry)
 
 	csr_read_clear(CSR_MSTATUS, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MSTATUS);
-	dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+	CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -138,7 +142,7 @@ static void csr_mie_reg_read(const struct cli_cmd_entry *pEntry)
 
 	val = csr_read(CSR_MIE);
 
-	dbg_str_hex32("CSR_MIE", val);
+	CLI_printf("CSR_MIE 0x%08x\n", val);
 	dbg_str("<<DONE>>");
 }
 
@@ -155,7 +159,7 @@ static void csr_mie_reg_set(const struct cli_cmd_entry *pEntry)
 
 	csr_read_set(CSR_MIE, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIE);
-	dbg_str_hex32("CSR_MIE", RegReadVal);
+	CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -172,7 +176,7 @@ static void csr_mie_reg_clear(const struct cli_cmd_entry *pEntry)
 
 	csr_read_clear(CSR_MIE, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIE);
-	dbg_str_hex32("CSR_MIE", RegReadVal);
+	CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -188,7 +192,7 @@ static void csr_mip_reg_read(const struct cli_cmd_entry *pEntry)
 
 	val = csr_read(CSR_MIP);
 
-	dbg_str_hex32("CSR_MIP", val);
+	CLI_printf("CSR_MIP 0x%08x\n", val);
 	dbg_str("<<DONE>>");
 }
 
@@ -205,7 +209,7 @@ static void csr_mip_reg_set(const struct cli_cmd_entry *pEntry)
 
 	csr_read_set(CSR_MIP, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIP);
-	dbg_str_hex32("CSR_MIP", RegReadVal);
+	CLI_printf("CSR_MIP 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -222,7 +226,7 @@ static void csr_mip_reg_clear(const struct cli_cmd_entry *pEntry)
 
 	csr_read_clear(CSR_MIP, BIT(bitNum));
 	RegReadVal = csr_read(CSR_MIP);
-	dbg_str_hex32("CSR_MIP", RegReadVal);
+	CLI_printf("CSR_MIP 0x%08x\n", RegReadVal);
 	dbg_str("<<DONE>>");
 }
 
@@ -280,15 +284,17 @@ static void test_all_events(const struct cli_cmd_entry *pEntry)
 
 static uint32_t testEvents(uint32_t aEventNum)
 {
-	int i = 0;
 	uint32_t lEvent = 0;
+	uint32_t lErrors = 0;
+	uint32_t levent_err0 = 0;
 	uint32_t lTestStatus = 0;
 	int lCurrentCount = 0;
 	uint32_t RegReadVal = 0;
+	uint8_t lI2CTxBuf[4] = {0};
 	AdvTimerUnit_t *adv_timer;
 	apb_soc_ctrl_typedef *lsoc_ctrl;  //Somesh: We need to use SocCtrl_t present in hal_apb_soc_ctrl_regs.h
-
-
+	ApbI2cs_t *apbI2cSlave = (ApbI2cs_t*) I2CS_START_ADDR;
+	ApbEventCntrl_t *ApbEventCntrl = (ApbEventCntrl_t *)SOC_EVENT_GEN_START_ADDR;
 	if( aEventNum < 32 )
 	{
 		RegReadVal = csr_read(CSR_MSTATUS);
@@ -301,7 +307,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 			//enable global interrupt.
 			csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 			RegReadVal = csr_read(CSR_MSTATUS);
-			dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+			CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 			dbg_str("<<DONE>>\r\n");
 
 		}
@@ -316,7 +322,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 			//open the event interrupt mask.
 			csr_read_set(CSR_MIE, BIT(aEventNum));
 			RegReadVal = csr_read(CSR_MIE);
-			dbg_str_hex32("CSR_MIE", RegReadVal);
+			CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 			dbg_str("<<DONE>>\r\n");
 
 		}
@@ -328,6 +334,32 @@ static uint32_t testEvents(uint32_t aEventNum)
 				lCurrentCount = handler_count[aEventNum];
 				vTaskDelay(2);
 				if( ( handler_count[aEventNum] - lCurrentCount)  >= 5 )
+				{
+					dbg_str("<<PASSED>>\r\n");
+				}
+				else
+				{
+					lTestStatus |= ( 1 << aEventNum );
+					dbg_str("<<FAILED>>\r\n");
+				}
+			}
+			else if( aEventNum == 20 )
+			{
+				hal_set_apb_i2cs_slave_on_off(1);
+				if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+					hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+
+				lCurrentCount = handler_count[aEventNum];
+
+				//Enable new message available for APB to pick up interrupt.
+				apbI2cSlave->i2cs_interrupt_to_apb_enable_b.new_i2c_apb_msg_avail_enable = 1;
+
+				//Trigger an APB interrupt by writing a message from I2C side
+				lI2CTxBuf[0] = 0x45;
+				udma_i2cm_write (0, MY_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, 1, lI2CTxBuf,  false);
+
+				vTaskDelay(1);
+				if( handler_count[aEventNum] == ( lCurrentCount + 1) )
 				{
 					dbg_str("<<PASSED>>\r\n");
 				}
@@ -496,6 +528,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 		}
 		else if( aEventNum == 31 )
 		{
+#if 0
 			lsoc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 			if( lsoc_ctrl->ena_efpga == 0 ) //efpga not initialized
 			{
@@ -528,6 +561,29 @@ static uint32_t testEvents(uint32_t aEventNum)
 				lTestStatus |= ( 1 << aEventNum );
 				dbg_str("<<FAILED>>\r\n");
 			}
+#endif
+			//Turn off interrupt 11.
+			csr_read_clear(CSR_MIE, BIT(11));
+			//Save existing handler_count.
+			lCurrentCount = handler_count[aEventNum];
+			//Trigger the 31 error event, by running a gpio event test without enabling interrupt 11.
+			lErrors = gpio_event_test_forevent31();
+
+			vTaskDelay(1);
+			levent_err0 = ApbEventCntrl->event_err0;
+			if( handler_count[aEventNum] == ( lCurrentCount + 1) )
+			{
+				csr_read_set(CSR_MIE, BIT(11));
+				vTaskDelay(2);
+				dbg_str("<<PASSED>>\r\n");
+			}
+			else
+			{
+				lTestStatus |= ( 1 << aEventNum );
+				csr_read_set(CSR_MIE, BIT(11));
+				vTaskDelay(2);
+				dbg_str("<<FAILED>>\r\n");
+			}
 		}
 		else
 		{
@@ -541,7 +597,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 			//close the event interrupt mask.
 			csr_read_clear(CSR_MIE, BIT(aEventNum));
 			RegReadVal = csr_read(CSR_MIE);
-			dbg_str_hex32("CSR_MIE", RegReadVal);
+			CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 			dbg_str("<<DONE>>\r\n");
 		}
 	}

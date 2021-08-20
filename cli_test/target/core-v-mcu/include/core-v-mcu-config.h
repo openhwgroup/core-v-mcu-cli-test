@@ -118,6 +118,7 @@
 //  GPIO configuration information
 #define GPIO_START_ADDR 0x1A101000
 
+#define SOC_EVENT_GEN_START_ADDR 0x1A106000
 //  I2C Slave configuration information
 #define I2CS_START_ADDR 0x1A107000
 

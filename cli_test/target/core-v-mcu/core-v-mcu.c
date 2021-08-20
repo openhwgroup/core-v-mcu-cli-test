@@ -39,6 +39,7 @@
 #include "drivers/include/udma_qspi_driver.h"
 
 #include "../../app/N25Q_16Mb-1Gb_Device_Driver V2.1/N25Q.h"
+#include "hal/include/hal_apb_i2cs.h"
 
 FLASH_DEVICE_OBJECT gFlashDeviceObject;
 
@@ -124,7 +125,10 @@ for (int i = 0 ; i < 32 ; i ++){
 	}
 	udma_qspim_open(0,5000000);
 
-	//Driver_Init(&gFlashDeviceObject);
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+			hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
+
 }
 
 void system_core_clock_update(void)

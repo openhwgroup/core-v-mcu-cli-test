@@ -96,26 +96,26 @@ static void i2cm_readbyte(const struct cli_cmd_entry *pEntry)
 
 	if( udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false) == pdTRUE )
 	{
-		dbg_str_hex8("reg", (int)i2c_buffer[0]);
+		CLI_printf("reg = 0x%02x\n", i2c_buffer[0]);
 		if( lExpValTrueOrFalse )
 		{
 			if( i2c_buffer[0] == lExpVal )
 			{
-				dbg_str("<<PASSED>>\r\n");
+				CLI_printf("i2cm%d readbyte slv addr 0x%02x reg 0x%02x <<PASSED>>\n",pEntry->cookie, i2c_addr, reg_addr);
 			}
 			else
 			{
-				dbg_str("<<FAILED>>\r\n");
+				CLI_printf("i2cm%d readbyte slv addr 0x%02x reg 0x%02x <<FAILED>>\n",pEntry->cookie, i2c_addr, reg_addr);
 			}
 		}
 		else
 		{
-			dbg_str("<<DONE>>\r\n");
+			CLI_printf("i2cm%d readbyte <<DONE>>\n",pEntry->cookie);
 		}
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		CLI_printf("i2cm%d readbyte slv addr 0x%02x reg 0x%02x <<FAILED>>\n",pEntry->cookie, i2c_addr, reg_addr);
 	}
 }
 
@@ -143,7 +143,7 @@ static void i2cm_readMultiBytes(const struct cli_cmd_entry *pEntry)
 	}
 	else
 	{
-		dbg_str("<<FAILED>>\r\n");
+		CLI_printf("i2cm%d readMultiBytes slv addr 0x%02x reg 0x%02x <<FAILED>>\n",pEntry->cookie, i2c_addr, reg_addr);
 	}
 }
 
@@ -163,7 +163,7 @@ static void i2cm_writebyte(const struct cli_cmd_entry *pEntry)
 	i2c_buffer[0] = (uint8_t)reg_value;
 	udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
 
-	dbg_str("<<DONE>>");
+	dbg_str("<<DONE>>\r\n");
 }
 
 static void i2cm_writeMultiBytes(const struct cli_cmd_entry *pEntry)
@@ -185,7 +185,7 @@ static void i2cm_writeMultiBytes(const struct cli_cmd_entry *pEntry)
 
 	udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, i, i2c_buffer,  false);
 
-	dbg_str("<<DONE>>");
+	dbg_str("<<DONE>>\r\n");
 }
 
 static void i2cm_reset(const struct cli_cmd_entry *pEntry)
@@ -211,21 +211,21 @@ static void i2cm_singlebyte_test(const struct cli_cmd_entry *pEntry)
 	udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
 	i2c_buffer[0] = 0xFF;
 	udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
-	dbg_str_int("First access", i2c_buffer[0]);
+	CLI_printf("First access = 0x%02x\n", i2c_buffer[0]);
 	if (i2c_buffer[0] == 0xA5) {
 		i2c_buffer[0] = 0x5A;
 		udma_i2cm_write (pEntry->cookie, i2c_addr, reg_addr, 1, i2c_buffer,  false);
 		i2c_buffer[0] = 0xFF;
 		udma_i2cm_read(pEntry->cookie, (uint8_t)i2c_addr, (uint8_t)reg_addr, 1, i2c_buffer, false);
-		dbg_str_int("Second access", i2c_buffer[0]);
+		CLI_printf("Second access = 0x%02x\n", i2c_buffer[0]);
 		if (i2c_buffer[0] == 0x5A) {
 			fPassed = true;
 		}
 	}
 	if (fPassed) {
-		dbg_str("<<PASSED>>");
+		CLI_printf("i2cm%d singlebyte_test slv addr 0x%02x reg 0x%02x <<PASSED>>\n",pEntry->cookie, i2c_addr, reg_addr);
 	} else {
-		dbg_str("<<FAILED>>");
+		CLI_printf("i2cm%d singlebyte_test slv addr 0x%02x reg 0x%02x <<FAILED>>\n",pEntry->cookie, i2c_addr, reg_addr);
 	}
 }
 
@@ -238,7 +238,7 @@ static void i2c_temp (const struct cli_cmd_entry *pEntry)
 	temp = (i2c_buffer[0] << 8) + i2c_buffer[1];
 	temp = ((temp *625) / 44000) + 32;
 	CLI_printf(" Board temp = %d F\r\n", temp);
-	dbg_str("<<DONE>>");
+	dbg_str("<<DONE>>\r\n");
 }
 
 static void i2c_read_dev_id(const struct cli_cmd_entry *pEntry)

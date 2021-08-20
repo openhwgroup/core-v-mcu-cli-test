@@ -2,13 +2,17 @@
 	"i2cm0"	: [
         {">console"		: "io setmux 23 2\r\n"},
 		{">console"		: "io setmux 24 2\r\n"},
-        {">console"		: "i2cm0 writebyte 0xDE 0x20 0x10\r\n"},
-		{">console"		: "i2cm0 readbyte 0xDE 0x20 0xFF\r\n"},
+        {">console"		: "i2cm0 writebyte 0xDE 0x10 0x3D\r\n"},
+		{">console"		: "i2cm0 readbyte 0xDE 0x10 0xFF\r\n"},
+        {">console"		: "i2cm0 writebyte 0xC4 0x10 0x5C\r\n"},
+        {">console"		: "i2cm0 readbyte 0xC4 0x10 0xFF\r\n"},    
 		{">console"		: "io setmux 23 0\r\n"},
 		{">console"		: "io setmux 24 0\r\n"},
 		{">console"		: "i2cm0 writebyte 0xDE 0x20 0x10\r\n"},
 		{">console"		: "i2cm0 readbyte 0xDE 0x20 0x10\r\n"},
 		{">console"		: "i2cm0 testsinglebyte 0xDE 0x20\r\n"},
-		{">console"		: "i2cm0 testsinglebyte 0xDE 0x00\r\n"}
+		{">console"		: "i2cm0 writebyte 0xC4 0x10 0x5C\r\n"},
+		{">console"		: "i2cm0 readbyte 0xC4 0x10 0x5C\r\n"},
+		{">console"		: "i2cm0 testsinglebyte 0xC4 0x10\r\n"}
 	]
 }

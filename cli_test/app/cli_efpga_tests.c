@@ -1498,9 +1498,9 @@ static void mathUnit0Multiplier0_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT0_MULTIPLIER_0);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA0-MU0 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA0-MU0 <<FAILED>>\r\n");
 }
 
 static void mathUnit0Multiplier1_test(const struct cli_cmd_entry *pEntry)
@@ -1510,9 +1510,9 @@ static void mathUnit0Multiplier1_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT0_MULTIPLIER_1);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA0-MU1 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA0-MU1 <<FAILED>>\r\n");
 
 }
 
@@ -1523,9 +1523,9 @@ static void mathUnit1Multiplier0_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT1_MULTIPLIER_0);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA1-MU0 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA1-MU0 <<FAILED>>\r\n");
 
 }
 
@@ -1536,9 +1536,9 @@ static void mathUnit1Multiplier1_test(const struct cli_cmd_entry *pEntry)
 	uint32_t lSts = 0;
 	lSts = mathUnitMultiplierTest(MATH_UNIT1_MULTIPLIER_1);
 	if( lSts == 0 )
-		dbg_str("<<PASSED>>\r\n");
+		dbg_str("MA1-MU1 <<PASSED>>\r\n");
 	else
-		dbg_str("<<FAILED>>\r\n");
+		dbg_str("MA1-MU1 <<FAILED>>\r\n");
 
 }
 
@@ -2167,9 +2167,23 @@ static void tcdm_task_stop(const struct cli_cmd_entry *pEntry)
 static void tcdm_task_status(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
-	CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d]\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
-	CLI_printf("TCDM TASK STATUS <<PASSED>>\n");
+	if( gTCDMWriteStatus.totalFailedCount == 0 )
+	{
+		CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d] <<PASSED>>\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
+	}
+	else
+	{
+		CLI_printf("Write: Total [%d] / Failed [%d] / Mismatch [%d] <<FAILED>>\n",gTCDMWriteStatus.totalTestsCount, gTCDMWriteStatus.totalFailedCount, gTCDMWriteStatus.totalMismatchCount);
+	}
+
+	if( gTCDMReadStatus.totalFailedCount == 0 )
+	{
+		CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d] <<PASSED>>\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
+	}
+	else
+	{
+		CLI_printf("Read : Total [%d] / Failed [%d] / Mismatch [%d] <<FAILED>>\n",gTCDMReadStatus.totalTestsCount, gTCDMReadStatus.totalFailedCount, gTCDMReadStatus.totalMismatchCount);
+	}
 }
 
 

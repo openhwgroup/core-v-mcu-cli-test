@@ -39,7 +39,7 @@ static void program_fpga(const struct cli_cmd_entry *pEntry)
 {
 	programFPGA();
     (void)pEntry;
-    dbg_str("<<DONE>>");
+    dbg_str("Pgm FPGA <<DONE>>\r\n");
 }
 
 static void read_fcb_reg(const struct cli_cmd_entry *pEntry)
@@ -52,8 +52,8 @@ static void read_fcb_reg(const struct cli_cmd_entry *pEntry)
 
     lPtr = (uint32_t *) (EFPGA_CONFIG_START_ADDR + (4* regNum) );
     xValue = *lPtr;
-	dbg_str_hex32("value", xValue);
-	dbg_str("<<DONE>>");
+	CLI_printf("value 0x%08x\n", xValue);
+	dbg_str("<<DONE>>\r\n");
 }
 
 static void write_fcb_reg(const struct cli_cmd_entry *pEntry)
@@ -69,5 +69,5 @@ static void write_fcb_reg(const struct cli_cmd_entry *pEntry)
     lPtr = (uint32_t *) (EFPGA_CONFIG_START_ADDR + (4* regNum));
 
     *lPtr = xValue;
-	dbg_str("<<DONE>>");
+	dbg_str("<<DONE>>\r\n");
 }

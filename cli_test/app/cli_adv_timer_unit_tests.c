@@ -135,7 +135,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -149,7 +149,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -181,9 +181,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -201,7 +201,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -224,7 +224,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -238,7 +238,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -270,9 +270,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -290,7 +290,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -313,7 +313,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -327,7 +327,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -359,9 +359,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -379,7 +379,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -402,7 +402,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -416,7 +416,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -448,9 +448,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -468,7 +468,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -499,7 +499,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -513,7 +513,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -545,9 +545,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_1_cmd_register = 1 << REG_TIMER_1_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -565,7 +565,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -588,7 +588,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -602,7 +602,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -634,9 +634,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_1_cmd_register = 1 << REG_TIMER_1_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -654,7 +654,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -677,7 +677,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -691,7 +691,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -723,9 +723,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_1_cmd_register = 1 << REG_TIMER_1_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num", aAdvTimerNum);
+						CLI_printf("Chn num", aAdvTimerChannelNum);
+						CLI_printf("Event num", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -743,7 +743,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -766,7 +766,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -780,7 +780,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -812,9 +812,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_1_cmd_register = 1 << REG_TIMER_1_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -832,7 +832,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -863,7 +863,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -877,7 +877,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -909,9 +909,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_2_cmd_register = 1 << REG_TIMER_2_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num", aAdvTimerNum);
+						CLI_printf("Chn num", aAdvTimerChannelNum);
+						CLI_printf("Event num", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -929,7 +929,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -952,7 +952,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -966,7 +966,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -998,9 +998,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_2_cmd_register = 1 << REG_TIMER_2_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -1018,7 +1018,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -1041,7 +1041,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1055,7 +1055,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1087,9 +1087,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_2_cmd_register = 1 << REG_TIMER_2_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num", aAdvTimerNum);
+						CLI_printf("Chn num", aAdvTimerChannelNum);
+						CLI_printf("Event num", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -1107,7 +1107,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -1130,7 +1130,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1144,7 +1144,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1176,9 +1176,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_2_cmd_register = 1 << REG_TIMER_2_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -1196,7 +1196,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -1227,7 +1227,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1241,7 +1241,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1273,9 +1273,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_3_cmd_register = 1 << REG_TIMER_3_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num", aAdvTimerNum);
+						CLI_printf("Chn num", aAdvTimerChannelNum);
+						CLI_printf("Event num", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -1293,7 +1293,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -1316,7 +1316,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1330,7 +1330,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1362,9 +1362,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_3_cmd_register = 1 << REG_TIMER_3_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -1382,7 +1382,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -1405,7 +1405,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1419,7 +1419,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1451,9 +1451,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_3_cmd_register = 1 << REG_TIMER_3_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num", aAdvTimerNum);
+						CLI_printf("Chn num", aAdvTimerChannelNum);
+						CLI_printf("Event num", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -1471,7 +1471,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}
@@ -1494,7 +1494,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//enable global interrupt.
 							csr_read_set(CSR_MSTATUS, MSTATUS_IE);
 							RegReadVal = csr_read(CSR_MSTATUS);
-							dbg_str_hex32("CSR_MSTATUS", RegReadVal);
+							CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1508,7 +1508,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//open the event interrupt mask.
 							csr_read_set(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 
 						}
@@ -1540,9 +1540,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 						adv_timer->timer_3_cmd_register = 1 << REG_TIMER_3_CMD_REGISTER_START_COMMAND_LSB; //start
 						lCurrentCount = handler_count[21 + lEventNum];
 						vTaskDelay(2);
-						dbg_str_hex8("Timer num", aAdvTimerNum);
-						dbg_str_hex8("Chn num", aAdvTimerChannelNum);
-						dbg_str_hex8("Event num", lEventNum);
+						CLI_printf("Timer num 0x%02x\n", aAdvTimerNum);
+						CLI_printf("Chn num 0x%02x\n", aAdvTimerChannelNum);
+						CLI_printf("Event num 0x%02x\n", lEventNum);
 						if( ( handler_count[21 + lEventNum] - lCurrentCount)  >= 2 )
 						{
 							dbg_str("<<PASSED>>\r\n");
@@ -1560,7 +1560,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 							//close the event interrupt mask.
 							csr_read_clear(CSR_MIE, BIT(21 + lEventNum));
 							RegReadVal = csr_read(CSR_MIE);
-							dbg_str_hex32("CSR_MIE", RegReadVal);
+							CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
 							dbg_str("<<DONE>>\r\n");
 						}
 					}

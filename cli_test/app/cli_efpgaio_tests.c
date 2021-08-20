@@ -112,9 +112,9 @@ static void efpgaio_get_status(const struct cli_cmd_entry *pEntry)
 	CLI_uint32_required( "gpio_num", &efpgaio_num );
 	efpgaio.number = efpgaio_num;
 	hal_efpgaio_status(&efpgaio);
-	dbg_str_hex8("input", (uint32_t)efpgaio.in_val);
-	dbg_str_hex8("output", (uint32_t)efpgaio.out_val);
-	dbg_str_hex8("output_en ", (uint32_t)efpgaio.mode);
+	CLI_printf("input 0x%02x\n", (uint32_t)efpgaio.in_val);
+	CLI_printf("output 0x%02x\n", (uint32_t)efpgaio.out_val);
+	CLI_printf("output_en 0x%02x\n", (uint32_t)efpgaio.mode);
 	dbg_str("<<DONE>>");
 }
 

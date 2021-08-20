@@ -19,6 +19,8 @@
 #include "stdio.h"
 #include "string.h"
 
+uint8_t checkIfFailedStringIsPresent(char *aBuf);
+extern uint8_t gFilterPrintMsgFlg;
 /* make 1 to help debug key sequence decode */
 #define DEBUG_KEYS 0
 
@@ -467,16 +469,44 @@ void CLI_printf( const char *fmt, ... )
     va_end(ap);
 }
 
+static char outbuf[100] = {0};
+static char gsTmpBuf[100] = {0};
+
 /* workhorse for printf() */
 void CLI_vprintf( const char *fmt, va_list ap )
 {
-    static char outbuf[100];
-    
     vsnprintf( outbuf, sizeof(outbuf)-1, fmt, ap );
     outbuf[ sizeof(outbuf) - 1 ] = 0;
+    memcpy(gsTmpBuf, outbuf, sizeof(outbuf));
+    if( gFilterPrintMsgFlg == 1 )
+    {
+    	if( checkIfFailedStringIsPresent(gsTmpBuf) == 0 )	//If failed string is not present, no need to print it on UART
+    	{
+    		return;
+    	}
+    }
+
     CLI_puts_no_nl( outbuf );
 }
 
 
+uint8_t checkIfFailedStringIsPresent(char *aBuf)
+{
+	uint8_t isFailedStringPresent = 0;
+	const char s[3] = "<<";
+	char *token;
 
+	/* get the first token */
+	token = strtok(aBuf, s);
+
+	/* walk through other tokens */
+	while( token != NULL ) {
+		if(strncmp(token, "FAILED", 5) == 0 )
+		{
+			isFailedStringPresent = 1;
+		}
+		token = strtok(NULL, s);
+	}
+	return isFailedStringPresent;
+}
 

@@ -158,9 +158,9 @@ static void io_setmux(const struct cli_cmd_entry *pEntry)
 	hal_setpinmux(ionum, mux_sel);
 	lGetmux_sel = hal_getpinmux(ionum);
 	if( lGetmux_sel == mux_sel )
-		dbg_str("<<PASSED>>\r\n");
+		CLI_printf("io_setmux %d <<PASSED>>\n", ionum);
 	else
-		dbg_str("<<FAILED>>\r\n");
+		CLI_printf("io_setmux %d <<FAILED>>\n", ionum);
 }
 
 static void io_getmux(const struct cli_cmd_entry *pEntry)
@@ -172,7 +172,7 @@ static void io_getmux(const struct cli_cmd_entry *pEntry)
 
 	CLI_uint32_required( "ionum", &ionum );
 	mux_sel = hal_getpinmux(ionum);
-	dbg_str_hex32("mux_sel", mux_sel);
+	CLI_printf("mux_sel 0x%08x\n", mux_sel);
 	dbg_str("<<DONE>>");
 }
 
@@ -221,14 +221,14 @@ static void gpio_read_status(const struct cli_cmd_entry *pEntry)
 
 	hal_read_gpio_status_raw(gpio_num, &value);
 
-	dbg_str_hex8("input", (uint8_t)((value >> 12) & 0x1));
-	dbg_str_hex8("output", (uint8_t)((value >> 8) & 0x1));
-	dbg_str_hex8("interrupt_type", (uint8_t)((value >> 17) & 0x7));
-	dbg_str_hex8("interrupt_enable", (uint8_t)((value >> 16) & 0x1));
-	dbg_str_hex8("gpio_mode", (uint8_t)((value >> 24) & 0x3));
+	CLI_printf("input 0x%02x\n", (uint8_t)((value >> 12) & 0x1));
+	CLI_printf("output 0x%02x\n", (uint8_t)((value >> 8) & 0x1));
+	CLI_printf("interrupt_type 0x%02x\n", (uint8_t)((value >> 17) & 0x7));
+	CLI_printf("interrupt_enable 0x%02x\n", (uint8_t)((value >> 16) & 0x1));
+	CLI_printf("gpio_mode 0x%02x\n", (uint8_t)((value >> 24) & 0x3));
 
 
-	dbg_str_hex32("rdstatus", value);
+	CLI_printf("rdstatus 0x%08x\n", value);
 	dbg_str("<<DONE>>");
 }
 
@@ -273,7 +273,7 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 				if (gpio_map[io_num].pm[mux_sel] == gpio_num) {
 					// Found a gpio to test
 					int_gpio_num = gpio_num;
-					dbg_str_hex8("GPIO",(uint8_t)gpio_num);
+					CLI_printf("GPIO 0x%02x\n",(uint8_t)gpio_num);
 					save_mux = hal_getpinmux((uint8_t)io_num);
 					hal_clr_gpio((uint8_t)gpio_num); // TODO save gpio state
 					hal_set_gpio_mode ((uint8_t)gpio_num,1);  // output
@@ -286,7 +286,7 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 					hal_set_gpio_interrupt((uint8_t)gpio_num, 0, 1); //int active low enabled
 					hal_set_gpio_interrupt((uint8_t)gpio_num, 0, 0); //int active low disabled
 					//if (event_flag == 0)
-					dbg_str_hex32("event_flag(!0)", (uint32_t)event_flag);
+					CLI_printf("event_flag(!0) 0x%08x\n", (uint32_t)event_flag);
 					hal_gpio_int_ack ((uint8_t)int_gpio_num);
 					event_flag = 0;
 					hal_set_gpio_interrupt((uint8_t)gpio_num, 4, 1); //int active high enabled
@@ -294,7 +294,7 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 					hal_clr_gpio((uint8_t)gpio_num);
 					hal_set_gpio_interrupt((uint8_t)gpio_num, 0, 0); //int active high disabled
 					//if (event_flag == 0)
-					dbg_str_hex32("event_flag(!0)", (uint32_t)event_flag);
+					CLI_printf("event_flag(!0) 0x%08x\n", (uint32_t)event_flag);
 					if( event_flag == 0 )
 					{
 						errors++;
@@ -304,14 +304,14 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 					hal_set_gpio_interrupt((uint8_t)gpio_num, 1, 1); //int falling edge enabled
 					hal_toggle_gpio((uint8_t)gpio_num);
 					vTaskDelay(1);
-					dbg_str_hex32("event_flag(0)", (uint32_t)event_flag);
+					CLI_printf("event_flag(0) 0x%08x\n", (uint32_t)event_flag);
 					if( event_flag != 0 )
 					{
 						errors++;
 					}
 					hal_toggle_gpio((uint8_t)gpio_num);
 					vTaskDelay(1);
-					dbg_str_hex32("event_flag(1)", (uint32_t)event_flag);
+					CLI_printf("event_flag(1) 0x%08x\n", (uint32_t)event_flag);
 					if( event_flag != 1 )
 					{
 						errors++;
@@ -319,7 +319,7 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 					hal_set_gpio_interrupt((uint8_t)gpio_num, 2, 1); //int rising edge enabled
 					hal_toggle_gpio((uint8_t)gpio_num);
 					vTaskDelay(1);
-					dbg_str_hex32("event_flag(2)", (uint32_t)event_flag);
+					CLI_printf("event_flag(2) 0x%08x\n", (uint32_t)event_flag);
 					if( event_flag != 2 )
 					{
 						errors++;
@@ -328,7 +328,7 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 					hal_toggle_gpio((uint8_t)gpio_num);
 					hal_toggle_gpio((uint8_t)gpio_num);
 					vTaskDelay(1);
-					dbg_str_hex32("event_flag(4)", (uint32_t)event_flag);
+					CLI_printf("event_flag(4) 0x%08x\n", (uint32_t)event_flag);
 					if( event_flag != 4 )
 					{
 						errors++;
@@ -336,7 +336,7 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 					hal_toggle_gpio((uint8_t)gpio_num);
 					hal_toggle_gpio((uint8_t)gpio_num);
 					vTaskDelay(1);
-					dbg_str_hex32("event_flag(6)", (uint32_t)event_flag);
+					CLI_printf("event_flag(6) 0x%08x\n", (uint32_t)event_flag);
 					if( event_flag != 6 )
 					{
 						errors++;
@@ -359,6 +359,99 @@ static void gpio_event_test(const struct cli_cmd_entry *pEntry)
 	{
 		CLI_printf("<<FAILED>>\r\n");
 	}
+}
+
+uint32_t gpio_event_test_forevent31(void)
+{
+	// Add functionality here
+	uint8_t	io_num;
+	uint8_t	mux_sel, save_mux;
+	short	gpio_num;
+	uint32_t errors = 0;
+
+	for (gpio_num = 4; gpio_num < N_GPIO; gpio_num++) {
+		for (io_num = 0; io_num < N_IO; io_num++) {
+			for (mux_sel = 0; mux_sel < 4; mux_sel++) {
+				if (gpio_map[io_num].pm[mux_sel] == gpio_num) {
+					// Found a gpio to test
+					int_gpio_num = gpio_num;
+					//CLI_printf("GPIO 0x%02x\n",(uint8_t)gpio_num);
+					save_mux = hal_getpinmux((uint8_t)io_num);
+					hal_clr_gpio((uint8_t)gpio_num); // TODO save gpio state
+					hal_set_gpio_mode ((uint8_t)gpio_num,1);  // output
+					hal_setpinmux(io_num,(uint8_t)mux_sel);
+					pi_fc_event_handler_set(128 + (uint8_t)gpio_num, isr_gpio_handler, NULL);
+					hal_soc_eu_set_fc_mask(128 + (uint8_t)gpio_num);
+
+					event_flag = 0;
+					vTaskDelay(1); // wait to make sure no interrupt fires
+					hal_set_gpio_interrupt((uint8_t)gpio_num, 0, 1); //int active low enabled
+					hal_set_gpio_interrupt((uint8_t)gpio_num, 0, 0); //int active low disabled
+					//if (event_flag == 0)
+					//CLI_printf("event_flag(!0) 0x%08x\n", (uint32_t)event_flag);
+					hal_gpio_int_ack ((uint8_t)int_gpio_num);
+					event_flag = 0;
+					hal_set_gpio_interrupt((uint8_t)gpio_num, 4, 1); //int active high enabled
+					hal_set_gpio((uint8_t)gpio_num);
+					hal_clr_gpio((uint8_t)gpio_num);
+					hal_set_gpio_interrupt((uint8_t)gpio_num, 0, 0); //int active high disabled
+					//if (event_flag == 0)
+					//CLI_printf("event_flag(!0) 0x%08x\n", (uint32_t)event_flag);
+					if( event_flag == 0 )
+					{
+						errors++;
+					}
+					hal_gpio_int_ack ((uint8_t)int_gpio_num);
+					event_flag = 0;
+					hal_set_gpio_interrupt((uint8_t)gpio_num, 1, 1); //int falling edge enabled
+					hal_toggle_gpio((uint8_t)gpio_num);
+					vTaskDelay(1);
+					//CLI_printf("event_flag(0) 0x%08x\n", (uint32_t)event_flag);
+					if( event_flag != 0 )
+					{
+						errors++;
+					}
+					hal_toggle_gpio((uint8_t)gpio_num);
+					vTaskDelay(1);
+					//CLI_printf("event_flag(1) 0x%08x\n", (uint32_t)event_flag);
+					if( event_flag != 1 )
+					{
+						errors++;
+					}
+					hal_set_gpio_interrupt((uint8_t)gpio_num, 2, 1); //int rising edge enabled
+					hal_toggle_gpio((uint8_t)gpio_num);
+					vTaskDelay(1);
+					//CLI_printf("event_flag(2) 0x%08x\n", (uint32_t)event_flag);
+					if( event_flag != 2 )
+					{
+						errors++;
+					}
+					hal_set_gpio_interrupt((uint8_t)gpio_num, 3, 1); //int both edges enabled
+					hal_toggle_gpio((uint8_t)gpio_num);
+					hal_toggle_gpio((uint8_t)gpio_num);
+					vTaskDelay(1);
+					//CLI_printf("event_flag(4) 0x%08x\n", (uint32_t)event_flag);
+					if( event_flag != 4 )
+					{
+						errors++;
+					}
+					hal_toggle_gpio((uint8_t)gpio_num);
+					hal_toggle_gpio((uint8_t)gpio_num);
+					vTaskDelay(1);
+					//CLI_printf("event_flag(6) 0x%08x\n", (uint32_t)event_flag);
+					if( event_flag != 6 )
+					{
+						errors++;
+					}
+					hal_soc_eu_clear_fc_mask(128 + (uint8_t)gpio_num);
+					pi_fc_event_handler_clear(128 + (uint8_t)gpio_num);
+					hal_setpinmux(io_num,save_mux);
+
+				}
+			}
+		}
+	}
+	return errors;
 }
 
 static unsigned int gpio_set_clr_toggle_mode_test(gpio_struct_typedef *gpio) {
@@ -473,10 +566,10 @@ static void apb_gpio_tests(const struct cli_cmd_entry *pEntry)
 		gpio.io_num = 11;
 		gpio.number = 4;
 		if (!err) {
-			dbg_str("<<PASSED>>\r\n");
+			dbg_str("apb_gpio_tests <<PASSED>>\r\n");
 		}
 		else {
-			dbg_str("<<FAILED>>\r\n");
+			dbg_str("apb_gpio_tests <<FAILED>>\r\n");
 		}
 	}
 }
