@@ -464,6 +464,7 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 			}while(mlt_type < 4);
 			break;
 		case 2:
+
 			mlt_type = 0;
 			do {
 				*mctl->m_ctl = 0x80000000;
@@ -480,6 +481,8 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 				if (mlt_type != 3) {
 					if(data_out != exp_data_out) errors ++;
 				}
+
+
 #if EFPGA_DEBUG
 				sprintf(message,"mctl->m_data_out = %08x\r\n",data_out);
 				dbg_str(message);
@@ -502,6 +505,7 @@ static unsigned int mltiply_test(ram_word *ram_adr1, ram_word *ram_adr2, mlti_ct
 #endif
 			mlt_type ++;
 			}while(mlt_type < 4);
+
 			break;
 		default:
 			break;
@@ -528,6 +532,7 @@ static void enableMultiplyOperation(uint32_t *aReg)
 uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 {
 	// Add functionality here
+
 	uint8_t mlt_type = 0;
 	uint32_t i = 0, lOperandSource = 0;
 	uint32_t lErrorCount = 0, lCount = 0;
@@ -538,6 +543,7 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 	uint32_t lOperandData = 0;
 	uint32_t lCoefficientData = 0;
 	uint64_t lExpectedData = 0;
+	uint32_t lDummy1 = 0, lDummy2 = 0;
 
 	uint32_t *m_ctl = (uint32_t *)NULL;
 	uint32_t *m_clken = (uint32_t *)NULL;
@@ -546,7 +552,8 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 	uint32_t *m_data_out = (uint32_t *)NULL;
 	ram_word *ram_addr1 = (ram_word *)NULL;
 	ram_word *ram_addr2 = (ram_word *)NULL;
-
+	uint32_t *ram_m0_ctl = (uint32_t *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
+	uint32_t *ram_m1_ctl = (uint32_t *)(EFPGA_BASE_ADDR + REG_M1_RAM_CONTROL);
 	apb_soc_ctrl_typedef* soc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 
 	if( aMathMultNum == MATH_UNIT0_MULTIPLIER_0 )
@@ -593,6 +600,8 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 	soc_ctrl->rst_efpga = 0xf;  //release efpga reset
 	soc_ctrl->ena_efpga = 0x7f; // enable all interfaces
 
+	*ram_m0_ctl = 0x0;
+	*ram_m1_ctl = 0x0;
 	/*----------------------------------------------------------------------------------------------*/
 	//To test 4 bit multiplication (8 4-bit multipliers will be there)
 	//1. Basic multiplication which does not need more than 4 bit accumulator. For ex 2*3 = 6 which can be represented in 4 bits.
@@ -619,6 +628,10 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
+
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
 		if (*m_data_out != 0x0)
@@ -662,6 +675,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			//Enable saturation bit.
 			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
 		}
@@ -700,6 +716,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = lCoefficientData;
 			ram_addr1->w[0] = 0x0;
 			ram_addr2->w[0] = 0x0;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			//Disable saturation bit.
 			*m_ctl = (uint32_t)(0x00000000 | ((mlt_type & 0x3) << 12));
 		}
@@ -764,6 +783,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
 		if (*m_data_out != 0x0)
@@ -871,6 +893,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
 		if (*m_data_out != 0x0)
@@ -914,6 +939,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			//Enable saturation bit.
 			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
 		}
@@ -961,6 +989,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			//Disable saturation bit.
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
@@ -1015,6 +1046,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
 		if (*m_data_out != 0x0)
@@ -1121,6 +1155,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
 		if (*m_data_out != 0x0)
@@ -1164,6 +1201,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			//Enable saturation bit.
 			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
 		}
@@ -1211,6 +1251,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			//Disable saturation bit.
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
@@ -1265,6 +1308,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
 		if (*m_data_out != 0x0)
@@ -1371,6 +1417,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			*m_ctl = (uint32_t)(0x0000C000 | ((mlt_type & 0x3) << 12));
 		}
 		if (*m_data_out != 0x0)
@@ -1414,6 +1463,9 @@ uint32_t mathUnitMultiplierTest(uint8_t aMathMultNum)
 			*m_cdata = 0x0;
 			ram_addr1->w[0] = lOperandData;
 			ram_addr2->w[0] = lCoefficientData;
+			//The dummy read of RAM address is required so that the multiplication result are read correctly.
+			lDummy1 = ram_addr1->w[0];
+			lDummy2 = ram_addr2->w[0];
 			//Enable saturation bit.
 			*m_ctl = (uint32_t)(0x0004C000 | ((mlt_type & 0x3) << 12));
 		}
@@ -1509,6 +1561,7 @@ static void m_mltiply_test(const struct cli_cmd_entry *pEntry)
 
 		ram_m0_ctl = (volatile unsigned int *)(EFPGA_BASE_ADDR + REG_M0_RAM_CONTROL);
 		*ram_m0_ctl = 0x0;
+
 		test_no = 1;
 		do {
 		switch(test_no) {
@@ -1641,6 +1694,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		for(k = 0; k < 6; k++) {
 			ram_addr[k] = (EFPGA_BASE_ADDR + (k+1)* REG_M0_OPER0);
 		}
+		//TODO: Put the RAM in 32-bit mode.
 
 #if EFPGA_ERROR
 		sprintf(message,"Testing 6RAMs :");
