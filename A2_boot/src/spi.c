@@ -73,7 +73,7 @@ void udma_flash_readid(uint32_t l2addr) {
 
 		*pcmd++ = kSPIm_Cfg | aucclkdiv;
 		*pcmd++ = kSPIm_SOT;
-		*pcmd++ = kSPIm_SendCmd | (0x7009e); // readid command
+		*pcmd++ = kSPIm_SendCmd | (0x7009f); // readid command
 	//	*pcmd++ = kSPIm_SendCmd | (0xf0000) | ((flash_addr >> 8) & 0xffff);
 	//	*pcmd++ = kSPIm_SendCmd | (0x70000) | (flash_addr && 0xff);
 		*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved

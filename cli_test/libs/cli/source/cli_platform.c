@@ -148,7 +148,8 @@ int CLI_getkey_raw( int timeout )
   for(;;){
     //uart_rx_wait( UART_ID_CONSOLE, timeout );
     if( udma_uart_control( UART_ID_CONSOLE , kUartDataValid, NULL) ){
-      x = udma_uart_getchar( UART_ID_CONSOLE );
+    	x = uart_getchar(UART_ID_CONSOLE);
+//      x = udma_uart_getchar( UART_ID_CONSOLE );
       if (x != 0)							// FIXME: why do we get nullls?
     	  return (int)x;
     }

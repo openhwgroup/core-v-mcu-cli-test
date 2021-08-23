@@ -30,9 +30,10 @@
 
 SemaphoreHandle_t  uart_semaphores_rx[N_UART];
 SemaphoreHandle_t  uart_semaphores_tx[N_UART];
-static char u1buffer[128];
-static int u1rdptr, u1wrptr;
-	static UdmaUart_t *puart1 = (UdmaUart_t*)(UDMA_CH_ADDR_UART + UDMA_CH_SIZE);
+static char u1buffer[128], u0buffer[128];
+static int u1rdptr, u1wrptr, u0rdptr,u0wrptr;
+static UdmaUart_t *puart0 = (UdmaUart_t*)(UDMA_CH_ADDR_UART);
+static UdmaUart_t *puart1 = (UdmaUart_t*)(UDMA_CH_ADDR_UART + UDMA_CH_SIZE);
 
 void uart_rx_isr (void *id){
 	if (id == 6) {
@@ -41,16 +42,26 @@ void uart_rx_isr (void *id){
 			u1wrptr &= 0x7f;
 		}
 	}
+	if (id == 2) {
+		while (puart0->valid) {
+			u0buffer[u0wrptr++] = puart0->data_b.rx_data & 0xff;
+			u0wrptr &= 0x7f;
+		}
+	}
 }
 uint8_t uart_getchar (uint8_t id) {
 	uint8_t retval;
-if (id == 1) {
-	while (u1rdptr == u1wrptr) ;
-	retval = u1buffer[u1rdptr++];
-	u1rdptr &= 0x7f;
-}
+	if (id == 1) {
+		while (u1rdptr == u1wrptr) ;
+		retval = u1buffer[u1rdptr++];
+		u1rdptr &= 0x7f;
+	}
+	if (id == 0) {
+		while (u0rdptr == u0wrptr) ;
+		retval = u0buffer[u0rdptr++];
+		u0rdptr &= 0x7f;
+	}
 	return retval;
-
 }
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	UdmaUart_t*				puart;
@@ -88,8 +99,9 @@ uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
 	puart->uart_setup_b.div = (uint16_t)(5000000/xbaudrate);
 	puart->uart_setup_b.bits = 3; // 8-bits
-	if (uart_id == 0) puart->uart_setup_b.rx_polling_en = 1;
-	if (uart_id == 1) puart->irq_en_b.rx_irq_en = 1;
+//	if (uart_id == 0) puart->uart_setup_b.rx_polling_en = 1;
+//	if (uart_id == 1)
+		puart->irq_en_b.rx_irq_en = 1;
 	puart->uart_setup_b.en_tx = 1;
 	puart->uart_setup_b.en_rx = 1;
 	puart->uart_setup_b.rx_clean_fifo = 1;
@@ -97,6 +109,10 @@ uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	if (uart_id == 1) {
 		 u1rdptr = 0;
 	 	 u1wrptr = 0;
+	}
+	if (uart_id == 0) {
+		 u0rdptr = 0;
+	 	 u0wrptr = 0;
 	}
 
 	return 0;
@@ -165,6 +181,10 @@ uint16_t udma_uart_control(uint8_t uart_id, udma_uart_control_type_t control_typ
 
 	switch(control_type) {
 	case kUartDataValid:
+		if (uart_id == 0)
+			return !(u0rdptr == u0wrptr);
+		if (uart_id == 1)
+			return !(u1rdptr == u1wrptr);
 		return puart->valid_b.rx_data_valid;
 	default:
 		return 0xFFFF;

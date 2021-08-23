@@ -1,7 +1,7 @@
 #!/bin/bash
 console_uart_found_flag=0
 uart1_uart_found_flag=0
-OUTPUTDIR=~/NightlyBuild/arnold2/core-v-mcu-cli-test/autotest/TestOutputs
+OUTPUTDIR=TestOutputs
 
 while getopts ":c:d:u:U:" opt; do
     case $opt in
