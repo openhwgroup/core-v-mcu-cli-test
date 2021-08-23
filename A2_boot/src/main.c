@@ -166,8 +166,7 @@ int main(void)
  udma_uart_open (id,115200);
  dbg_str("\nA2 Bootloader Bootsel=");
 
- if (bootsel == 1) dbg_str("1");
- else dbg_str("0");
+ dbg_hex32(bootsel);
  udma_qspim_open(0, 2500000);
  udma_flash_reset_enable(0, 0);
  //for (i = 0; i < 10000; i++);
@@ -185,7 +184,10 @@ int main(void)
 	 bootFromRom(0,0);
  } else
  while (1) {
+	 psoc->jtagreg = 1;
 	 for (bootsel = 0; bootsel < 1000000; bootsel++);
+	 if (psoc->jtagreg != 0x1)
+		 dbg_hex32(psoc->jtagreg);
 	 dbg_str(tstring);
  }
 
