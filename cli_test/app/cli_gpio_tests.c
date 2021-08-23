@@ -368,8 +368,10 @@ uint32_t gpio_event_test_forevent31(void)
 	uint8_t	mux_sel, save_mux;
 	short	gpio_num;
 	uint32_t errors = 0;
+	uint16_t i = 0;
 
-	for (gpio_num = 4; gpio_num < N_GPIO; gpio_num++) {
+	for (i = 0; i < 5; i++) {
+		gpio_num = 5;
 		for (io_num = 0; io_num < N_IO; io_num++) {
 			for (mux_sel = 0; mux_sel < 4; mux_sel++) {
 				if (gpio_map[io_num].pm[mux_sel] == gpio_num) {

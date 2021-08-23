@@ -24,11 +24,6 @@
 static uint8_t gsI2CTxBuf[32] = {0};
 static uint8_t gsI2CRxBuf[32] = {0};
 
-
-
-
-
-
 static void i2cs_readSlaveAddress(const struct cli_cmd_entry *pEntry);
 static void i2cs_writeSlaveAddress(const struct cli_cmd_entry *pEntry);
 static void i2cs_on(const struct cli_cmd_entry *pEntry);
@@ -45,7 +40,7 @@ static void i2cs_runApbToI2cFIFOWatermarkTests(const struct cli_cmd_entry *pEntr
 
 static void i2cs_runI2cToApbFIFOFlushTests(const struct cli_cmd_entry *pEntry);
 static void i2cs_runApbToI2cFIFOFlushTests(const struct cli_cmd_entry *pEntry);
-
+static void i2cs_test_all(const struct cli_cmd_entry *pEntry);
 
 const struct cli_cmd_entry i2cs_functions[] =
 {
@@ -61,6 +56,7 @@ const struct cli_cmd_entry i2cs_functions[] =
 	CLI_CMD_WITH_ARG( "apb2i2cfifowm", i2cs_runApbToI2cFIFOWatermarkTests,	1, 	"Run I2C slave FIFO water mark level tests"),
 	CLI_CMD_WITH_ARG( "i2c2apbflush", i2cs_runI2cToApbFIFOFlushTests,	1, 	"Run I2C slave FIFO flush test"),
 	CLI_CMD_WITH_ARG( "apb2i2cflush", i2cs_runApbToI2cFIFOFlushTests,	1, 	"Run I2C slave FIFO flush test"),
+	CLI_CMD_SIMPLE ( "all", i2cs_test_all,		    "test all basic functionalites of i2c slave"),
 	CLI_CMD_TERMINATE()
 };
 
@@ -2026,3 +2022,14 @@ static void i2cs_runApbToI2cFIFOWatermarkTests (const struct cli_cmd_entry *pEnt
 	}
 }
 
+static void i2cs_test_all(const struct cli_cmd_entry *pEntry)
+{
+	i2cs_runI2cToApbMsgTests(NULL);
+	i2cs_runApbToI2cMsgTests(NULL);
+	i2cs_runI2cToApbFIFOTests(NULL);
+	i2cs_runApbToI2cFIFOTests(NULL);
+	i2cs_runI2cToApbFIFOWatermarkTests(NULL);
+	i2cs_runApbToI2cFIFOWatermarkTests(NULL);
+	i2cs_runI2cToApbFIFOFlushTests(NULL);
+	i2cs_runApbToI2cFIFOFlushTests(NULL);
+}

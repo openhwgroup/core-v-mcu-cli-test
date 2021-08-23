@@ -261,8 +261,10 @@ static void mem_check(const struct cli_cmd_entry *pEntry)
 
 static void barr_mem_check(const struct cli_cmd_entry *pEntry)
 {
+	uint32_t lNumOfKBs = 0;
 	(void)pEntry;
-	if( memTest() == 0 )
+	CLI_uint32_required( "num of KBs to test", &lNumOfKBs );
+	if( memTest(lNumOfKBs) == 0 )
 	{
 		dbg_str("BARR <<PASSED>>\r\n");
 	}

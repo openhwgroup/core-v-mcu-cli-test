@@ -31,6 +31,8 @@ static void i2c_temp(const struct cli_cmd_entry *pEntry);
 static void i2c_read_dev_id(const struct cli_cmd_entry *pEntry);
 static void i2cm_singlebyte_test(const struct cli_cmd_entry *pEntry);
 static void i2c_buffer_reset(const struct cli_cmd_entry *pEntry);
+static void i2cm0_test_all(const struct cli_cmd_entry *pEntry);
+static void i2cm1_test_all(const struct cli_cmd_entry *pEntry);
 
 static uint8_t i2c_buffer[256] = {0};
 
@@ -44,6 +46,7 @@ const struct cli_cmd_entry i2cm0_functions[] =
   CLI_CMD_WITH_ARG( "read", 	i2cm_readMultiBytes,	0, "i2c_addr reg_addr value 	-- read register" ),
   CLI_CMD_WITH_ARG( "testsinglebyte", 	i2cm_singlebyte_test,	0, "i2c_addr reg_addr	-- writes 0xA5 and then 0x5A to register and checks result" ),
   CLI_CMD_SIMPLE ( "rbuff", i2c_buffer_reset,		    "reset i2c device application buffer"),
+  CLI_CMD_SIMPLE ( "all", i2cm0_test_all,		    "test all basic functionalites of i2cm0"),
   CLI_CMD_TERMINATE()
 
 };
@@ -59,6 +62,7 @@ const struct cli_cmd_entry i2cm1_functions[] =
 	CLI_CMD_SIMPLE ( "temp", i2c_temp,				   "read on board temperature"),
 	CLI_CMD_SIMPLE ( "dev_id", i2c_read_dev_id,		    "read i2c device id"),
 	CLI_CMD_SIMPLE ( "rbuff", i2c_buffer_reset,		    "reset i2c device application buffer"),
+	CLI_CMD_SIMPLE ( "all", i2cm1_test_all,		    "test all basic functionalites of i2cm1"),
 	CLI_CMD_TERMINATE()
 };
 
@@ -258,5 +262,131 @@ static void i2c_read_dev_id(const struct cli_cmd_entry *pEntry)
 		dbg_str("Dev Id Test: <<FAILED>>\r\n");
 	}
 	vPortFree(message);
+}
+
+static void i2cm0_test_all(const struct cli_cmd_entry *pEntry)
+{
+
+	bool		fPassed = false;
+
+	hal_setpinmux(23, 2);
+	hal_setpinmux(24, 2);
+	i2c_buffer[0] = 0x3D;
+	udma_i2cm_write (0, 0xDE, 0x10, 1, i2c_buffer,  false);
+
+	udma_i2cm_read(0, 0xDE, 0x10, 1, &i2c_buffer[1], false);
+	if( i2c_buffer[1] == 0xFF )
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<PASSED>>\n",0xDE, 0x10);
+	}
+	else
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<FAILED>>\n",0xDE, 0x10);
+	}
+
+	i2c_buffer[0] = 0x5C;
+	udma_i2cm_write (0, 0xC4, 0x10, 1, i2c_buffer,  false);
+
+	udma_i2cm_read(0, 0xC4, 0x10, 1, &i2c_buffer[1], false);
+	if( i2c_buffer[1] == 0xFF )
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<PASSED>>\n", 0xC4, 0x10);
+	}
+	else
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<FAILED>>\n", 0xC4, 0x10);
+	}
+
+	hal_setpinmux(23, 0);
+	hal_setpinmux(24, 0);
+
+	i2c_buffer[0] = 0x5C;
+	udma_i2cm_write (0, 0xDE, 0x10, 1, i2c_buffer,  false);
+
+	udma_i2cm_read(0, 0xDE, 0x10, 1, &i2c_buffer[1], false);
+	if( i2c_buffer[1] == 0x5C )
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<PASSED>>\n", 0xDE, 0x10);
+	}
+	else
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<FAILED>>\n", 0xDE, 0x10);
+	}
+
+	i2c_buffer[0] = 0xA5;
+	udma_i2cm_write (0, 0xDE, 0x10, 1, i2c_buffer,  false);
+	i2c_buffer[0] = 0xFF;
+	udma_i2cm_read(0, 0xDE, 0x10, 1, i2c_buffer, false);
+	CLI_printf("First access = 0x%02x\n", i2c_buffer[0]);
+	if (i2c_buffer[0] == 0xA5) {
+		i2c_buffer[0] = 0x5A;
+		udma_i2cm_write (0, 0xDE, 0x10, 1, i2c_buffer,  false);
+		i2c_buffer[0] = 0xFF;
+		udma_i2cm_read(0, 0xDE, 0x10, 1, i2c_buffer, false);
+		CLI_printf("Second access = 0x%02x\n", i2c_buffer[0]);
+		if (i2c_buffer[0] == 0x5A) {
+			fPassed = true;
+		}
+	}
+	if (fPassed) {
+		CLI_printf("i2cm0 singlebyte_test slv addr 0x%02x reg 0x%02x <<PASSED>>\n", 0xDE, 0x10);
+	} else {
+		CLI_printf("i2cm0 singlebyte_test slv addr 0x%02x reg 0x%02x <<FAILED>>\n", 0xDE, 0x10);
+	}
+
+	i2c_buffer[0] = 0x5C;
+	udma_i2cm_write (0, 0xC4, 0x10, 1, i2c_buffer,  false);
+
+	udma_i2cm_read(0, 0xC4, 0x10, 1, &i2c_buffer[1], false);
+	if( i2c_buffer[1] == 0x5C )
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<PASSED>>\n", 0xC4, 0x10);
+	}
+	else
+	{
+		CLI_printf("i2cm0 readbyte slv addr 0x%02x reg 0x%02x <<FAILED>>\n", 0xC4, 0x10);
+	}
+
+	i2c_buffer[0] = 0xA5;
+	udma_i2cm_write (0, 0xC4, 0x10, 1, i2c_buffer,  false);
+	i2c_buffer[0] = 0xFF;
+	udma_i2cm_read(0, 0xC4, 0x10, 1, i2c_buffer, false);
+	CLI_printf("First access = 0x%02x\n", i2c_buffer[0]);
+	if (i2c_buffer[0] == 0xA5) {
+		i2c_buffer[0] = 0x5A;
+		udma_i2cm_write (0, 0xC4, 0x10, 1, i2c_buffer,  false);
+		i2c_buffer[0] = 0xFF;
+		udma_i2cm_read(0, 0xC4, 0x10, 1, i2c_buffer, false);
+		CLI_printf("Second access = 0x%02x\n", i2c_buffer[0]);
+		if (i2c_buffer[0] == 0x5A) {
+			fPassed = true;
+		}
+	}
+	if (fPassed) {
+		CLI_printf("i2cm0 singlebyte_test slv addr 0x%02x reg 0x%02x <<PASSED>>\n", 0xC4, 0x10);
+	} else {
+		CLI_printf("i2cm0 singlebyte_test slv addr 0x%02x reg 0x%02x <<FAILED>>\n", 0xC4, 0x10);
+	}
+}
+
+static void i2cm1_test_all(const struct cli_cmd_entry *pEntry)
+{
+
+	hal_setpinmux(46, 2);
+	hal_setpinmux(47, 2);
+
+	udma_i2cm_read(0, 0x96, 0x0B, 1, &i2c_buffer[1], false);
+	if( i2c_buffer[1] == 0xFF )
+	{
+		CLI_printf("i2cm1 readbyte slv addr 0x%02x reg 0x%02x <<PASSED>>\n", 0x96, 0x0B);
+	}
+	else
+	{
+		CLI_printf("i2cm1 readbyte slv addr 0x%02x reg 0x%02x <<FAILED>>\n", 0x96, 0x0B);
+	}
+	hal_setpinmux(46, 0);
+	hal_setpinmux(47, 0);
+	i2c_temp(NULL);
+	i2c_read_dev_id(NULL);
 }
 

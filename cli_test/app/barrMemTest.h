@@ -10,6 +10,6 @@ datum memTestDataBus(volatile datum * address);
 datum memTestDataBusNBytes(volatile datum * baseAddress, unsigned long nBytes);
 datum *memTestAddressBus(volatile datum * baseAddress, unsigned long nBytes);
 datum *memTestDevice(volatile datum * baseAddress, unsigned long nBytes);
-int memTest(void);
+int memTest(uint32_t aNumOfKBs);
 #endif
 

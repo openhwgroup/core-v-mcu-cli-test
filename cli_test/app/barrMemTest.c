@@ -216,10 +216,12 @@ memTestDevice(volatile datum * baseAddress, unsigned long nBytes)
  *
  **********************************************************************/
 int
-memTest(void)
+memTest(uint32_t aNumOfKBs)
 {
 
-	CLI_printf("Testing from 0x%08x to 0x%08x\n",BASE_ADDRESS, (BASE_ADDRESS+NUM_BYTES));
+	uint32_t lNumOfBytes = 0;
+	lNumOfBytes = (aNumOfKBs * 1024);
+	CLI_printf("Testing from 0x%08x to 0x%08x\n",BASE_ADDRESS, (BASE_ADDRESS+lNumOfBytes));
     //if ((memTestDataBus(BASE_ADDRESS) != 0) ||
 	if ((memTestDataBusNBytes(BASE_ADDRESS, NUM_BYTES) != 0) ||
         (memTestAddressBus(BASE_ADDRESS, NUM_BYTES) != NULL) ||

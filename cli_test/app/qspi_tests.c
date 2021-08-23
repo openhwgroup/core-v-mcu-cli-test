@@ -550,7 +550,7 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 
 	if( CLI_is_more_args() ){
 		lExpValTrueOrFalse = 1;
-		CLI_uint32_required("exp", &lExpVal);
+		CLI_uint32_required("exp", &lExpVal.w);
 	}
 
 	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
@@ -562,11 +562,11 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 	{
 		if( xValue.w == lExpVal.w )
 		{
-			CLI_printf("peek 0x%08x <<PASSED>>\n",lAddress);
+			CLI_printf("flash peek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
 		}
 		else
 		{
-			CLI_printf("peek 0x%08x <<FAILED>>\n",lAddress);
+			CLI_printf("flash peek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
 		}
 	}
 	else
@@ -653,7 +653,7 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 
 	if( CLI_is_more_args() ){
 		lExpValTrueOrFalse = 1;
-		CLI_uint32_required("exp", &lExpVal);
+		CLI_uint32_required("exp", &lExpVal.w);
 	}
 
 	dbg_str("Qspi Flash Read\n");
@@ -671,11 +671,11 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 	{
 		if( xValue.w == lExpVal.w )
 		{
-			CLI_printf("qpeek 0x%08x <<PASSED>>\n",lAddress);
+			CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
 		}
 		else
 		{
-			CLI_printf("qpeek 0x%08x <<FAILED>>\n",lAddress);
+			CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
 		}
 	}
 	else
