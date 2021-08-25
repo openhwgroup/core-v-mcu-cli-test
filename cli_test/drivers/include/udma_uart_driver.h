@@ -35,5 +35,6 @@ uint16_t udma_uart_read(uint8_t uart_id, uint16_t read_len, uint8_t* read_buffer
 uint16_t udma_uart_readraw(uint8_t uart_id, uint16_t read_len, uint8_t* read_buffer);
 uint8_t udma_uart_getchar(uint8_t uart_id);
 uint16_t udma_uart_control(uint8_t uart_id, udma_uart_control_type_t control_type, void* pparam);
+uint8_t uart_getchar (uint8_t id);
 
 #endif //__UDMA_UART_DRIVER_H_

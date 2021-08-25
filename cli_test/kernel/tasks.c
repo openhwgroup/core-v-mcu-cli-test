@@ -28,7 +28,8 @@
 /* Standard includes. */
 #include <stdlib.h>
 #include <string.h>
-
+#include <stdint.h>
+#include "target/core-v-mcu/include/core-v-mcu-config.h"
 /* Defining MPU_WRAPPERS_INCLUDED_FROM_API_FILE prevents task.h from redefining
 all the API functions to use the MPU wrappers.  That should only be done when
 task.h is included from an application file. */
@@ -1340,42 +1341,47 @@ static void prvAddNewTaskToReadyList( TCB_t *pxNewTCB )
 
 	void vTaskDelay( const TickType_t xTicksToDelay )
 	{
+#if (USE_FREE_RTOS == 1 )
 	BaseType_t xAlreadyYielded = pdFALSE;
 
-		/* A delay time of zero just forces a reschedule. */
-		if( xTicksToDelay > ( TickType_t ) 0U )
+	/* A delay time of zero just forces a reschedule. */
+	if( xTicksToDelay > ( TickType_t ) 0U )
+	{
+		configASSERT( uxSchedulerSuspended == 0 );
+		vTaskSuspendAll();
 		{
-			configASSERT( uxSchedulerSuspended == 0 );
-			vTaskSuspendAll();
-			{
-				traceTASK_DELAY();
+			traceTASK_DELAY();
 
-				/* A task that is removed from the event list while the
-				scheduler is suspended will not get placed in the ready
-				list or removed from the blocked list until the scheduler
-				is resumed.
+			/* A task that is removed from the event list while the
+			scheduler is suspended will not get placed in the ready
+			list or removed from the blocked list until the scheduler
+			is resumed.
 
-				This task cannot be in an event list as it is the currently
-				executing task. */
-				prvAddCurrentTaskToDelayedList( xTicksToDelay, pdFALSE );
-			}
-			xAlreadyYielded = xTaskResumeAll();
+			This task cannot be in an event list as it is the currently
+			executing task. */
+			prvAddCurrentTaskToDelayedList( xTicksToDelay, pdFALSE );
 		}
-		else
-		{
-			mtCOVERAGE_TEST_MARKER();
-		}
+		xAlreadyYielded = xTaskResumeAll();
+	}
+	else
+	{
+		mtCOVERAGE_TEST_MARKER();
+	}
 
-		/* Force a reschedule if xTaskResumeAll has not already done so, we may
-		have put ourselves to sleep. */
-		if( xAlreadyYielded == pdFALSE )
-		{
-			portYIELD_WITHIN_API();
-		}
-		else
-		{
-			mtCOVERAGE_TEST_MARKER();
-		}
+	/* Force a reschedule if xTaskResumeAll has not already done so, we may
+	have put ourselves to sleep. */
+	if( xAlreadyYielded == pdFALSE )
+	{
+		portYIELD_WITHIN_API();
+	}
+	else
+	{
+		mtCOVERAGE_TEST_MARKER();
+	}
+#else
+		uint32_t lCounter = 0;
+		for(lCounter=0; lCounter < (xTicksToDelay * 1000) ; lCounter++);
+#endif
 	}
 
 #endif /* INCLUDE_vTaskDelay */

@@ -16,8 +16,10 @@
 * SPDX-License-Identifier: Apache-2.0
 * Author: Robert Balas (balasr@iis.ee.ethz.ch)
 */
+#include "core-v-mcu/include/core-v-mcu-config.h"
 
 .extern freertos_risc_v_trap_handler
+.extern bm_risc_v_trap_handler
 #ifdef PULP_FREERTOS_VECTORED_CONTEXT_SWITCH
 .extern	freertos_risc_v_ctxt_handler
 #endif
@@ -29,6 +31,7 @@
 .section .vectors, "ax"
 .option norvc
 vector_table:
+#if ( USE_FREE_RTOS == 1 )
 	j freertos_risc_v_trap_handler  // irq0
 	j freertos_risc_v_trap_handler
 	j freertos_risc_v_trap_handler
@@ -39,7 +42,7 @@ vector_table:
 	j freertos_risc_v_trap_handler //ctxt_handler  // irq 7 mtime or timer
 	j freertos_risc_v_trap_handler
 	j freertos_risc_v_trap_handler
-	j h7// freertos_risc_v_trap_handler
+	j freertos_risc_v_trap_handler
 	j freertos_risc_v_trap_handler // irq 11 Machine (event Fifo)
 	j freertos_risc_v_trap_handler
 	j freertos_risc_v_trap_handler
@@ -61,7 +64,40 @@ vector_table:
 	j freertos_risc_v_trap_handler // IRQ29
 	j freertos_risc_v_trap_handler // IRQ30
     j freertos_risc_v_trap_handler // IRQ30
-
+#else
+	j bm_risc_v_trap_handler  // irq0
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler  // irq3
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler //ctxt_handler  // irq 7 mtime or timer
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler // irq 11 Machine (event Fifo)
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler
+	j bm_risc_v_trap_handler // IRQ16
+	j bm_risc_v_trap_handler // IRQ17
+	j bm_risc_v_trap_handler // IRQ18
+	j bm_risc_v_trap_handler // IRQ19
+	j bm_risc_v_trap_handler // IRQ20
+	j bm_risc_v_trap_handler // IRQ21
+	j bm_risc_v_trap_handler // IRQ22
+	j bm_risc_v_trap_handler // IRQ23
+	j bm_risc_v_trap_handler // IRQ24
+	j bm_risc_v_trap_handler // IRQ25
+	j bm_risc_v_trap_handler // IRQ26
+	j bm_risc_v_trap_handler // IRQ27
+	j bm_risc_v_trap_handler // IRQ28
+	j bm_risc_v_trap_handler // IRQ29
+	j bm_risc_v_trap_handler // IRQ30
+    j bm_risc_v_trap_handler // IRQ30
+#endif
 /* this is fixed to 0x8000, used for PULP_SECURE=0. We redirect this entry to the
 new vector table (which is at mtvec) */
 /* .section .legacy_irq, "ax" */

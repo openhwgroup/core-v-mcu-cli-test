@@ -652,7 +652,7 @@ static unsigned int gpio_even_tests(gpio_struct_typedef *gpio) {
 	default:
 		break;
 	}
-	while(event_flag == 0){
+	if(event_flag == 0){
 		dbg_str("NO GPIO Interrupt triggered \r\n");
 	}
 	if(event_flag == 0x1) {

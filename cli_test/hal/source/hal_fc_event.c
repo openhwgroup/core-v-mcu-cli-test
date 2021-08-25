@@ -22,6 +22,7 @@
  *  Created on: Feb 19, 2021
  *      Author: qlblue
  */
+#include "target/core-v-mcu/include/core-v-mcu-config.h"
 
 //#include "pmsis/implem/drivers/fc_event/fc_event.h"
 #include "hal/include/hal_fc_event.h"
@@ -78,6 +79,7 @@ void pi_fc_event_handler_clear(uint32_t event_id)
 	fc_event_semaphores[event_id] = NULL;
 }
 
+#if(USE_FREE_RTOS == 1)
 /* TODO: Use Eric's FIRQ ABI */
 void fc_soc_event_handler1 (uint32_t mcause)
 {
@@ -109,3 +111,21 @@ event_id &= 0xFF;
 		portYIELD_FROM_ISR( xHigherPriorityTaskWoken );
 	}
 }
+
+#else
+void bm_fc_soc_event_handler (uint32_t mcause)
+{
+	uint32_t event_id = *(uint32_t*)(0x1a106090); // new event fifo address
+	event_id &= 0xFF;
+	/* redirect to handler with jump table */
+	if (fc_event_handlers[event_id] != NULL) {
+		fc_event_handlers[event_id]((void *)event_id);
+	}
+}
+
+
+void bm_timer_irq_handler(uint32_t mcause)
+{
+
+}
+#endif

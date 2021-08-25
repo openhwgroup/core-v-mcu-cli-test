@@ -54,9 +54,11 @@ static void efpga_autotest(const struct cli_cmd_entry *pEntry);
 const struct cli_cmd_entry efpga_cli_tests[] =
 {
   CLI_CMD_SIMPLE( "tcdm", tcdm_test, "Tcdm0-4 r/w tests" ),
+#if (USE_FREE_RTOS == 1)
   CLI_CMD_SIMPLE( "tcdm_st", tcdm_task_start, "Tcdm start task" ),
   CLI_CMD_SIMPLE( "tcdm_sp", tcdm_task_stop, "Tcdm delete task" ),
-  CLI_CMD_SIMPLE( "tcdm_status", tcdm_task_status, "Tcdm delete task" ),
+  CLI_CMD_SIMPLE( "tcdm_status", tcdm_task_status, "Tcdm task status" ),
+#endif
   CLI_CMD_SIMPLE( "ram", ram_test, "32 bit ram tests" ),
   CLI_CMD_SIMPLE ( "mlt", m_mltiply_test ,"mltiply_test"),
   CLI_CMD_SIMPLE ( "math0mult0", mathUnit0Multiplier0_test ,"math unit 0 multiplier 0 test"),
