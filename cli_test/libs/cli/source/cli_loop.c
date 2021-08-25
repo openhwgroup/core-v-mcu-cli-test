@@ -19,7 +19,7 @@
 #include "task.h"
 #include "libs/cli/include/cli.h"
 #include "string.h"
-#include "target/core-v-mcu/include/core-v-mcu-config.h"
+
 /*
  * This is the primary CLI task.
  * It basically is a loop waiting for keys to come from the human.
@@ -369,7 +369,6 @@ void CLI_dispatch(void)
 	 * We can use a timeout (ie: 10mSecs, or 100 char periods)
 	 * to detect when tera term is done pasting text.
 	 */
-#if(USE_FREE_RTOS == 1 )
         for(;;){
             /* using 10mSecs handles delays from pasting */
             /* and is not really noticeable by humans. */
@@ -380,8 +379,6 @@ void CLI_dispatch(void)
                 /* toss the key the pressed */
             }
         }
-#endif
-
     }
 }
 

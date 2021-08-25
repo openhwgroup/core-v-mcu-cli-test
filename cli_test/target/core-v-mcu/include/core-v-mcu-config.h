@@ -140,5 +140,4 @@
 //  EFPGA configuration information (FCB)
 #define EFPGA_CONFIG_START_ADDR 0x1A200000
 
-#define USE_FREE_RTOS 1
 #endif //__CORE_V_MCU_CONFIG_H_

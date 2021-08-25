@@ -68,12 +68,9 @@ BaseType_t xTaskIncrementTick(void);
 void vTaskSwitchContext(void);
 
 /* interrupt handling */
-extern void timer_irq_handler(uint32_t mcause);
-extern void bm_timer_irq_handler(uint32_t mcause);
+void timer_irq_handler(uint32_t mcause);
 void undefined_handler(uint32_t mcause);
 extern void fc_soc_event_handler1 (uint32_t mcause);
-extern void bm_fc_soc_event_handler (uint32_t mcause);
-
 void (*isr_table[32])(uint32_t);
 
 /**
@@ -101,14 +98,9 @@ for (int i = 0 ; i < 32 ; i ++){
 	isr_table[i] = undefined_handler;
 	handler_count[i] = 0;
 }
-
-#if( USE_FREE_RTOS == 1 )
 	isr_table[0x7] = timer_irq_handler;
 	isr_table[0xb] = (void(*)(uint32_t))fc_soc_event_handler1; // 11 for cv32
-#else
-	isr_table[0x7] = bm_timer_irq_handler;
-	isr_table[0xb] = (void(*)(uint32_t))bm_fc_soc_event_handler; // 11 for cv32
-#endif
+
 	/* mtvec is set in crt0.S */
 
 	/* deactivate all soc events as they are enabled by default */
@@ -150,7 +142,6 @@ void system_core_clock_get(void)
 	return ;
 }
 
-#if(USE_FREE_RTOS == 1)
 void timer_irq_handler(uint32_t mcause)
 {
 #warning requires critical section if interrupt nesting is used.
@@ -158,7 +149,6 @@ void timer_irq_handler(uint32_t mcause)
 		vTaskSwitchContext();
 	}
 }
-#endif
 
 void undefined_handler(uint32_t mcause)
 {
@@ -187,12 +177,6 @@ void vSystemIrqHandler(uint32_t mcause)
 {
 	uint32_t val = 0;
 //	extern void (*isr_table[32])(uint32_t);
-	isr_table[mcause & 0x1f](mcause & 0x1f);
-
-}
-
-void baremetalIntrHandler(uint32_t mcause)
-{
 	isr_table[mcause & 0x1f](mcause & 0x1f);
 
 }

@@ -30,7 +30,6 @@
 #include "task.h"
 //#include <eoss3_hal_uart.h>
 #include "drivers/include/udma_uart_driver.h"
-#include "target/core-v-mcu/include/core-v-mcu-config.h"
 //#include "RtosTask.h"
 #include "SDKConfig.h"
 #include <setjmp.h>
@@ -57,9 +56,7 @@ const char *gSimulatorCmdTable[] = {
 		"efpga mlt",
 		"efpga rw",
 		"efpga auto",
-#if(USE_FREE_RTOS == 1)
 		"efpga tcdm_st",
-#endif
 		"efpgaio all",
 		"fcb pgm",
 		"i2cs on",
@@ -67,12 +64,9 @@ const char *gSimulatorCmdTable[] = {
 		"gpio event",
 		"gpio evnt",
 		"gpio all",
-#if(USE_FREE_RTOS == 1)
 		"i2cm0 all",
 		"i2cm1 all",
-#endif
 		"mem test barr 32",
-#if(USE_FREE_RTOS == 1)
 		"qspi flashid",
 		"qspi erase 0x00100000",
 		"qspi init",
@@ -87,14 +81,11 @@ const char *gSimulatorCmdTable[] = {
 		"qspi flash_peek 0x00100000 0x76543210",
 		"qspi init",
 		"qspi flash_qpeek 0x00100000 0x76543210",
-		"i2cs all",
-#endif
 		"intr all",
+		"i2cs all",
 		"uart1 tx the_quick_brown_fox_jumped_over_the_lazy_dog!",
-#if(USE_FREE_RTOS == 1)
 		"efpga tcdm_status",
 		"efpga tcdm_sp",
-#endif
 		NULL
 };
 #ifdef DISABLE_UART_PRINTS
@@ -171,36 +162,6 @@ int CLI_getkey_raw( int timeout )
   return EOF;
 }
 
-uint8_t runSimulatorCommands(void)
-{
-	uint8_t lSts = 0;
-	if( gSimulatorCmdTable[gSimulatorCmdTableIndex] != NULL )
-	{
-		memcpy( (void *)(&CLI_common.cmdline[0]), gSimulatorCmdTable[gSimulatorCmdTableIndex], strlen(gSimulatorCmdTable[gSimulatorCmdTableIndex]) );
-		CLI_dispatch();
-		/*
-		 * NOTE: Above dispatch() call might not return!
-		 * If an error occurs, the long jump will occur.
-		 */
-		/* clean up from last */
-		memset( (void *)(&CLI_common.cmdline[0]), 0, sizeof(CLI_common.cmdline) );
-		gSimulatorCmdTableIndex++;
-	}
-	else
-	{
-		lSts = 1;
-		if( gFilterPrintMsgFlg == 1 )
-			gFilterPrintMsgFlg = 0;
-
-		CLI_cmd_stack_clear();
-		memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );
-		CLI_printf("Simul Done\n");
-		CLI_print_prompt();
-	}
-	return lSts;
-}
-
-
 void CLI_task( void *pParameter )
 {
     (void)(pParameter);
@@ -228,9 +189,29 @@ void CLI_task( void *pParameter )
     	}
     	else
     	{
-    		//Execute simulator command table
-    		if( runSimulatorCommands() == 1 )	//Once done, switch off the flag
+    		if( gSimulatorCmdTable[gSimulatorCmdTableIndex] != NULL )
+    		{
+    			memcpy( (void *)(&CLI_common.cmdline[0]), gSimulatorCmdTable[gSimulatorCmdTableIndex], strlen(gSimulatorCmdTable[gSimulatorCmdTableIndex]) );
+    			CLI_dispatch();
+				/*
+				 * NOTE: Above dispatch() call might not return!
+				 * If an error occurs, the long jump will occur.
+				 */
+    			/* clean up from last */
+				memset( (void *)(&CLI_common.cmdline[0]), 0, sizeof(CLI_common.cmdline) );
+    			gSimulatorCmdTableIndex++;
+    		}
+    		else
+    		{
     			gSimulatorEnabledFlg = 0;
+    			if( gFilterPrintMsgFlg == 1 )
+    				gFilterPrintMsgFlg = 0;
+
+    			CLI_cmd_stack_clear();
+				memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );
+				CLI_printf("Simul Done\n");
+				CLI_print_prompt();
+    		}
     	}
 
     }
@@ -244,4 +225,3 @@ void CLI_start_task(const struct cli_cmd_entry *pMainMenu)
     xTaskCreate ( CLI_task, "CLI", 14 * CLI_TASK_STACKSIZE, NULL, (UBaseType_t)(tskIDLE_PRIORITY+2), &xHandleTestCli);
     configASSERT( xHandleTestCli );
 }
-

@@ -30,8 +30,8 @@
 
 SemaphoreHandle_t  uart_semaphores_rx[N_UART];
 SemaphoreHandle_t  uart_semaphores_tx[N_UART];
-char u1buffer[128] = {0}, u0buffer[128] = {0};
-uint16_t u1rdptr = 0, u1wrptr = 0, u0rdptr = 0, u0wrptr = 0;
+static char u1buffer[128], u0buffer[128];
+static int u1rdptr, u1wrptr, u0rdptr,u0wrptr;
 static UdmaUart_t *puart0 = (UdmaUart_t*)(UDMA_CH_ADDR_UART);
 static UdmaUart_t *puart1 = (UdmaUart_t*)(UDMA_CH_ADDR_UART + UDMA_CH_SIZE);
 
@@ -60,42 +60,6 @@ uint8_t uart_getchar (uint8_t id) {
 		while (u0rdptr == u0wrptr) ;
 		retval = u0buffer[u0rdptr++];
 		u0rdptr &= 0x7f;
-	}
-	return retval;
-}
-
-uint8_t bm_uart_getchar(uint8_t id, uint8_t *lChar)
-{
-	uint8_t retval = 0;
-	if (id == 1) {
-		if( u1rdptr != u1wrptr )
-		{
-			if( lChar )
-				*lChar = u1buffer[u1rdptr];
-			u1rdptr++;
-			if( u1rdptr > 128 )
-				u1rdptr = 0;
-			retval = 1;
-		}
-		else
-		{
-			retval = 0;
-		}
-	}
-	else if (id == 0) {
-		if( u0rdptr != u0wrptr )
-		{
-			if( lChar )
-				*lChar = u0buffer[u0rdptr];
-			u0rdptr++;
-			if( u0rdptr > 128 )
-				u0rdptr = 0;
-			retval = 1;
-		}
-		else
-		{
-			retval = 0;
-		}
 	}
 	return retval;
 }
@@ -157,12 +121,10 @@ uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 uint16_t udma_uart_writeraw(uint8_t uart_id, uint16_t write_len, uint8_t* write_buffer) {
 	UdmaUart_t*				puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
 
-#if ( USE_FREE_RTOS == 1 )
 	SemaphoreHandle_t shSemaphoreHandle = uart_semaphores_tx[uart_id];
 	if( xSemaphoreTake( shSemaphoreHandle, 1000000 ) != pdTRUE ) {
 		return 1;
 	}
-#endif
 
 	while (puart->status_b.tx_busy) {  // ToDo: Why is this necessary?  Thought the semaphore should have protected
 	}

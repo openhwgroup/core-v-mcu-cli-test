@@ -45,22 +45,15 @@
 
 /* c stdlib */
 #include <stdio.h>
-#include "string.h"
 
 /* PULPissimo includes. */
 #include "target/core-v-mcu/include/core-v-mcu-config.h"
 #include "target/core-v-mcu/include/core-v-mcu-system.h"
-#include "target/core-v-mcu/include/csr.h"
-
 #include "hal/include/hal_timer_irq.h"
 #include "hal/include/hal_fll.h"
 #include "hal/include/hal_irq.h"
 #include "drivers/include/udma_uart_driver.h"
-#include <app/include/i2c_task.h>
-#include <app/include/efpga_tests.h>
 
-#include "libs/cli/include/cli.h"
-#include "hal/include/hal_udma_i2cm_reg_defs.h"
 /******************************************************************************
  * This project provides two demo applications.  A simple blinky style project,
  * and a more comprehensive test and demo application.  The
@@ -87,7 +80,7 @@ or 0 to run the more comprehensive test and demo application. */
  * main_full() is used when mainCREATE_SIMPLE_BLINKY_DEMO_ONLY is set to 0.
  */
 
-extern void main_blinky( void );
+	extern void main_blinky( void );
 
 /* Prototypes for the standard FreeRTOS callback/hook functions implemented
 within this file.  See https://www.freertos.org/a00016.html */
@@ -98,29 +91,27 @@ void vApplicationTickHook( void );
 
 /* Prepare hardware to run the demo. */
 static void prvSetupHardware( void );
-void CLI_dispatch(void);
-uint8_t runSimulatorCommands(void);
-uint8_t UartGetString(uint8_t aPortNum, char *aCmdLineBuf, int16_t aBufSize, uint8_t aTerminatingChar);
+
+
 
 /*-----------------------------------------------------------*/
+#include <app/include/i2c_task.h>
+#include <app/include/efpga_tests.h>
 
+#include "libs/cli/include/cli.h"
+#include "hal/include/hal_udma_i2cm_reg_defs.h"
 
 char* SOFTWARE_VERSION_STR = "cli_test v0.2 - NoInt \n";
 extern const struct cli_cmd_entry my_main_menu[];
-extern uint8_t gSimulatorEnabledFlg;
 
-#define CMD_LINE_BUF_SIZE       32
-#define TERMINATING_CHARACTER   '\r'
-static char gsCommandLineBuf[CMD_LINE_BUF_SIZE] = {0};
 
 int main(void)
 {
-	uint32_t RegReadVal = 0;
     prvSetupHardware();
 
 	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
 	of this file. */
-#if ( USE_FREE_RTOS == 1 )
+
 	CLI_start_task( my_main_menu );
 
 	/* Start the tasks and timer running. */
@@ -131,70 +122,8 @@ int main(void)
 		timer tasks to be created.  See the memory management section on the
 		FreeRTOS web site for more details on the FreeRTOS heap
 		http://www.freertos.org/a00111.html. */
-#else
 
-	RegReadVal = csr_read(CSR_MSTATUS);
-	if( ( RegReadVal & MSTATUS_IE ) != 0 )	//Check if global interrupt is enabled.
-	{
-		//Do nothing.
-	}
-	else
-	{
-		//enable global interrupt.
-		csr_read_set(CSR_MSTATUS, MSTATUS_IE);
-		RegReadVal = csr_read(CSR_MSTATUS);
-		//CLI_printf("CSR_MSTATUS 0x%08x\n", RegReadVal);
-		//dbg_str("<<DONE>>\r\n");
-
-	}
-
-	RegReadVal = csr_read(CSR_MIE);
-	if( ( RegReadVal & BIT(11) ) != 0 )	//Check if the event interrupt mask is open.
-	{
-		//Do nothing.
-	}
-	else
-	{
-		//open the event interrupt mask.
-		csr_read_set(CSR_MIE, BIT(11));
-		RegReadVal = csr_read(CSR_MIE);
-		//CLI_printf("CSR_MIE 0x%08x\n", RegReadVal);
-		//dbg_str("<<DONE>>\r\n");
-
-	}
-    //CLI_printf("#*******************\n");
-    //CLI_printf("Command Line Interface\n");
-    CLI_printf("App SW Version: %s\n", SOFTWARE_VERSION_STR );
-    //CLI_printf("#*******************\n");
-    //CLI_init( NULL );//my_main_menu );
-    CLI_init( my_main_menu );
-    CLI_print_prompt();
-#endif
-
-	while(1)
-	{
-#if ( USE_FREE_RTOS == 0 )
-		if(UartGetString(0,gsCommandLineBuf, CMD_LINE_BUF_SIZE, TERMINATING_CHARACTER) == 1)
-		{
-			memcpy( (void *)(&CLI_common.cmdline[0]), gsCommandLineBuf, strlen(gsCommandLineBuf) );
-			CLI_dispatch();
-			/*
-			 * NOTE: Above dispatch() call might not return!
-			 * If an error occurs, the long jump will occur.
-			 */
-			/* clean up from last */
-			memset( (void *)(&CLI_common.cmdline[0]), 0, sizeof(CLI_common.cmdline) );
-			CLI_print_prompt();
-		}
-
-		//Execute simulator command table
-		if(gSimulatorEnabledFlg == 1 )
-		{
-			if( runSimulatorCommands() == 1 )	//Once done, switch off the flag
-				gSimulatorEnabledFlg = 0;
-		}
-#endif
-	}
+	while(1);
 }
 /*-----------------------------------------------------------*/
 
@@ -270,40 +199,3 @@ void vApplicationTickHook( void )
 	#endif
 }
 /*-----------------------------------------------------------*/
-
-/*
- Uart2GetString does not store the terminating character. It will give out a
- * NULL terminated string.
- */
-uint8_t UartGetString(uint8_t aPortNum, char *aCmdLineBuf, int16_t aBufSize, uint8_t aTerminatingChar)
-{
-    static int16_t sCmdIndex = 0;
-    uint8_t lStatus = 0, lChar = 0;
-
-    //lChar = uart_getchar(aPortNum);
-    lStatus = bm_uart_getchar(aPortNum, &lChar);
-    if( lStatus == 1 )
-    {
-		if( lChar != aTerminatingChar )
-		{
-			if(sCmdIndex < aBufSize-1)
-				aCmdLineBuf[sCmdIndex++] = lChar;
-			else    //Ran out of buffer size, return a truncated message.
-			{
-				aCmdLineBuf[sCmdIndex] = '\0';
-				sCmdIndex = 0;
-				return 1;
-			}
-		}
-		else    //rxd a terminating character, return with the formed string.
-		{
-			aCmdLineBuf[sCmdIndex] = '\0';
-			sCmdIndex = 0;
-			return 1;
-		}
-    }
-	return 0;       //Keep returning 0, until the string is formed.
-}
-
-
-

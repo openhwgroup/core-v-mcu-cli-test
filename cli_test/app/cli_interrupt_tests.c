@@ -345,7 +345,6 @@ static uint32_t testEvents(uint32_t aEventNum)
 			}
 			else if( aEventNum == 20 )
 			{
-#if( USE_FREE_RTOS == 1)
 				hal_set_apb_i2cs_slave_on_off(1);
 				if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
 					hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
@@ -369,10 +368,6 @@ static uint32_t testEvents(uint32_t aEventNum)
 					lTestStatus |= ( 1 << aEventNum );
 					dbg_str("<<FAILED>>\r\n");
 				}
-#else
-				lTestStatus = 0xDEADCAFE;
-				dbg_str("<<UNKNOWN1>>\r\n");
-#endif
 			}
 			else
 			{
