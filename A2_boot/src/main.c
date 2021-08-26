@@ -20,10 +20,10 @@
  * If semihosting is not available, use `--specs=nosys.specs` during link.
  */
 #include "core-v-mcu-config.h"
-#include "hal_apb_soc_ctrl_reg_defs.h"
+#include "apb_soc_ctrl_reg_defs.h"
 #include <string.h>
-#include "../include/flash.h"
-#include "../include/dbg.h"
+#include "flash.h"
+#include "dbg.h"
 
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate);
 uint16_t udma_uart_writeraw(uint8_t uart_id, uint16_t write_len, uint8_t* write_buffer) ;

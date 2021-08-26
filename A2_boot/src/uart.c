@@ -6,8 +6,8 @@
  */
 
 #include "core-v-mcu-config.h"
-#include "hal_udma_ctrl_reg_defs.h"
-#include "hal_udma_uart_reg_defs.h"
+#include "udma_ctrl_reg_defs.h"
+#include "udma_uart_reg_defs.h"
 
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate) {
 	UdmaUart_t*				puart;

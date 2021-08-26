@@ -1,4 +1,4 @@
- /*
+/*
  * This is a generated file
  * 
  * Copyright 2021 QuickLogic
@@ -18,12 +18,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#ifndef __UDMA_QSPI_H_
-#define __UDMA_QSPI_H_
+#ifndef __UDMA_I2CM_H_
+#define __UDMA_I2CM_H_
 
 //---------------------------------//
 //
-// Module: UDMA_QSPI
+// Module: UDMA_I2CM
 //
 //---------------------------------//
 
@@ -64,10 +64,9 @@ typedef struct {
     __IO uint32_t rx_cfg;
     struct {
       __IO uint32_t  continuous :  1;
-      __IO uint32_t  datasize   :  2;
-      __IO uint32_t             :  1;
+      __IO uint32_t             :  3;
       __IO uint32_t  en         :  1;
-//      __IO uint32_t  pending    :  1;
+      __IO uint32_t  pending    :  1;
       __IO uint32_t  clr        :  1;
     } rx_cfg_b;
   };
@@ -94,10 +93,9 @@ typedef struct {
     __IO uint32_t tx_cfg;
     struct {
       __IO uint32_t  continuous :  1;
-      __IO uint32_t  datasize   :  2;
-      __IO uint32_t             :  1;
+      __IO uint32_t             :  3;
       __IO uint32_t  en         :  1;
- //     __IO uint32_t  pending    :  1;
+      __IO uint32_t  pending    :  1;
       __IO uint32_t  clr        :  1;
     } tx_cfg_b;
   };
@@ -105,42 +103,21 @@ typedef struct {
 
   // Offset = 0x0020
   union {
-    __IO uint32_t cmd_saddr;
+    __IO uint32_t status;
     struct {
-      __IO uint32_t  saddr      : 32;
-    } cmd_saddr_b;
+      __IO uint32_t  busy       :  1;
+      __IO uint32_t  al         :  1;
+    } status_b;
   };
 
   // Offset = 0x0024
   union {
-    __IO uint32_t cmd_size;
+    __IO uint32_t setup;
     struct {
-      __IO uint32_t  size       : 21;
-    } cmd_size_b;
+      __IO uint32_t  reset      :  1;
+    } setup_b;
   };
-
-  // Offset = 0x0028
-  union {
-    __IO uint32_t cmd_cfg;
-    struct {
-      __IO uint32_t  continuous :  1;
-      __IO uint32_t  datasize   :  2;
-      __IO uint32_t             :  1;
-      __IO uint32_t  en         :  1;
-  //    __IO uint32_t  pending    :  1;
-      __IO uint32_t  clr        :  1;
-    } cmd_cfg_b;
-  };
-  __I uint32_t    unused2[1];
-
-  // Offset = 0x0030
-  union {
-    __IO uint32_t status;
-    struct {
-      __IO uint32_t  busy       :  2;
-    } status_b;
-  };
-} UdmaQspi_t;
+} UdmaI2cm_t;
 
 
 #define REG_RX_SADDR                   0x00
@@ -156,8 +133,6 @@ typedef struct {
 #define   REG_RX_CFG_PENDING_MASK                  0x1
 #define   REG_RX_CFG_EN_LSB                        4
 #define   REG_RX_CFG_EN_MASK                       0x1
-#define   REG_RX_CFG_DATASIZE_LSB                  1
-#define   REG_RX_CFG_DATASIZE_MASK                 0x3
 #define   REG_RX_CFG_CONTINUOUS_LSB                0
 #define   REG_RX_CFG_CONTINUOUS_MASK               0x1
 #define REG_TX_SADDR                   0x10
@@ -173,30 +148,16 @@ typedef struct {
 #define   REG_TX_CFG_PENDING_MASK                  0x1
 #define   REG_TX_CFG_EN_LSB                        4
 #define   REG_TX_CFG_EN_MASK                       0x1
-#define   REG_TX_CFG_DATASIZE_LSB                  1
-#define   REG_TX_CFG_DATASIZE_MASK                 0x3
 #define   REG_TX_CFG_CONTINUOUS_LSB                0
 #define   REG_TX_CFG_CONTINUOUS_MASK               0x1
-#define REG_CMD_SADDR                  0x20
-#define   REG_CMD_SADDR_SADDR_LSB                  0
-#define   REG_CMD_SADDR_SADDR_MASK                 0xffffffff
-#define REG_CMD_SIZE                   0x24
-#define   REG_CMD_SIZE_SIZE_LSB                    0
-#define   REG_CMD_SIZE_SIZE_MASK                   0x1fffff
-#define REG_CMD_CFG                    0x28
-#define   REG_CMD_CFG_CLR_LSB                      6
-#define   REG_CMD_CFG_CLR_MASK                     0x1
-#define   REG_CMD_CFG_PENDING_LSB                  5
-#define   REG_CMD_CFG_PENDING_MASK                 0x1
-#define   REG_CMD_CFG_EN_LSB                       4
-#define   REG_CMD_CFG_EN_MASK                      0x1
-#define   REG_CMD_CFG_DATASIZE_LSB                 1
-#define   REG_CMD_CFG_DATASIZE_MASK                0x3
-#define   REG_CMD_CFG_CONTINUOUS_LSB               0
-#define   REG_CMD_CFG_CONTINUOUS_MASK              0x1
-#define REG_STATUS                     0x30
+#define REG_STATUS                     0x20
+#define   REG_STATUS_AL_LSB                        1
+#define   REG_STATUS_AL_MASK                       0x1
 #define   REG_STATUS_BUSY_LSB                      0
-#define   REG_STATUS_BUSY_MASK                     0x3
+#define   REG_STATUS_BUSY_MASK                     0x1
+#define REG_SETUP                      0x24
+#define   REG_SETUP_RESET_LSB                      0
+#define   REG_SETUP_RESET_MASK                     0x1
 
 #ifndef __REGFIELD_OPS_
 #define __REGFIELD_OPS_
@@ -210,4 +171,4 @@ static inline uint32_t regfield_write(uint32_t reg, uint32_t mask, uint32_t lsb,
 }
 #endif  // __REGFIELD_OPS_
 
-#endif // __UDMA_QSPI_H_
+#endif // __UDMA_I2CM_H_

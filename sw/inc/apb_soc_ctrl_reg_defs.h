@@ -158,26 +158,12 @@ typedef struct {
 
   // Offset = 0x00e0
   union {
-    __IO uint32_t rto_peripheral_error;
-    struct {
-      __IO uint32_t  fll_rto    :  1;
-      __IO uint32_t  gpio_rto   :  1;
-      __IO uint32_t  udma_rto   :  1;
-      __IO uint32_t  soc_control_rto :  1;
-      __IO uint32_t  adv_timer_rto :  1;
-      __IO uint32_t  event_gen_rto :  1;
-      __IO uint32_t  i2cs_rto   :  1;
-      __IO uint32_t  timer_rto  :  1;
-      __IO uint32_t  fcb_rto    :  1;
-    } rto_peripheral_error_b;
+    __IO uint32_t sel_clk_dc_fifo_efpga;
   };
 
   // Offset = 0x00e4
   union {
-    __IO uint32_t ready_timeout_count;
-    struct {
-      __IO uint32_t  count      : 20;
-    } ready_timeout_count_b;
+    __IO uint32_t clk_gating_dc_fifo_efpga;
   };
 
   // Offset = 0x00e8
@@ -212,18 +198,11 @@ typedef struct {
   // Offset = 0x00f4
   union {
     __IO uint32_t efpga_status_out;
+    struct {
+      __IO uint32_t  efpga_version :  8;
+    } efpga_status_out_b;
   };
-
-  // Offset = 0x00f8
-  union {
-    __IO uint32_t efpga_version;
-  };
-
-  // Offset = 0x00fc
-  union {
-    __IO uint32_t soft_reset;
-  };
-  __I uint32_t    unused7[192];
+  __I uint32_t    unused7[194];
 
   // Offset = 0x0400
   union {
@@ -296,28 +275,8 @@ typedef struct {
 #define REG_BOOTSEL                    0x00C4
 #define REG_CLKSEL                     0x00C8
 #define REG_CLK_DIV_CLU                0x00D8
-#define REG_RTO_PERIPHERAL_ERROR       0x00E0
-#define   REG_RTO_PERIPHERAL_ERROR_FCB_RTO_LSB     8
-#define   REG_RTO_PERIPHERAL_ERROR_FCB_RTO_MASK    0x1
-#define   REG_RTO_PERIPHERAL_ERROR_TIMER_RTO_LSB   7
-#define   REG_RTO_PERIPHERAL_ERROR_TIMER_RTO_MASK  0x1
-#define   REG_RTO_PERIPHERAL_ERROR_I2CS_RTO_LSB    6
-#define   REG_RTO_PERIPHERAL_ERROR_I2CS_RTO_MASK   0x1
-#define   REG_RTO_PERIPHERAL_ERROR_EVENT_GEN_RTO_LSB 5
-#define   REG_RTO_PERIPHERAL_ERROR_EVENT_GEN_RTO_MASK 0x1
-#define   REG_RTO_PERIPHERAL_ERROR_ADV_TIMER_RTO_LSB 4
-#define   REG_RTO_PERIPHERAL_ERROR_ADV_TIMER_RTO_MASK 0x1
-#define   REG_RTO_PERIPHERAL_ERROR_SOC_CONTROL_RTO_LSB 3
-#define   REG_RTO_PERIPHERAL_ERROR_SOC_CONTROL_RTO_MASK 0x1
-#define   REG_RTO_PERIPHERAL_ERROR_UDMA_RTO_LSB    2
-#define   REG_RTO_PERIPHERAL_ERROR_UDMA_RTO_MASK   0x1
-#define   REG_RTO_PERIPHERAL_ERROR_GPIO_RTO_LSB    1
-#define   REG_RTO_PERIPHERAL_ERROR_GPIO_RTO_MASK   0x1
-#define   REG_RTO_PERIPHERAL_ERROR_FLL_RTO_LSB     0
-#define   REG_RTO_PERIPHERAL_ERROR_FLL_RTO_MASK    0x1
-#define REG_READY_TIMEOUT_COUNT        0x00E4
-#define   REG_READY_TIMEOUT_COUNT_COUNT_LSB        0
-#define   REG_READY_TIMEOUT_COUNT_COUNT_MASK       0xfffff
+#define REG_SEL_CLK_DC_FIFO_EFPGA      0x00E0
+#define REG_CLK_GATING_DC_FIFO_EFPGA   0x00E4
 #define REG_RESET_TYPE1_EFPGA          0x00E8
 #define   REG_RESET_TYPE1_EFPGA_RESET_LB_LSB       3
 #define   REG_RESET_TYPE1_EFPGA_RESET_LB_MASK      0x1
@@ -342,8 +301,8 @@ typedef struct {
 #define   REG_ENABLE_IN_OUT_EFPGA_ENABLE_TCDM_P0_MASK 0x1
 #define REG_EFPGA_CONTROL_IN           0x00F0
 #define REG_EFPGA_STATUS_OUT           0x00F4
-#define REG_EFPGA_VERSION              0x00F8
-#define REG_SOFT_RESET                 0x00FC
+#define   REG_EFPGA_STATUS_OUT_EFPGA_VERSION_LSB   0
+#define   REG_EFPGA_STATUS_OUT_EFPGA_VERSION_MASK  0xff
 #define REG_IO_CTRL                    0x0400
 #define   REG_IO_CTRL_CFG_LSB                      8
 #define   REG_IO_CTRL_CFG_MASK                     0x3f
