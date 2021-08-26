@@ -20,7 +20,7 @@
  * If semihosting is not available, use `--specs=nosys.specs` during link.
  */
 #include "core-v-mcu-config.h"
-#include <hal_apb_soc_ctrl_reg_defs.h>
+#include "hal_apb_soc_ctrl_reg_defs.h"
 #include <string.h>
 #include "../include/flash.h"
 #include "../include/dbg.h"
