@@ -36,6 +36,7 @@ tcdm_bg_task_sts_t gTCDMReadStatus;
 tcdm_bg_task_sts_t gTCDMWriteStatus;
 
 extern uint8_t gDebugEnabledFlg;
+extern uint8_t gSimulatorEnabledFlg;
 
 static void tcdm_test(const struct cli_cmd_entry *pEntry);
 static void ram_test(const struct cli_cmd_entry *pEntry);
@@ -1700,14 +1701,30 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing 6RAMs :");
 		dbg_str(message);
 #endif
-		for (i = 0; i < 512; i++) {
-			for(j = 0; j < 6; j++ ){
-				ram_addr[j]->w[i] = 0;
+		if( gSimulatorEnabledFlg == 0 )
+		{	//To run on FPGA emulation, the eFPGA RAM is not fully instantiated. So half of it will appear inverted
+			for (i = 0; i < 512; i++) {
+				for(j = 0; j < 6; j++ ){
+					ram_addr[j]->w[i] = 0;
+				}
+			}
+			for (i = 512; i < 1024; i++) { // expect 0xffffffff in next 512 locations
+				for(j = 0; j < 6; j++ ){
+					if(ram_addr[j]->w[i] != 0xffffffff) errors++;
+				}
 			}
 		}
-		for (i = 512; i < 1024; i++) { // expect 0xffffffff in next 512 locations
-			for(j = 0; j < 6; j++ ){
-				if(ram_addr[j]->w[i] != 0xffffffff) errors++;
+		else
+		{	//To run on Questa Sim simulation, the eFPGA RAM is fully instantiated. So it will appear as it is.
+			for (i = 0; i < 1024; i++) {
+				for(j = 0; j < 6; j++ ){
+					ram_addr[j]->w[i] = 0;
+				}
+			}
+			for (i = 0; i < 1024; i++) { // expect 0 in all locations
+				for(j = 0; j < 6; j++ ){
+					if(ram_addr[j]->w[i] != 0) errors++;
+				}
 			}
 		}
 		global_err += errors;
@@ -1723,16 +1740,31 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m0_oper0");
 		dbg_str(message);
 #endif
-		for (i = 0; i < 512; i++) {
-			ram_addr[0]->w[i] = i;
-		}
-		for (i = 0; i < 512; i++) {
-			if (ram_addr[0]->w[i+512] != ~i) {
-				if (errors++ < 10) {
+		if( gSimulatorEnabledFlg == 0 )
+		{	//To run on FPGA emulation, the eFPGA RAM is not fully instantiated. So half of it will appear inverted
+			for (i = 0; i < 512; i++) {
+				ram_addr[0]->w[i] = i;
+			}
+			for (i = 0; i < 512; i++) {
+				if (ram_addr[0]->w[i+512] != ~i) {
+					if (errors++ < 10) {
 #if EFPGA_DEBUG
-					sprintf(message,"m0_oper0[%d] = %x\r\n",i,efpga->m0_oper0.w[i]);
-					dbg_str(message);
+						sprintf(message,"m0_oper0[%d] = %x\r\n",i,efpga->m0_oper0.w[i]);
+						dbg_str(message);
 #endif
+					}
+				}
+			}
+		}
+		else
+		{
+			//To run on Questa Sim simulation, the eFPGA RAM is fully instantiated. So it will appear as it is.
+			for (i = 0; i < 1024; i++) {
+				ram_addr[0]->w[i] = i;
+			}
+			for (i = 0; i < 1024; i++) {
+				if (ram_addr[0]->w[i] != i) {
+					errors++;
 				}
 			}
 		}
@@ -1750,16 +1782,31 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m0_oper1");
 		dbg_str(message);
 #endif
-		for (i = 0 ; i < 512; i++) {
-			ram_addr[1]->w[i] = i;
-		}
-		for (i = 0 ; i < 512; i++) {
-			if (ram_addr[1]->w[i+512] != ~i)
-			if (errors++ < 10) {
+		if( gSimulatorEnabledFlg == 0 )
+		{
+			//To run on FPGA emulation, the eFPGA RAM is not fully instantiated. So half of it will appear inverted
+			for (i = 0 ; i < 512; i++) {
+				ram_addr[1]->w[i] = i;
+			}
+			for (i = 0 ; i < 512; i++) {
+				if (ram_addr[1]->w[i+512] != ~i)
+					if (errors++ < 10) {
 #if EFPGA_DEBUG
 				sprintf(message,"m0_oper1[%d] = %x\r\n",i,efpga->m0_oper0.w[i]);
 				dbg_str(message);
 #endif
+					}
+			}
+		}
+		else
+		{
+			//To run on Questa Sim simulation, the eFPGA RAM is fully instantiated. So it will appear as it is.
+			for (i = 0 ; i < 1024; i++) {
+				ram_addr[1]->w[i] = i;
+			}
+			for (i = 0 ; i < 1024; i++) {
+				if (ram_addr[1]->w[i] != i)
+					errors++;
 			}
 		}
 		global_err += errors;
@@ -1776,11 +1823,25 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m0_coef");
 		dbg_str(message);
 #endif
-		for (i = 0 ; i < 512; i++) {
-			ram_addr[2]->w[i] = i;
+		if( gSimulatorEnabledFlg == 0 )
+		{
+			//To run on FPGA emulation, the eFPGA RAM is not fully instantiated. So half of it will appear inverted
+			for (i = 0 ; i < 512; i++) {
+				ram_addr[2]->w[i] = i;
+			}
+			for (i = 0 ; i < 512; i++) {
+				if (ram_addr[2]->w[i+512] != ~i) errors++;
+			}
 		}
-		for (i = 0 ; i < 512; i++) {
-			if (ram_addr[2]->w[i+512] != ~i) errors++;
+		else
+		{
+			//To run on Questa Sim simulation, the eFPGA RAM is fully instantiated. So it will appear as it is.
+			for (i = 0 ; i < 1024; i++) {
+				ram_addr[2]->w[i] = i;
+			}
+			for (i = 0 ; i < 1024; i++) {
+				if (ram_addr[2]->w[i] != i) errors++;
+			}
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -1795,11 +1856,25 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m1_oper0");
 		dbg_str(message);
 #endif
-		for (i = 0 ; i < 512; i++) {
-			ram_addr[3]->w[i] = i;
+		if( gSimulatorEnabledFlg == 0 )
+		{
+			//To run on FPGA emulation, the eFPGA RAM is not fully instantiated. So half of it will appear inverted
+			for (i = 0 ; i < 512; i++) {
+				ram_addr[3]->w[i] = i;
+			}
+			for (i = 0 ; i < 512; i++) {
+				if (ram_addr[3]->w[i+512] != ~i) errors++;
+			}
 		}
-		for (i = 0 ; i < 512; i++) {
-			if (ram_addr[3]->w[i+512] != ~i) errors++;
+		else
+		{
+			//To run on Questa Sim simulation, the eFPGA RAM is fully instantiated. So it will appear as it is.
+			for (i = 0 ; i < 1024; i++) {
+				ram_addr[3]->w[i] = i;
+			}
+			for (i = 0 ; i < 1024; i++) {
+				if (ram_addr[3]->w[i] != i) errors++;
+			}
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -1814,11 +1889,25 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m1_oper1");
 		dbg_str(message);
 #endif
-		for (i = 0 ; i < 512; i++) {
-			ram_addr[4]->w[i] = i;
+		if( gSimulatorEnabledFlg == 0 )
+		{
+			//To run on FPGA emulation, the eFPGA RAM is not fully instantiated. So half of it will appear inverted
+			for (i = 0 ; i < 512; i++) {
+				ram_addr[4]->w[i] = i;
+			}
+			for (i = 0 ; i < 512; i++) {
+				if (ram_addr[4]->w[i+512] != ~i) errors++;
+			}
 		}
-		for (i = 0 ; i < 512; i++) {
-			if (ram_addr[4]->w[i+512] != ~i) errors++;
+		else
+		{
+			//To run on Questa Sim simulation, the eFPGA RAM is fully instantiated. So it will appear as it is.
+			for (i = 0 ; i < 1024; i++) {
+				ram_addr[4]->w[i] = i;
+			}
+			for (i = 0 ; i < 1024; i++) {
+				if (ram_addr[4]->w[i] != i) errors++;
+			}
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -1833,11 +1922,25 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		sprintf(message,"Testing m1_coef");
 		dbg_str(message);
 #endif
-		for (i = 0 ; i < 512; i++) {
-			ram_addr[5]->w[i] = i;
+		if( gSimulatorEnabledFlg == 0 )
+		{
+			//To run on FPGA emulation, the eFPGA RAM is not fully instantiated. So half of it will appear inverted
+			for (i = 0 ; i < 512; i++) {
+				ram_addr[5]->w[i] = i;
+			}
+			for (i = 0 ; i < 512; i++) {
+				if (ram_addr[5]->w[i+512] != ~i) errors++;
+			}
 		}
-		for (i = 0 ; i < 512; i++) {
-			if (ram_addr[5]->w[i+512] != ~i) errors++;
+		else
+		{
+			//To run on Questa Sim simulation, the eFPGA RAM is fully instantiated. So it will appear as it is.
+			for (i = 0 ; i < 1024; i++) {
+				ram_addr[5]->w[i] = i;
+			}
+			for (i = 0 ; i < 1024; i++) {
+				if (ram_addr[5]->w[i] != i) errors++;
+			}
 		}
 		global_err += errors;
 #if EFPGA_ERROR
@@ -1848,7 +1951,7 @@ static void ram_test(const struct cli_cmd_entry *pEntry)
 		dbg_str(message);
 #endif
 		errors = 0;
-		(global_err == 0)?(dbg_str("RAM TEST: <<PASSED>>\r\n")):(dbg_str(" RAM TEST: <<FAILED>>\r\n"));
+		(global_err == 0)?(dbg_str("eFPGA RAM TEST: <<PASSED>>\r\n")):(dbg_str("eFPGA RAM TEST: <<FAILED>>\r\n"));
 		vPortFree(message);
 }
 
