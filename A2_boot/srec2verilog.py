@@ -3,11 +3,11 @@ import sys, getopt, struct, time
 
 
 def help () :
-    print ('Quickstart help: srec2verilog.py -i <input.srec> -o <outputfile>')
+    print ('Quickstart help: srec2verilog.py -i <input.srec> -o <outputfile> -m <boot.mem>')
     
 def main (argv) :
     try :
-        opts, args = getopt.getopt(argv, "i:o:",[])
+        opts, args = getopt.getopt(argv, "i:o:m:",[])
     except getopt.GetoptError :
         help()
         sys.exit(2)
@@ -19,9 +19,12 @@ def main (argv) :
             infilename = arg
         elif opt == '-o' :
             outfilename = arg
+        elif opt == '-m' :
+            memfilename = arg
     try:
         infile = open(infilename,'r')
         outfile = open(outfilename,'w')
+        memfile = open(memfilename,'w')
     except:
         print ('Error: Input file not found\n', infilename)
         help()
@@ -57,7 +60,11 @@ def main (argv) :
                 dword[2], dword[3] = dword[3], dword[2]
                 dword[4], dword[5] = dword[5], dword[4]
                 dword[6], dword[7] = dword[7], dword[6]
+                dataInHex = "".join(dword)
                 print ("  ",element,": value <= 32'h","".join(dword),";",sep="")
+                sys.stdout = memfile
+                print (dataInHex)
+                sys.stdout = outfile
                 element = element + int(1);
     print ("  default: value <= 0;")
     print("   endcase")

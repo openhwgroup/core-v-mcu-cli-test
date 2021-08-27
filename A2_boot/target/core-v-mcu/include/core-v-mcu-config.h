@@ -11,7 +11,7 @@
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES ORETH CONDITIONS OF ANY KIND, either express or implied.
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
@@ -21,13 +21,14 @@
 #ifndef __CORE_V_MCU_CONFIG_H_
 #define __CORE_V_MCU_CONFIG_H_
 
-#define BUILD_DATE 0x20210417
-#define BUILD_TIME 0x00201530
+#define BUILD_DATE 0x20210623
+#define BUILD_TIME 0x00111431
 
 //  SOC options
 #define N_IO                 48
 #define N_SYSIO              3
 #define N_GPIO               32
+#define N_APBIO              50
 #define NBIT_PADCFG          6
 #define NBIT_PADMUX          2
 #define N_UART               2
@@ -117,10 +118,17 @@
 //  GPIO configuration information
 #define GPIO_START_ADDR 0x1A101000
 
-//  Timer configuration information
+#define SOC_EVENT_GEN_START_ADDR 0x1A106000
+//  I2C Slave configuration information
+#define I2CS_START_ADDR 0x1A107000
+
+//  EFPGAIO configuration information
+#define EFPGAIO_START_ADDR 0x1A300000
+
+//  SOC controller configuration information
 #define SOC_CTRL_START_ADDR 0x1A104000
 
-//  Timer configuration information
+//  Event Unit (Interrupts) configuration information
 #define EU_START_ADDR 0x1A109000
 
 //  Timer configuration information
@@ -128,5 +136,8 @@
 
 //  AdvTimer configuration information
 #define ADV_TIMER_START_ADDR 0x1A105000
+
+//  EFPGA configuration information (FCB)
+#define EFPGA_CONFIG_START_ADDR 0x1A200000
 
 #endif //__CORE_V_MCU_CONFIG_H_
