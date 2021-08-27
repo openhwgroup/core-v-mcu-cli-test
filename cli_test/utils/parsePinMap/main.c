@@ -142,6 +142,7 @@ int main(int argc, char *argv[])
 
             fclose(lCSVFileReadPtr);
             fclose(lOutFileWritePtr);
+            fclose(lOutHeaderFileWritePtr);
         }
         else
         {
