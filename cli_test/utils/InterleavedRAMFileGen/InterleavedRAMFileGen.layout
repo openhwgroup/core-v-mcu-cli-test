@@ -4,11 +4,7 @@
 	<ActiveTarget name="Debug" />
 	<File name="main.c" open="1" top="1" tabpos="1" split="0" active="1" splitpos="0" zoom_1="3" zoom_2="0">
 		<Cursor>
-<<<<<<< HEAD
-			<Cursor1 position="1663" topLine="34" />
-=======
-			<Cursor1 position="6236" topLine="157" />
->>>>>>> somesh-FCB
+			<Cursor1 position="1262" topLine="35" />
 		</Cursor>
 	</File>
 </CodeBlocks_layout_file>
