@@ -20,10 +20,11 @@
  * If semihosting is not available, use `--specs=nosys.specs` during link.
  */
 #include "core-v-mcu-config.h"
-#include <hal_apb_soc_ctrl_reg_defs.h>
+#include "apb_soc_ctrl_reg_defs.h"
 #include <string.h>
-#include "../include/flash.h"
-#include "../include/dbg.h"
+#include "flash.h"
+#include "dbg.h"
+#include "hal_apb_i2cs.h"
 
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate);
 uint16_t udma_uart_writeraw(uint8_t uart_id, uint16_t write_len, uint8_t* write_buffer) ;
@@ -154,33 +155,38 @@ static void bootFromRom(int hyperflash, int qpi)
 
 int main(void)
 {
- int id = 1, i = 0;
- unsigned int bootsel, flash_present;
- char tstring[8];
- //TODO: FLL clock settings need to be taken care in the actual chip.
- //TODO: 5000000 to be changed to #define PERIPHERAL_CLOCK_FREQ_IN_HZ
- volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;
- bootsel = *(volatile int*)0x1c010000;
- bootsel = psoc->bootsel & 0x1;
+	int id = 1, i = 0;
+	unsigned int bootsel, flash_present;
+	char tstring[8];
+	//TODO: FLL clock settings need to be taken care in the actual chip.
+	//TODO: 5000000 to be changed to #define PERIPHERAL_CLOCK_FREQ_IN_HZ
+	volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;
+	bootsel = *(volatile int*)0x1c010000;
+	bootsel = psoc->bootsel & 0x1;
 
- udma_uart_open (id,115200);
- dbg_str("\nA2 Bootloader Bootsel=");
+	hal_set_apb_i2cs_slave_on_off(1);
+	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
+			hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
 
- dbg_hex32(bootsel);
- udma_qspim_open(0, 2500000);
- udma_flash_reset_enable(0, 0);
- //for (i = 0; i < 10000; i++);
- udma_flash_reset_memory(0, 0);
- //for (i = 0; i < 10000; i++);
- udma_flash_readid(tstring);
- if (tstring[0] != 0xFF) flash_present = 1;
- else flash_present = 0;
- if (bootsel == 0)
+	udma_uart_open (id,115200);
+	dbg_str("\nA2 Bootloader Bootsel=");
+
+	if (bootsel == 1) dbg_str("1");
+	else dbg_str("0");
+	udma_qspim_open(0, 2500000);
+	udma_flash_reset_enable(0, 0);
+	//for (i = 0; i < 10000; i++);
+	udma_flash_reset_memory(0, 0);
+	//for (i = 0; i < 10000; i++);
+	udma_flash_readid(tstring);
+	if (tstring[0] != 0xFF) flash_present = 1;
+	else flash_present = 0;
+	if (bootsel == 0)
 	 tstring[0] = '.';
- else if (flash_present == 0)
+	else if (flash_present == 0)
 	 tstring[0] = '!';
- tstring[1] = 0;
- if ((bootsel == 1) && (flash_present == 1)) { //boot from SPI flash
+	tstring[1] = 0;
+	if ((bootsel == 1) && (flash_present == 1)) { //boot from SPI flash
 	 bootFromRom(0,0);
  } else
  while (1) {
@@ -189,6 +195,6 @@ int main(void)
 	 if (psoc->jtagreg != 0x1)
 		 dbg_hex32(psoc->jtagreg);
 	 dbg_str(tstring);
- }
+	}
 
 }

@@ -32,6 +32,7 @@
 #include "hal/include/hal_gpio.h"
 #include "hal/include/hal_fc_event.h"
 #include "include/gpio_tests.h"
+#include "gpio_map.h"
 
 extern uint8_t gDebugEnabledFlg;
 
@@ -49,10 +50,11 @@ static void gpio_set_mode(const struct cli_cmd_entry *pEntry);
 static void gpio_event_test(const struct cli_cmd_entry *pEntry);
 static void apb_gpio_tests(const struct cli_cmd_entry *pEntry);
 static void apb_gpio_event_tests(const struct cli_cmd_entry *pEntry);
-
+#if 0
 typedef struct {
 	short pm[4];
 } gpio_struct_t;
+extern gpio_struct_t gpio_map[];
 
 gpio_struct_t gpio_map[48] = { {-1,-1,-1,-1}, //io00
 		{-1,-1,-1,-1}, //io01
@@ -104,6 +106,7 @@ gpio_struct_t gpio_map[48] = { {-1,-1,-1,-1}, //io00
 		{-1,-1,-1,0x128}, //io47
 		{-1,-1,-1,-1} };
 
+#endif
 
 
 // IO menu

@@ -29,13 +29,13 @@
 #include <stdbool.h>
 
 
-#include "../target/core-v-mcu/include/core-v-mcu-config.h"
+#include "core-v-mcu-config.h"
 
 
-#include <hal_udma_ctrl_reg_defs.h>
-#include <hal_udma_qspi_reg_defs.h>
-#include "../include/flash.h"
-#include "../include/udma_qspi_driver.h"
+#include "udma_ctrl_reg_defs.h"
+#include "udma_qspi_reg_defs.h"
+#include "flash.h"
+#include "udma_qspi_driver.h"
 
 
 
