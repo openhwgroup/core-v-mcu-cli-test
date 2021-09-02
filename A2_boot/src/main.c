@@ -196,7 +196,10 @@ int main(void)
 		crcInit();
 		bootsel = 0;
 		//TODO: Send a single byte message indicating the reset type. POR / Button reset / WDT
+		psoc->jtagreg = 1;
 		while (1) {
+			if (psoc->jtagreg != 0x1)
+				dbg_hex32(psoc->jtagreg);
 			processI2CProtocolFrames();
 			bootsel++;
 			//for (bootsel = 0; bootsel < 1000000; bootsel++);
@@ -208,5 +211,4 @@ int main(void)
 			}
 		}
 	}
-
 }
