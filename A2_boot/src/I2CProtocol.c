@@ -5,6 +5,7 @@
 #include "hal_apb_i2cs.h"
 #include "I2CProtocol.h"
 #include "crc.h"
+#include "dbg.h"
 
 uint8_t gStopUartMsgFlg = 0;
 uint8_t gsI2CProtocolFrameRxBuf[256] = {0};
@@ -102,7 +103,7 @@ void parseI2CProtocolFrame(uint8_t *aBuf, uint16_t aLen)
 		}
 		else if ( lParseFramePtr->CmdType == A2_JUMP_TO_ADDRESS_CMD )
 		{
-			dbg_str("\I2C BL JMP ");
+			dbg_str("\nI2C BL JMP ");
 			dbg_hex32(lParseFramePtr->A2RamAddress);
 			dbg_str(" ");
 			jump_to_address(lParseFramePtr->A2RamAddress);
