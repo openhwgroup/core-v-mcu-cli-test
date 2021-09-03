@@ -118,52 +118,71 @@ typedef struct {
   union {
     __IO uint32_t jtagreg;
   };
-  __I uint32_t    unused3[10];
-
-  // Offset = 0x00a0
-  union {
-    __IO uint32_t corestatus;
-    struct {
-      __IO uint32_t  status     : 31;
-      __IO uint32_t  eoc        :  1;
-    } corestatus_b;
-  };
-  __I uint32_t    unused4[7];
-
-  // Offset = 0x00c0
-  union {
-    __IO uint32_t cs_ro;
-    struct {
-      __IO uint32_t  status     : 31;
-      __IO uint32_t  eoc        :  1;
-    } cs_ro_b;
-  };
+  __I uint32_t    unused3[19];
 
   // Offset = 0x00c4
   union {
     __IO uint32_t bootsel;
+    struct {
+      __IO uint32_t  bootdev    :  1;
+    } bootsel_b;
   };
 
   // Offset = 0x00c8
   union {
     __IO uint32_t clksel;
   };
-  __I uint32_t    unused5[3];
+  __I uint32_t    unused4[1];
+
+  // Offset = 0x00d0
+  union {
+    __IO uint32_t wd_count;
+    struct {
+      __IO uint32_t  count      : 31;
+    } wd_count_b;
+  };
+
+  // Offset = 0x00d4
+  union {
+    __IO uint32_t wd_control;
+    struct {
+      __IO uint32_t  wd_value   : 16;
+      __IO uint32_t             : 15;
+      __IO uint32_t  enable_status :  1;
+    } wd_control_b;
+  };
 
   // Offset = 0x00d8
   union {
-    __IO uint32_t clk_div_clu;
+    __IO uint32_t reset_reason;
+    struct {
+      __IO uint32_t  reason     :  2;
+    } reset_reason_b;
   };
-  __I uint32_t    unused6[1];
+  __I uint32_t    unused5[1];
 
   // Offset = 0x00e0
   union {
-    __IO uint32_t sel_clk_dc_fifo_efpga;
+    __IO uint32_t rto_peripheral_error;
+    struct {
+      __IO uint32_t  fll_rto    :  1;
+      __IO uint32_t  gpio_rto   :  1;
+      __IO uint32_t  udma_rto   :  1;
+      __IO uint32_t  soc_control_rto :  1;
+      __IO uint32_t  adv_timer_rto :  1;
+      __IO uint32_t  event_gen_rto :  1;
+      __IO uint32_t  i2cs_rto   :  1;
+      __IO uint32_t  timer_rto  :  1;
+      __IO uint32_t  fcb_rto    :  1;
+    } rto_peripheral_error_b;
   };
 
   // Offset = 0x00e4
   union {
-    __IO uint32_t clk_gating_dc_fifo_efpga;
+    __IO uint32_t ready_timeout_count;
+    struct {
+      __IO uint32_t  count      : 20;
+    } ready_timeout_count_b;
   };
 
   // Offset = 0x00e8
@@ -198,11 +217,18 @@ typedef struct {
   // Offset = 0x00f4
   union {
     __IO uint32_t efpga_status_out;
-    struct {
-      __IO uint32_t  efpga_version :  8;
-    } efpga_status_out_b;
   };
-  __I uint32_t    unused7[194];
+
+  // Offset = 0x00f8
+  union {
+    __IO uint32_t efpga_version;
+  };
+
+  // Offset = 0x00fc
+  union {
+    __IO uint32_t soft_reset;
+  };
+  __I uint32_t    unused6[192];
 
   // Offset = 0x0400
   union {
@@ -262,21 +288,45 @@ typedef struct {
 #define   REG_PER_CFG1_N_SDIO_LSB                  0
 #define   REG_PER_CFG1_N_SDIO_MASK                 0xff
 #define REG_JTAGREG                    0x0074
-#define REG_CORESTATUS                 0x00A0
-#define   REG_CORESTATUS_EOC_LSB                   31
-#define   REG_CORESTATUS_EOC_MASK                  0x1
-#define   REG_CORESTATUS_STATUS_LSB                0
-#define   REG_CORESTATUS_STATUS_MASK               0x7fffffff
-#define REG_CS_RO                      0x00C0
-#define   REG_CS_RO_EOC_LSB                        31
-#define   REG_CS_RO_EOC_MASK                       0x1
-#define   REG_CS_RO_STATUS_LSB                     0
-#define   REG_CS_RO_STATUS_MASK                    0x7fffffff
 #define REG_BOOTSEL                    0x00C4
+#define   REG_BOOTSEL_BootDev_LSB                  0
+#define   REG_BOOTSEL_BootDev_MASK                 0x1
 #define REG_CLKSEL                     0x00C8
-#define REG_CLK_DIV_CLU                0x00D8
-#define REG_SEL_CLK_DC_FIFO_EFPGA      0x00E0
-#define REG_CLK_GATING_DC_FIFO_EFPGA   0x00E4
+#define REG_WD_COUNT                   0x00D0
+#define   REG_WD_COUNT_COUNT_LSB                   0
+#define   REG_WD_COUNT_COUNT_MASK                  0x7fffffff
+#define REG_WD_CONTROL                 0x00D4
+#define   REG_WD_CONTROL_ENABLE_STATUS_LSB         31
+#define   REG_WD_CONTROL_ENABLE_STATUS_MASK        0x1
+#define   REG_WD_CONTROL_WD_VALUE_LSB              0
+#define   REG_WD_CONTROL_WD_VALUE_MASK             0xffff
+#define   REG_WD_CONTROL_ENABLE_WD_LSB             0
+#define   REG_WD_CONTROL_ENABLE_WD_MASK            0x1
+#define REG_RESET_REASON               0x00D8
+#define   REG_RESET_REASON_REASON_LSB              0
+#define   REG_RESET_REASON_REASON_MASK             0x3
+#define REG_RTO_PERIPHERAL_ERROR       0x00E0
+#define   REG_RTO_PERIPHERAL_ERROR_FCB_RTO_LSB     8
+#define   REG_RTO_PERIPHERAL_ERROR_FCB_RTO_MASK    0x1
+#define   REG_RTO_PERIPHERAL_ERROR_TIMER_RTO_LSB   7
+#define   REG_RTO_PERIPHERAL_ERROR_TIMER_RTO_MASK  0x1
+#define   REG_RTO_PERIPHERAL_ERROR_I2CS_RTO_LSB    6
+#define   REG_RTO_PERIPHERAL_ERROR_I2CS_RTO_MASK   0x1
+#define   REG_RTO_PERIPHERAL_ERROR_EVENT_GEN_RTO_LSB 5
+#define   REG_RTO_PERIPHERAL_ERROR_EVENT_GEN_RTO_MASK 0x1
+#define   REG_RTO_PERIPHERAL_ERROR_ADV_TIMER_RTO_LSB 4
+#define   REG_RTO_PERIPHERAL_ERROR_ADV_TIMER_RTO_MASK 0x1
+#define   REG_RTO_PERIPHERAL_ERROR_SOC_CONTROL_RTO_LSB 3
+#define   REG_RTO_PERIPHERAL_ERROR_SOC_CONTROL_RTO_MASK 0x1
+#define   REG_RTO_PERIPHERAL_ERROR_UDMA_RTO_LSB    2
+#define   REG_RTO_PERIPHERAL_ERROR_UDMA_RTO_MASK   0x1
+#define   REG_RTO_PERIPHERAL_ERROR_GPIO_RTO_LSB    1
+#define   REG_RTO_PERIPHERAL_ERROR_GPIO_RTO_MASK   0x1
+#define   REG_RTO_PERIPHERAL_ERROR_FLL_RTO_LSB     0
+#define   REG_RTO_PERIPHERAL_ERROR_FLL_RTO_MASK    0x1
+#define REG_READY_TIMEOUT_COUNT        0x00E4
+#define   REG_READY_TIMEOUT_COUNT_COUNT_LSB        0
+#define   REG_READY_TIMEOUT_COUNT_COUNT_MASK       0xfffff
 #define REG_RESET_TYPE1_EFPGA          0x00E8
 #define   REG_RESET_TYPE1_EFPGA_RESET_LB_LSB       3
 #define   REG_RESET_TYPE1_EFPGA_RESET_LB_MASK      0x1
@@ -301,8 +351,8 @@ typedef struct {
 #define   REG_ENABLE_IN_OUT_EFPGA_ENABLE_TCDM_P0_MASK 0x1
 #define REG_EFPGA_CONTROL_IN           0x00F0
 #define REG_EFPGA_STATUS_OUT           0x00F4
-#define   REG_EFPGA_STATUS_OUT_EFPGA_VERSION_LSB   0
-#define   REG_EFPGA_STATUS_OUT_EFPGA_VERSION_MASK  0xff
+#define REG_EFPGA_VERSION              0x00F8
+#define REG_SOFT_RESET                 0x00FC
 #define REG_IO_CTRL                    0x0400
 #define   REG_IO_CTRL_CFG_LSB                      8
 #define   REG_IO_CTRL_CFG_MASK                     0x3f
