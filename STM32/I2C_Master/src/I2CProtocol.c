@@ -23,7 +23,7 @@ uint16_t I2CProtocolFrameCalChksum(uint8_t *cbuf, uint8_t pkt_size)
     return lCRC;
 }
 
-uint16_t formI2CProtocolFrame(uint8_t *aBuf, uint16_t aBufSize, uint8_t aCmdType, uint32_t aA2RamAddress, const uint8_t *aData, uint8_t aDataLen)
+uint16_t formI2CProtocolFrame(uint8_t *aBuf, uint16_t aBufSize, uint8_t aCmdType, uint32_t aA2RamAddress, const uint8_t *aData, uint8_t aDataLen, uint8_t aCRCOnOff)
 {
 	uint8_t i = 0;
 	uint16_t ui16Crc = 0;
@@ -42,9 +42,17 @@ uint16_t formI2CProtocolFrame(uint8_t *aBuf, uint16_t aBufSize, uint8_t aCmdType
 			}
 		}
 
-		ui16Crc = I2CProtocolFrameCalChksum(aBuf, i+I2C_PROTOCOL_FRAME_HEADER_SIZE);
-		lFillPtr->Data[i++] = (uint8_t)(ui16Crc >> 8 );
-		lFillPtr->Data[i++] = (uint8_t)ui16Crc;
+		if( aCRCOnOff == 1 )
+		{
+			ui16Crc = I2CProtocolFrameCalChksum(aBuf, i+I2C_PROTOCOL_FRAME_HEADER_SIZE);
+			lFillPtr->Data[i++] = (uint8_t)(ui16Crc >> 8 );
+			lFillPtr->Data[i++] = (uint8_t)ui16Crc;
+		}
+		else
+		{
+			lFillPtr->Data[i++] = 0;
+			lFillPtr->Data[i++] = 0;
+		}
 		return i + I2C_PROTOCOL_FRAME_HEADER_SIZE;
 	}
 	return 0;
@@ -97,7 +105,7 @@ void parseI2CProtocolFrame(uint8_t *aBuf, uint16_t aLen)
 	}
 }
 
-void programArnold2(void)
+uint8_t programArnold2(uint8_t aCRCOnOff)
 {
 	uint32_t lStartOffset = 0, lFwBufOffset = 0;
 	uint32_t lTotalSize = 0;
@@ -106,6 +114,8 @@ void programArnold2(void)
 	uint16_t lCounter = 0, len = 0;
 	uint8_t lSts = 0, lData = 0;
 	uint32_t lIndicatorCnt = 0;
+	uint8_t lPgmSts = 0;
+	uint8_t lRetryCnt = 0;
 
 	if( gHeaderData != NULL )
 	{
@@ -119,7 +129,14 @@ void programArnold2(void)
 			while( lRemainingbytes != 0 )
 			{
 				do{
-					TM_I2C_Write(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, A2_I2C_BL_IS_READY_CHECK_CMD);
+					if( aCRCOnOff == 1 )
+					{
+						TM_I2C_Write(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, A2_I2C_BL_WITH_CRC_IS_READY_CHECK_CMD);
+					}
+					else if( aCRCOnOff == 0 )
+					{
+						TM_I2C_Write(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, A2_I2C_BL_WITHOUT_CRC_IS_READY_CHECK_CMD);
+					}
 
 					do{
 						TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C_STATUS, &lSts);
@@ -132,15 +149,49 @@ void programArnold2(void)
 					lBytesToSend = I2C_PROTOCOL_MAX_PAYLOAD_SIZE;
 				else
 					lBytesToSend = lRemainingbytes;
-				len = formI2CProtocolFrame(gsI2CProtocolFrameTxBuf, 256, A2_LOAD_MEMORY_CMD, (lLoadAddressStart + lLoadAddressOffset), &gArnold2AppFWBuf[lStartOffset + lFwBufOffset], lBytesToSend);
+				len = formI2CProtocolFrame(gsI2CProtocolFrameTxBuf, 256, A2_LOAD_MEMORY_CMD, (lLoadAddressStart + lLoadAddressOffset), &gArnold2AppFWBuf[lStartOffset + lFwBufOffset], lBytesToSend, aCRCOnOff);
 				sendI2CProtocolFrame(gsI2CProtocolFrameTxBuf, len);
 
-				lRemainingbytes -= lBytesToSend;
-				lLoadAddressOffset += lBytesToSend;
-				lFwBufOffset += lBytesToSend;
+				if( aCRCOnOff == 1 )
+				{
+					do{
+						TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C_STATUS, &lSts);
+						lCounter++;
+					}while( lSts == 0 );
 
+					TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C, &lData);
+
+					if( lData == A2_GOOD_FRAME_RCVD)
+					{
+						//Move ahead
+						lRemainingbytes -= lBytesToSend;
+						lLoadAddressOffset += lBytesToSend;
+						lFwBufOffset += lBytesToSend;
+					}
+					else if( lData == A2_CORRUPTED_FRAME_RCVD )
+					{
+						lRetryCnt++; //Retry the frame.
+						if( lRetryCnt >= 3 )
+						{
+							lRetryCnt = 0;
+							lPgmSts = 0;
+							return lPgmSts;
+						}
+					}
+					else
+					{
+						;
+					}
+				}
+				else	//No CRC
+				{
+					//Move ahead
+					lRemainingbytes -= lBytesToSend;
+					lLoadAddressOffset += lBytesToSend;
+					lFwBufOffset += lBytesToSend;
+				}
 				lIndicatorCnt++;
-				if( lIndicatorCnt >= 20 )
+				if( lIndicatorCnt >= 15 )
 				{
 					lIndicatorCnt = 0;
 					TM_DISCO_LedToggle(LED_RED);
@@ -149,8 +200,14 @@ void programArnold2(void)
 			TM_DISCO_LedOff(LED_RED);
 
 			do{
-				TM_I2C_Write(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, A2_I2C_BL_IS_READY_CHECK_CMD);
-
+				if( aCRCOnOff == 1 )
+				{
+					TM_I2C_Write(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, A2_I2C_BL_WITH_CRC_IS_READY_CHECK_CMD);
+				}
+				else if( aCRCOnOff == 0 )
+				{
+					TM_I2C_Write(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_I2C_APB, A2_I2C_BL_WITHOUT_CRC_IS_READY_CHECK_CMD);
+				}
 				do{
 					TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C_STATUS, &lSts);
 					lCounter++;
@@ -159,34 +216,15 @@ void programArnold2(void)
 				TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C, &lData);
 			}while(lData != A2_I2C_BL_IS_READY_CHECK_RSP_YES);
 
-			len = formI2CProtocolFrame(gsI2CProtocolFrameTxBuf, 256, A2_JUMP_TO_ADDRESS_CMD, gHeaderData->header.entry, NULL, 0);
+			len = formI2CProtocolFrame(gsI2CProtocolFrameTxBuf, 256, A2_JUMP_TO_ADDRESS_CMD, gHeaderData->header.entry, NULL, 0, aCRCOnOff);
 			sendI2CProtocolFrame(gsI2CProtocolFrameTxBuf, len);
 
 			TM_DISCO_LedOn(LED_ORANGE);
+			lPgmSts = 1;
 		}
 	}
-#if 0
-	if( lData == I2C_NEW_MSG_READY_BYTE )
-	{
-		//APB reads out the written data.
-		//If the read FIFO is not empty
-		i = 0;
-		while( 1 )
-		{
-			TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_FLAGS, &lData);
-			if( lData != 0 )
-			{
-				TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_FIFO_APB_I2C_READ_DATA_PORT, &lData);
-				gsI2CProtocolFrameRxBuf[i] = lData;
-				i++;
-			}
-			else
-				break;
-		}
-		parseI2CProtocolFrame(gsI2CProtocolFrameRxBuf, i);
-	}
-#endif
 
+	return lPgmSts;
 }
 
 

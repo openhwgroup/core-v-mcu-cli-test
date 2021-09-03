@@ -86,7 +86,11 @@ int main(void)
 				{
 					TM_DISCO_LedOff(LED_BLUE);
 					TM_DISCO_LedOff(LED_ORANGE);
-					programArnold2();
+					if( programArnold2(1) == 0 )
+					//if( programArnold2(0) == 0 )
+					{
+						TM_DISCO_LedOff(LED_GREEN);
+					}
 				}
 			}
     	}

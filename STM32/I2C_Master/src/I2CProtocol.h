@@ -81,21 +81,25 @@ typedef union {
 #define A2_TO_HOST_FRAME_HEADER      0x5A70
 #define HOST_TO_A2_FRAME_HEADER      0xA507
 
-#define A2_I2C_BL_IS_READY_CHECK_CMD     0x20
-#define A2_I2C_BL_IS_READY_CHECK_RSP_YES  0x21
-#define A2_I2C_BL_IS_READY_CHECK_RSP_NO    0x22
-#define I2C_NEW_FRAME_READY_BYTE       0x23
-#define A2_LOAD_MEMORY_CMD          0x24
-#define A2_READ_MEMORY_CMD          0x25
-#define A2_JUMP_TO_ADDRESS_CMD        0x26
-#define A2_RESET_REASON_POR          0x27
-#define A2_RESET_REASON_WDT          0x28
-#define A2_RESET_REASON_BUTTON_PRESS    0x29
-uint16_t formI2CProtocolFrame(uint8_t *aBuf, uint16_t aBufSize, uint8_t aCmdType, uint32_t aA2RamAddress, const uint8_t *aData, uint8_t aDataLen);
+#define A2_I2C_BL_WITHOUT_CRC_IS_READY_CHECK_CMD   		0x19
+#define A2_I2C_BL_WITH_CRC_IS_READY_CHECK_CMD     		0x20
+#define A2_I2C_BL_IS_READY_CHECK_RSP_YES  				0x21
+#define A2_I2C_BL_IS_READY_CHECK_RSP_NO    				0x22
+#define I2C_NEW_FRAME_READY_BYTE       					0x23
+#define A2_LOAD_MEMORY_CMD          					0x24
+#define A2_READ_MEMORY_CMD          					0x25
+#define A2_JUMP_TO_ADDRESS_CMD        					0x26
+#define A2_RESET_REASON_POR          					0x27
+#define A2_RESET_REASON_WDT          					0x28
+#define A2_RESET_REASON_BUTTON_PRESS    				0x29
+#define A2_CORRUPTED_FRAME_RCVD           				0x30
+#define A2_GOOD_FRAME_RCVD              				0x31
+
+uint16_t formI2CProtocolFrame(uint8_t *aBuf, uint16_t aBufSize, uint8_t aCmdType, uint32_t aA2RamAddress, const uint8_t *aData, uint8_t aDataLen, uint8_t aCRCOnOff);
 void processI2CProtocolFrames(void);
 uint16_t sendI2CProtocolFrame(uint8_t *aI2CProtocolFrameBuf, uint16_t aFrameSize);
 void readHeaderData(void);
-void programArnold2(void);
+uint8_t programArnold2(uint8_t aCRCOnOff);
 uint32_t getSizeOfA2FwBuf(void);
 
 #endif
