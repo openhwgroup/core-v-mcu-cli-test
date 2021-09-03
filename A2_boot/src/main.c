@@ -199,7 +199,7 @@ int main(void)
 		psoc->jtagreg = 1;
 		while (1) {
 			if (psoc->jtagreg != 0x1)
-				dbg_hex32(psoc->jtagreg);
+				jump_to_address(0x1C008080);
 			processI2CProtocolFrames();
 			bootsel++;
 			//for (bootsel = 0; bootsel < 1000000; bootsel++);
