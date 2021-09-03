@@ -33,6 +33,9 @@ typedef union {
 #define A2_LOAD_MEMORY_CMD					0x24
 #define A2_READ_MEMORY_CMD					0x25
 #define A2_JUMP_TO_ADDRESS_CMD				0x26
+#define A2_RESET_REASON_POR					0x27
+#define A2_RESET_REASON_WDT					0x28
+#define A2_RESET_REASON_BUTTON_PRESS		0x29
 
 uint8_t formI2CProtocolFrame(uint8_t *aBuf, uint8_t aBufSize, uint8_t aCmdType, uint8_t *aData, uint8_t aDataLen);
 void processI2CProtocolFrames(void);
