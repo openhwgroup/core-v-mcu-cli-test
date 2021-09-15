@@ -196,10 +196,19 @@ int main(void)
 		crcInit();
 		bootsel = 0;
 		//TODO: Send a single byte message indicating the reset type. POR / Button reset / WDT
+		if( psoc->reset_reason == 1 )	//1 = POR
+		{
+			hal_set_i2cs_msg_apb_i2c(A2_RESET_REASON_POR);
+		}
+		else if( psoc->reset_reason & 0x02 )	//3 = WDT
+		{
+			hal_set_i2cs_msg_apb_i2c(A2_RESET_REASON_WDT);
+		}
+
 		psoc->jtagreg = 1;
 		while (1) {
 			if (psoc->jtagreg != 0x1)
-				dbg_hex32(psoc->jtagreg);
+				jump_to_address(0x1C008080);
 			processI2CProtocolFrames();
 			bootsel++;
 			//for (bootsel = 0; bootsel < 1000000; bootsel++);
