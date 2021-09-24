@@ -27,6 +27,7 @@ typedef union {
 	uint8_t b[4];
 } split_4Byte_t ;
 
+extern uint8_t gQSPIFlashPresentFlg;
 
 extern FLASH_DEVICE_OBJECT gFlashDeviceObject;
 
@@ -272,13 +273,16 @@ char*  pzArg = NULL;
 static void flash_write (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
-		char *message;
-		int errors = 0;
-		int addr, i;
-		uint16_t length;
-		uint8_t l2addr[4];
-		uint32_t wdata;
+	// Add functionality here
+	char *message;
+	int errors = 0;
+	int addr, i;
+	uint16_t length;
+	uint8_t l2addr[4];
+	uint32_t wdata;
+
+	if( gQSPIFlashPresentFlg == 1)
+	{
 		CLI_uint32_required( "addr", &addr );
 		CLI_uint32_required( "data", &wdata );
 		l2addr[0] = (wdata >> 24) & 0xff;
@@ -299,16 +303,23 @@ static void flash_write (const struct cli_cmd_entry *pEntry)
 		}
 		dbg_str("\n");
 		vPortFree(message);
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 static void flash_read(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
-		char *message;
-		int errors = 0;
-		uint32_t addr, i;
-		uint16_t length;
-		uint8_t *l2addr;
+	// Add functionality here
+	char *message;
+	int errors = 0;
+	uint32_t addr, i;
+	uint16_t length;
+	uint8_t *l2addr;
+	if( gQSPIFlashPresentFlg == 1 )
+	{
 		CLI_uint32_required( "addr", &addr );
 		CLI_uint16_required( "length", &length );
 		message  = pvPortMalloc(80);
@@ -326,16 +337,23 @@ static void flash_read(const struct cli_cmd_entry *pEntry)
 		dbg_str("\n");
 		vPortFree(l2addr);
 		vPortFree(message);
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 
 static void flash_bulk_erase (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
-		char *message;
-		int errors = 0;
-		int addr,i;
-		uint8_t result;
+	// Add functionality here
+	char *message;
+	int errors = 0;
+	int addr,i;
+	uint8_t result;
+	if( gQSPIFlashPresentFlg == 1 )
+	{
 		message  = pvPortMalloc(80);
 		CLI_uint32_required( "addr", &addr );
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
@@ -344,15 +362,23 @@ static void flash_bulk_erase (const struct cli_cmd_entry *pEntry)
 				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 static void flash_sector_erase (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
-		char *message;
-		int errors = 0;
-		int addr,i;
-		uint8_t result;
+	// Add functionality here
+
+	char *message;
+	int errors = 0;
+	int addr,i;
+	uint8_t result;
+	if( gQSPIFlashPresentFlg == 1 )
+	{
 		message  = pvPortMalloc(80);
 		CLI_uint32_required( "addr", &addr );
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
@@ -361,16 +387,24 @@ static void flash_sector_erase (const struct cli_cmd_entry *pEntry)
 				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
+
 }
 
 static void flash_subsector_erase (const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
-		char *message;
-		int errors = 0;
-		int addr,i;
-		uint8_t result;
+	// Add functionality here
+	char *message;
+	int errors = 0;
+	int addr,i;
+	uint8_t result;
+	if( gQSPIFlashPresentFlg == 1 )
+	{
 		message  = pvPortMalloc(80);
 		CLI_uint32_required( "addr", &addr );
 		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
@@ -379,6 +413,11 @@ static void flash_subsector_erase (const struct cli_cmd_entry *pEntry)
 				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 
 static void flash_subsector_erase_new (const struct cli_cmd_entry *pEntry)
@@ -389,15 +428,21 @@ static void flash_subsector_erase_new (const struct cli_cmd_entry *pEntry)
 	uint32_t lStartSubSectorNum = 0;
 	uint32_t lNumOfSubSectors = 0;
 	uint8_t result;
-
-	CLI_uint32_required( "start addr", &lStartSubSectorNum );
-	CLI_uint32_required( "Num of sub sectors", &lNumOfSubSectors );
-	//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	//result = udma_flash_erase(0,0,addr,0);
-	if( flashEraseSubsector_Micron(lStartSubSectorNum, lNumOfSubSectors) == 0 )
-		dbg_str("<<PASSED>>\r\n");
+	if(gQSPIFlashPresentFlg == 1 )
+	{
+		CLI_uint32_required( "start addr", &lStartSubSectorNum );
+		CLI_uint32_required( "Num of sub sectors", &lNumOfSubSectors );
+		//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		//result = udma_flash_erase(0,0,addr,0);
+		if( flashEraseSubsector_Micron(lStartSubSectorNum, lNumOfSubSectors) == 0 )
+			dbg_str("<<PASSED>>\r\n");
+		else
+			dbg_str("<<FAILED>>\r\n");
+	}
 	else
-		dbg_str("<<FAILED>>\r\n");
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 
 static void flash_readid(const struct cli_cmd_entry *pEntry)
@@ -405,24 +450,30 @@ static void flash_readid(const struct cli_cmd_entry *pEntry)
 
 	(void)pEntry;
 	// Add functionality here
-	uint8_t lVal = 0;
+
 	union {
 		uint32_t w;
 		uint8_t b[4];
 	} result ;
 
 	result.w = 0;
+	if( gQSPIFlashPresentFlg == 1 )
+	{
+		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		result.w = udma_flash_readid(0,0);
 
-	result.w = udma_flash_readid(0,0);
-
-	CLI_printf("FLASH read ID results = 0x%08x %02x %02x %02x %02x\n",
-			result.w, result.b[0],result.b[1],result.b[2],result.b[3]);
-	if( result.w == 0x1019ba20 )
-		CLI_printf("<<PASSED>>\n");
+		CLI_printf("FLASH read ID results = 0x%08x %02x %02x %02x %02x\n",
+				result.w, result.b[0],result.b[1],result.b[2],result.b[3]);
+		if( result.w == 0x1019ba20 )
+			CLI_printf("<<PASSED>>\n");
+		else
+			CLI_printf("<<FAILED>>\n");
+	}
 	else
-		CLI_printf("<<FAILED>>\n");
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 
 }
 
@@ -437,9 +488,15 @@ static void flash_quad(const struct cli_cmd_entry *pEntry)
 		uint8_t b[4];
 	} result ;
 	result.w = 0;
-
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	udma_flash_enterQuadIOMode(0, 0 );
+	if( gQSPIFlashPresentFlg == 1 )
+	{
+		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		udma_flash_enterQuadIOMode(0, 0 );
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 
 
@@ -451,9 +508,16 @@ static void flash_init(const struct cli_cmd_entry *pEntry)
 	(void)pEntry;
 	// Add functionality here
 
-	Driver_Init(&gFlashDeviceObject);
+	if( gQSPIFlashPresentFlg == 1 )
+	{
+		Driver_Init(&gFlashDeviceObject);
 
-	dbg_str("<<DONE>>\r\n");
+		dbg_str("<<DONE>>\r\n");
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 
 static void flash_reset(const struct cli_cmd_entry *pEntry)
@@ -462,62 +526,69 @@ static void flash_reset(const struct cli_cmd_entry *pEntry)
 	(void)pEntry;
 	// Add functionality here
 
-	udma_flash_reset_enable(0, 0);
-	for (i = 0; i < 10000; i++);
-	udma_flash_reset_memory(0, 0);
-	for (i = 0; i < 10000; i++);
+	if( gQSPIFlashPresentFlg == 1 )
+	{
+		udma_flash_reset_enable(0, 0);
+		for (i = 0; i < 10000; i++);
+		udma_flash_reset_memory(0, 0);
+		for (i = 0; i < 10000; i++);
 
-	dbg_str("<<DONE>>\r\n");
+		dbg_str("<<DONE>>\r\n");
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
 }
 
 
 static void qspi_read(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
+	// Add functionality here
 
-		uint8_t read_data[8] = {0xff,0xfe,0xfc,0xf8,0xf0,0xe0,0xc0,0x80};
-		uint8_t lRead_data[8] = {0};
+	uint8_t read_data[8] = {0xff,0xfe,0xfc,0xf8,0xf0,0xe0,0xc0,0x80};
+	uint8_t lRead_data[8] = {0};
 
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		udma_qspim_read(0, 0, 4, lRead_data);
-		CLI_printf("[0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n",lRead_data[0], lRead_data[1], lRead_data[2], lRead_data[3]);
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	udma_qspim_read(0, 0, 4, lRead_data);
+	CLI_printf("[0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n",lRead_data[0], lRead_data[1], lRead_data[2], lRead_data[3]);
 
 }
 
 static void qspi_write(const struct cli_cmd_entry *pEntry)
 {
 	(void)pEntry;
-	    // Add functionality here
-		char *message;
-		int errors = 0;
-		int i, length;
-		CLI_uint32_required( "length", &length );
-		message  = pvPortMalloc(80);
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		sprintf(message,"Qspi Write tests");
-		dbg_str(message);
-		message[0] = 0x01;
-		message[1] = 0x03;
-		message[2] = 0x07;
-		message[3] = 0x0f;
-		message[4] = 0x1f;
-		message[5] = 0x3f;
-		message[6] = 0x7f;
-		message[7] = 0xff;
-		message[8] = 0xfe;
-		message[9] = 0xfc;
-		message[10] = 0xf8;
-		message[11] = 0xf0;
-		message[12] = 0xe0;
-		message[13] = 0xc0;
-		message[14] = 0x80;
-		message[15] = 0x00;
-		udma_qspim_write(0, 0, length, message);
-		udma_qspim_write(0, 1, length, message);
-		udma_qspim_write(0, 2, length, message);
-		udma_qspim_write(0, 3, length, message);
-		vPortFree(message);
+	// Add functionality here
+	char *message;
+	int errors = 0;
+	int i, length;
+	CLI_uint32_required( "length", &length );
+	message  = pvPortMalloc(80);
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	sprintf(message,"Qspi Write tests");
+	dbg_str(message);
+	message[0] = 0x01;
+	message[1] = 0x03;
+	message[2] = 0x07;
+	message[3] = 0x0f;
+	message[4] = 0x1f;
+	message[5] = 0x3f;
+	message[6] = 0x7f;
+	message[7] = 0xff;
+	message[8] = 0xfe;
+	message[9] = 0xfc;
+	message[10] = 0xf8;
+	message[11] = 0xf0;
+	message[12] = 0xe0;
+	message[13] = 0xc0;
+	message[14] = 0x80;
+	message[15] = 0x00;
+	udma_qspim_write(0, 0, length, message);
+	udma_qspim_write(0, 1, length, message);
+	udma_qspim_write(0, 2, length, message);
+	udma_qspim_write(0, 3, length, message);
+	vPortFree(message);
 }
 
 static void flash_peek(const struct cli_cmd_entry *pEntry)
@@ -534,51 +605,58 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 	xValue.w = 0;
 	lExpVal.w = 0;
 
-	for(i=0; i<8; i++ )
+	if( gQSPIFlashPresentFlg == 1 )
 	{
-		//Save pin muxes
-		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-	}
-
-	for(i=0; i<8; i++ )
-	{
-		//set pin muxes
-		hal_setpinmux(13+i, 0);
-	}
-
-	CLI_uint32_required( "addr", &lAddress );
-
-	if( CLI_is_more_args() ){
-		lExpValTrueOrFalse = 1;
-		CLI_uint32_required("exp", &lExpVal.w);
-	}
-
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	dbg_str("Qspi Flash Read\n");
-	udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
-	CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
-
-	if( lExpValTrueOrFalse )
-	{
-		if( xValue.w == lExpVal.w )
+		for(i=0; i<8; i++ )
 		{
-			CLI_printf("flash peek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
+			//Save pin muxes
+			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+		}
+
+		for(i=0; i<8; i++ )
+		{
+			//set pin muxes
+			hal_setpinmux(13+i, 0);
+		}
+
+		CLI_uint32_required( "addr", &lAddress );
+
+		if( CLI_is_more_args() ){
+			lExpValTrueOrFalse = 1;
+			CLI_uint32_required("exp", &lExpVal.w);
+		}
+
+		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		dbg_str("Qspi Flash Read\n");
+		udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
+		CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
+
+		if( lExpValTrueOrFalse )
+		{
+			if( xValue.w == lExpVal.w )
+			{
+				CLI_printf("flash peek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
+			}
+			else
+			{
+				CLI_printf("flash peek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
+			}
 		}
 		else
 		{
-			CLI_printf("flash peek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
+			dbg_str("<<DONE>>\r\n");
+		}
+
+		//Restore pin muxes
+		for(i=0; i<8; i++ )
+		{
+			//Save pin muxes
+			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
 		}
 	}
 	else
 	{
-		dbg_str("<<DONE>>\r\n");
-	}
-
-	//Restore pin muxes
-	for(i=0; i<8; i++ )
-	{
-		//Save pin muxes
-		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
 	}
 }
 
@@ -592,32 +670,40 @@ static void flash_poke(const struct cli_cmd_entry *pEntry)
 	uint8_t lMuxSelSaveBuf[8] = {0};
 
 	xValue.w = 0;
-	for(i=0; i<8; i++ )
+
+	if( gQSPIFlashPresentFlg == 1 )
 	{
-		//Save pin muxes
-		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+		for(i=0; i<8; i++ )
+		{
+			//Save pin muxes
+			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+		}
+
+		for(i=0; i<8; i++ )
+		{
+			//set pin muxes
+			hal_setpinmux(13+i, 0);
+		}
+
+		CLI_uint32_required( "addr", &lAddress );
+		CLI_uint32_required( "value", &xValue.w);
+
+		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		dbg_str("Qspi Flash write\n");
+		udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
+
+		dbg_str("<<DONE>>\r\n");
+
+		//Restore pin muxes
+		for(i=0; i<8; i++ )
+		{
+			//Save pin muxes
+			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+		}
 	}
-
-	for(i=0; i<8; i++ )
+	else
 	{
-		//set pin muxes
-		hal_setpinmux(13+i, 0);
-	}
-
-	CLI_uint32_required( "addr", &lAddress );
-	CLI_uint32_required( "value", &xValue.w);
-
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	dbg_str("Qspi Flash write\n");
-	udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
-
-	dbg_str("<<DONE>>\r\n");
-
-	//Restore pin muxes
-	for(i=0; i<8; i++ )
-	{
-		//Save pin muxes
-		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
 	}
 }
 
@@ -636,58 +722,64 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 	xValue.w = 0;
 	lExpVal.w = 0;
 	//lLongVal.w = 0;
-
-	for(i=0; i<8; i++ )
+	if( gQSPIFlashPresentFlg == 1 )
 	{
-		//Save pin muxes
-		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-	}
-
-	for(i=0; i<8; i++ )
-	{
-		//set pin muxes
-		hal_setpinmux(13+i, 0);
-	}
-
-	CLI_uint32_required( "addr", &lAddress );
-
-	if( CLI_is_more_args() ){
-		lExpValTrueOrFalse = 1;
-		CLI_uint32_required("exp", &lExpVal.w);
-	}
-
-	dbg_str("Qspi Flash Read\n");
-	//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-
-	//udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
-	//udma_flash_read_quad(0, 0, lAddress, &xValue.b[0], 4);
-	//if( flashRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
-	if( flashQuadOutputFastRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
-		CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
-	else
-		dbg_str("flashRead_Micron Error\n");
-
-	if( lExpValTrueOrFalse )
-	{
-		if( xValue.w == lExpVal.w )
+		for(i=0; i<8; i++ )
 		{
-			CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
+			//Save pin muxes
+			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+		}
+
+		for(i=0; i<8; i++ )
+		{
+			//set pin muxes
+			hal_setpinmux(13+i, 0);
+		}
+
+		CLI_uint32_required( "addr", &lAddress );
+
+		if( CLI_is_more_args() ){
+			lExpValTrueOrFalse = 1;
+			CLI_uint32_required("exp", &lExpVal.w);
+		}
+
+		dbg_str("Qspi Flash Read\n");
+		//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+
+		//udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
+		//udma_flash_read_quad(0, 0, lAddress, &xValue.b[0], 4);
+		//if( flashRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
+		if( flashQuadOutputFastRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
+			CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
+		else
+			dbg_str("flashRead_Micron Error\n");
+
+		if( lExpValTrueOrFalse )
+		{
+			if( xValue.w == lExpVal.w )
+			{
+				CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
+			}
+			else
+			{
+				CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
+			}
 		}
 		else
 		{
-			CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
+			dbg_str("qpeek <<DONE>>\r\n");
+		}
+
+		//Restore pin muxes
+		for(i=0; i<8; i++ )
+		{
+			//Save pin muxes
+			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
 		}
 	}
 	else
 	{
-		dbg_str("qpeek <<DONE>>\r\n");
-	}
-
-	//Restore pin muxes
-	for(i=0; i<8; i++ )
-	{
-		//Save pin muxes
-		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
 	}
 }
 uint8_t gBuf[32] = {0};
@@ -701,40 +793,47 @@ static void flash_quad_poke(const struct cli_cmd_entry *pEntry)
 	uint8_t i = 0;
 	uint8_t lMuxSelSaveBuf[8] = {0};
 
-	for( i=0 ;i <32; i++ )
+	if( gQSPIFlashPresentFlg == 1 )
 	{
-		gBuf[i] = i;
+		for( i=0 ;i <32; i++ )
+		{
+			gBuf[i] = i;
+		}
+		xValue.w = 0;
+		for(i=0; i<8; i++ )
+		{
+			//Save pin muxes
+			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+		}
+
+		for(i=0; i<8; i++ )
+		{
+			//set pin muxes
+			hal_setpinmux(13+i, 0);
+		}
+
+		CLI_uint32_required( "addr", &lAddress );
+		CLI_uint32_required( "value", &xValue.w);
+
+		dbg_str("Qspi Flash write\n");
+		//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		//udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
+
+		//flashWrite_Micron(lAddress, &xValue.b[0], 4);
+		flashQuadInputFastProgram_Micron(lAddress, &xValue.b[0], 4);
+		//flashQuadInputFastProgram_Micron(0, gBuf, 32);
+		dbg_str("qpoke <<DONE>>\r\n");
+
+		//Restore pin muxes
+		for(i=0; i<8; i++ )
+		{
+			//Save pin muxes
+			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+		}
 	}
-	xValue.w = 0;
-	for(i=0; i<8; i++ )
+	else
 	{
-		//Save pin muxes
-		lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-	}
-
-	for(i=0; i<8; i++ )
-	{
-		//set pin muxes
-		hal_setpinmux(13+i, 0);
-	}
-
-	CLI_uint32_required( "addr", &lAddress );
-	CLI_uint32_required( "value", &xValue.w);
-
-	dbg_str("Qspi Flash write\n");
-	//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	//udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
-
-	//flashWrite_Micron(lAddress, &xValue.b[0], 4);
-	flashQuadInputFastProgram_Micron(lAddress, &xValue.b[0], 4);
-	//flashQuadInputFastProgram_Micron(0, gBuf, 32);
-	dbg_str("qpoke <<DONE>>\r\n");
-
-	//Restore pin muxes
-	for(i=0; i<8; i++ )
-	{
-		//Save pin muxes
-		 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
 	}
 }
 

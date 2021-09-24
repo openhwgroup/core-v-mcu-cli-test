@@ -113,7 +113,11 @@
 #define UDMA_CTRL_EXT_PER0_CLKEN   (1 << 8)
 
 //  FLL configuration information
-#define FLL_START_ADDR 0x1A100000
+#define FLL1_START_ADDR 0x1A100000
+
+#define FLL2_START_ADDR 0x1A100010
+
+#define FLL3_START_ADDR 0x1A100020
 
 //  GPIO configuration information
 #define GPIO_START_ADDR 0x1A101000

@@ -42,6 +42,7 @@
 #include "hal/include/hal_apb_i2cs.h"
 
 FLASH_DEVICE_OBJECT gFlashDeviceObject;
+uint8_t gQSPIFlashPresentFlg = 0;
 
 /* test some assumptions we make about compiler settings */
 static_assert(sizeof(uintptr_t) == 4,
@@ -72,7 +73,7 @@ void timer_irq_handler(uint32_t mcause);
 void undefined_handler(uint32_t mcause);
 extern void fc_soc_event_handler1 (uint32_t mcause);
 void (*isr_table[32])(uint32_t);
-
+void flash_readid (const struct cli_cmd_entry *pEntry);
 /**
  * Board init code. Always call this before anything else.
  */
@@ -124,6 +125,17 @@ for (int i = 0 ; i < 32 ; i ++){
 		udma_i2cm_open(id, 400000);  //200000
 	}
 	udma_qspim_open(0,5000000);
+
+	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+
+	if( udma_flash_readid(0,0) == 0xFFFFFFFF )
+	{
+		gQSPIFlashPresentFlg = 0;
+	}
+	else
+	{
+		gQSPIFlashPresentFlg = 1;
+	}
 
 	hal_set_apb_i2cs_slave_on_off(1);
 	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
