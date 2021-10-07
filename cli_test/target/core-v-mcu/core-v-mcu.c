@@ -128,7 +128,7 @@ for (int i = 0 ; i < 32 ; i ++){
 
 	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
-	if( udma_flash_readid(0,0) == 0xFFFFFFFF )
+	if( ( udma_flash_readid(0,0) == 0xFFFFFFFF ) || ( udma_flash_readid(0,0) == 0 ) )
 	{
 		gQSPIFlashPresentFlg = 0;
 	}
