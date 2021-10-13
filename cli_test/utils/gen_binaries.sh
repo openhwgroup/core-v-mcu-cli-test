@@ -13,4 +13,5 @@ echo "Done. Generated files are in cli_test/utils/memoryInitFiles"
 echo "Generating memory initialization file for simulated flash model"
 cd ../../../bin2txt/bin/Debug
 ./bin2txt ../../../../Default/cli_sim.bin
+./bin2txt ../../../../Default/cli.bin
 echo "Done. Generated file is in cli_test/utils/memoryInitFiles"
