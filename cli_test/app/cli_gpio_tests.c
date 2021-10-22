@@ -655,6 +655,7 @@ static unsigned int gpio_even_tests(gpio_struct_typedef *gpio) {
 	default:
 		break;
 	}
+	//TODO: Break this loop with a counter and print the GPIO number.
 	while(event_flag == 0){
 		dbg_str("NO GPIO Interrupt triggered \r\n");
 	}

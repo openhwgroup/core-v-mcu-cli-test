@@ -37,7 +37,7 @@
 #define N_I2SC               0
 #define N_CSI2               0
 #define N_HYPER              0
-#define N_SDIO               0
+#define N_SDIO               1
 #define N_CAM                1
 #define N_JTAG               0
 #define N_MRAM               0
