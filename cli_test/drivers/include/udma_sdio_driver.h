@@ -59,6 +59,10 @@ void udma_flash_write(uint8_t sdio_id, uint8_t cs, uint32_t flash_addr,uint8_t *
 uint32_t udma_flash_reset_enable(uint8_t sdio_id, uint8_t cs);
 uint32_t udma_flash_reset_memory(uint8_t sdio_id, uint8_t cs);
 
+uint8_t udma_sdio_readBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_t *aBuf, uint32_t aBufLen);
+uint8_t udma_sdio_writeBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_t *aBuf, uint32_t aBufLen);
+void udma_sdio_clearDataSetup(uint8_t sdio_id);
+
 // helper functions
 
 

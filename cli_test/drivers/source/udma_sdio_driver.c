@@ -28,6 +28,7 @@
 #include "hal/include/hal_udma_sdio_reg_defs.h"
 #include <drivers/include/udma_sdio_driver.h>
 
+#define BLOCK_SIZE 512
 
 uint16_t udma_sdio_open (uint8_t sdio_id)
 {
@@ -66,25 +67,78 @@ uint16_t udma_sdio_control(uint8_t sdio_id, udma_sdio_control_type_t control_typ
 	return 0;
 }
 
+void udma_sdio_clearDataSetup(uint8_t sdio_id)
+{
+	UdmaSdio_t *psdio_regs = (UdmaSdio_t*)(UDMA_CH_ADDR_SDIO + sdio_id * UDMA_CH_SIZE);
+	psdio_regs->data_setup = 0x00000000;
+}
+uint8_t udma_sdio_writeBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_t *aBuf, uint32_t aBufLen)
+{
+	uint8_t lSts = 0;
+	uint32_t lData = 0;
+	UdmaSdio_t *psdio_regs = (UdmaSdio_t*)(UDMA_CH_ADDR_SDIO + sdio_id * UDMA_CH_SIZE);
+
+	psdio_regs->tx_saddr = aBuf;
+	psdio_regs->tx_size = aBufLen;
+
+	lData = 0;
+	psdio_regs->data_setup = 0x00000000;
+	lData |= 1 << 0;	//Data Enable - Enable data transfer for current command
+	lData |= 0 << 1;	//RWN: Set transfer direction 1 read; 0 write
+	lData |= 1 << 2;	//QUAD mode: Use quad mode.
+	lData |= ( aNumOfBlocks - 1 ) << 8; //Number of blocks
+	lData |= ( BLOCK_SIZE - 1 ) << 16; //Block size
+
+	psdio_regs->data_setup = lData;
+}
+
+uint8_t udma_sdio_readBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_t *aBuf, uint32_t aBufLen)
+{
+	uint8_t lSts = 0;
+	uint32_t lData = 0;
+	UdmaSdio_t *psdio_regs = (UdmaSdio_t*)(UDMA_CH_ADDR_SDIO + sdio_id * UDMA_CH_SIZE);
+
+	psdio_regs->rx_saddr = aBuf;
+	psdio_regs->rx_size = aBufLen;
+
+	lData = 0;
+	psdio_regs->data_setup = 0x00000000;
+	lData |= 1 << 0;	//Data Enable - Enable data transfer for current command
+	lData |= 1 << 1;	//RWN: Set transfer direction 1 read; 0 write
+	lData |= 1 << 2;	//QUAD mode: Use quad mode.
+	lData |= ( aNumOfBlocks - 1 ) << 8; //Number of blocks
+	lData |= ( BLOCK_SIZE - 1 ) << 16; //Block size
+
+	psdio_regs->data_setup = lData;
+}
+
 uint8_t udma_sdio_sendCmd(uint8_t sdio_id, uint8_t aCmdOpCode, uint8_t aRspType, uint32_t aCmdArgument, uint32_t *aResponseBuf)
 {
 	uint8_t lSts = 0;
+	uint32_t lData = 0;
 	UdmaSdio_t *psdio_regs = (UdmaSdio_t*)(UDMA_CH_ADDR_SDIO + sdio_id * UDMA_CH_SIZE);
 
-	psdio_regs->cmd_op_b.cmd_op = ( aCmdOpCode & 0x3F );
-	psdio_regs->cmd_op_b.cmd_rsp_type = ( aRspType & 0x07 );
-	psdio_regs->cmd_arg_b.cmd_arg = aCmdArgument;
+	lData |= (aRspType & REG_CMD_OP_CMD_RSP_TYPE_MASK ) << REG_CMD_OP_CMD_RSP_TYPE_LSB;
+	lData |= ( aCmdOpCode & REG_CMD_OP_CMD_OP_MASK ) << REG_CMD_OP_CMD_OP_LSB;
+	psdio_regs->cmd_op = lData;
 
-	psdio_regs->start_b.start = 1;
+	//psdio_regs->cmd_op_b.cmd_op = ( aCmdOpCode & 0x3F );
+	//psdio_regs->cmd_op_b.cmd_rsp_type = ( aRspType & 0x07 );
+	psdio_regs->cmd_arg = aCmdArgument;
 
-	while( psdio_regs->status_b.eot == 0 );
+	psdio_regs->start = 1;
+
+	while( psdio_regs->status_b.eot == 0 )
+	{
+		if( psdio_regs->status_b.error == 1 )
+		{
+			lSts = psdio_regs->status_b.cmd_err_status;
+			break;
+		}
+	}
 
 	psdio_regs->status_b.eot = 1;	//Write 1 to EOT bit to clear it.
 
-	if( psdio_regs->status_b.error == 1 )
-	{
-		lSts = psdio_regs->status_b.cmd_err_status;
-	}
 
 	if( aResponseBuf )
 	{
