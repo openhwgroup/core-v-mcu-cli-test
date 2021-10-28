@@ -78,6 +78,10 @@ uint8_t udma_sdio_writeBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_
 	uint32_t lData = 0;
 	UdmaSdio_t *psdio_regs = (UdmaSdio_t*)(UDMA_CH_ADDR_SDIO + sdio_id * UDMA_CH_SIZE);
 
+	psdio_regs->tx_cfg_b.clr = 1;
+	psdio_regs->tx_cfg_b.en = 0;
+	psdio_regs->tx_cfg_b.datasize = 2;
+
 	psdio_regs->tx_saddr = aBuf;
 	psdio_regs->tx_size = aBufLen;
 
@@ -90,6 +94,8 @@ uint8_t udma_sdio_writeBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_
 	lData |= ( BLOCK_SIZE - 1 ) << 16; //Block size
 
 	psdio_regs->data_setup = lData;
+
+	psdio_regs->tx_cfg_b.en = 1;
 }
 
 uint8_t udma_sdio_readBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_t *aBuf, uint32_t aBufLen)
@@ -97,6 +103,10 @@ uint8_t udma_sdio_readBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_t
 	uint8_t lSts = 0;
 	uint32_t lData = 0;
 	UdmaSdio_t *psdio_regs = (UdmaSdio_t*)(UDMA_CH_ADDR_SDIO + sdio_id * UDMA_CH_SIZE);
+
+	psdio_regs->rx_cfg_b.clr = 1;
+	psdio_regs->rx_cfg_b.en = 0;
+	psdio_regs->rx_cfg_b.datasize = 2;
 
 	psdio_regs->rx_saddr = aBuf;
 	psdio_regs->rx_size = aBufLen;
@@ -110,12 +120,16 @@ uint8_t udma_sdio_readBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_t
 	lData |= ( BLOCK_SIZE - 1 ) << 16; //Block size
 
 	psdio_regs->data_setup = lData;
+
+	psdio_regs->rx_cfg_b.en = 1;
+
 }
 
 uint8_t udma_sdio_sendCmd(uint8_t sdio_id, uint8_t aCmdOpCode, uint8_t aRspType, uint32_t aCmdArgument, uint32_t *aResponseBuf)
 {
 	uint8_t lSts = 0;
 	uint32_t lData = 0;
+	uint32_t lLoopCounter = 0;
 	UdmaSdio_t *psdio_regs = (UdmaSdio_t*)(UDMA_CH_ADDR_SDIO + sdio_id * UDMA_CH_SIZE);
 
 	lData |= (aRspType & REG_CMD_OP_CMD_RSP_TYPE_MASK ) << REG_CMD_OP_CMD_RSP_TYPE_LSB;
@@ -134,6 +148,14 @@ uint8_t udma_sdio_sendCmd(uint8_t sdio_id, uint8_t aCmdOpCode, uint8_t aRspType,
 		{
 			lSts = psdio_regs->status_b.cmd_err_status;
 			break;
+		}
+		else
+		{
+			if(++lLoopCounter >= 0x00800000 )
+			{
+				lSts = 2;
+				break;
+			}
 		}
 	}
 

@@ -50,12 +50,14 @@ static void sdio_cardWrite(const struct cli_cmd_entry *pEntry)
 	uint32_t lCmdArg = 0;
 	uint32_t lRspBuf[4] = {0};
 	uint32_t i = 0;
+	uint32_t lBlockAddr = 0;
 	(void)pEntry;
 
+	CLI_uint32_required( "block Address", &lBlockAddr );
 	udma_sdio_writeBlockData(0, 1, gBlockWriteBuf, 512);
 
 	lCmd = 0x18;	//CMD24
-	lCmdArg = 0x00000400;	//SD card block address as the argument
+	lCmdArg = lBlockAddr;	//SD card block address as the argument
 	lSts = udma_sdio_sendCmd(0, lCmd, 0x02, lCmdArg, lRspBuf);
 
 	udma_sdio_clearDataSetup(0);
@@ -70,12 +72,18 @@ static void sdio_cardRead(const struct cli_cmd_entry *pEntry)
 	uint32_t lCmdArg = 0;
 	uint32_t lRspBuf[4] = {0};
 	uint32_t i = 0;
+	uint32_t lBlockAddr = 0;
 	(void)pEntry;
+	CLI_uint32_required( "block Address", &lBlockAddr );
 
+	for(i=0; i<128; i++ )
+	{
+		gBlockReadBuf[i] = 0x10101010 + i;
+	}
 	udma_sdio_readBlockData(0, 1, gBlockReadBuf, 512);
 
 	lCmd = 0x11;	//CMD17
-	lCmdArg = 0x00000400;	//SD card block address as the argument
+	lCmdArg = lBlockAddr;	//SD card block address as the argument
 	lSts = udma_sdio_sendCmd(0, lCmd, 0x02, lCmdArg, lRspBuf);
 
 	udma_sdio_clearDataSetup(0);
@@ -88,7 +96,12 @@ static void sdio_cardRead(const struct cli_cmd_entry *pEntry)
 
 }
 
-static void sdio_CardStdbyToTrsfrMode(const struct cli_cmd_entry *pEntry)
+static void sdio_readCardSpecificData(void)
+{
+
+}
+
+static void sdio_CardStandbyToTransferMode(void)
 {
 	uint8_t lSts = 0;
 	uint8_t lCmd = 0;
@@ -97,15 +110,12 @@ static void sdio_CardStdbyToTrsfrMode(const struct cli_cmd_entry *pEntry)
 	uint32_t lCardStatus = 0;
 	uint32_t lRspBuf[4] = {0};
 
-	(void)pEntry;
-
-	lCmd = 0x07;
-
 	if( gRelativeCardAddress != 0 )
 	{
+		lCmd = 0x07;
 		lCmdArg = 0;
 		lCmdArg |= ( gRelativeCardAddress << 16 );
-		lSts = udma_sdio_sendCmd(0, lCmd, 0x02, lCmdArg, lRspBuf);	//CMD 07
+		lSts = udma_sdio_sendCmd(0, lCmd, 0x04, lCmdArg, lRspBuf);	//CMD 07
 		CLI_printf("\nCMD %d Arg 0x%08x sts 0x%02x\n",lCmd, lCmdArg, lSts);
 
 		CLI_printf("Rsp R1b = 0x%08x 0x%08x\n", lRspBuf[0], lRspBuf[1]);
@@ -147,7 +157,12 @@ static void sdio_CardStdbyToTrsfrMode(const struct cli_cmd_entry *pEntry)
 
 }
 
+static void sdio_CardStdbyToTrsfrMode(const struct cli_cmd_entry *pEntry)
+{
 
+	(void)pEntry;
+	sdio_CardStandbyToTransferMode();
+}
 
 static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 {
@@ -253,7 +268,14 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 		lCmd = 0x02;
 		lSts = udma_sdio_sendCmd(0, lCmd, 0x03, 0x00000000, lRspBuf);	//CMD 02
 		CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
-		CLI_printf("0x%08x 0x%08x 0x%08x 0x%08x\n", lRspBuf[0], lRspBuf[1], lRspBuf[2], lRspBuf[3]);
+		CLI_printf("CID 0x%08x 0x%08x 0x%08x 0x%08x\n", lRspBuf[0], lRspBuf[1], lRspBuf[2], lRspBuf[3]);
+
+		CLI_printf("Manufacturer ID = 0x%02x\n", ( ( lRspBuf[3] & 0xFF000000) >> 24));
+		CLI_printf("OEM ID = 0x%04x\n", ( ( lRspBuf[3] & 0x00FFFF00) >> 8));
+		CLI_printf("Product Name = %c%c%c%c%c\n",  ( ( lRspBuf[3] & 0x000000FF) >> 0), ( ( lRspBuf[2] & 0xFF000000) >> 24),( ( lRspBuf[2] & 0x00FF0000) >> 16),( ( lRspBuf[2] & 0x0000FF00) >> 8),( ( lRspBuf[2] & 0x000000FF) >> 0) );
+		CLI_printf("Product Rev = 0x%02x\n",( ( lRspBuf[1] & 0xFF000000) >> 24));
+		CLI_printf("Product Serial Number = 0x%08x\n",( ( lRspBuf[1] & 0x00FFFFFF) << 8) | ( ( lRspBuf[0] & 0xFF000000) >> 24));
+		CLI_printf("Mfg Dt = 0x%08x\n", ( ( lRspBuf[0] & 0x000FFF00) >> 8));
 
 		lCmd = 0x03;
 		lSts = udma_sdio_sendCmd(0, lCmd, 0x02, 0x00000000, lRspBuf);	//CMD 03
@@ -261,10 +283,28 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 		CLI_printf("0x%08x\n", lRspBuf[0]);
 		gRelativeCardAddress = ( lRspBuf[0] & 0xFFFF0000 ) >> 16;
 		CLI_printf("RCA 0x%04x\n", gRelativeCardAddress);
+
+		sdio_readCardSpecificData();
+		sdio_CardStandbyToTransferMode();
 	}
 
 	for(i=0; i<128; i++ )
+	{
 		gBlockWriteBuf[i] = 0x12340000 + i;
+		gBlockReadBuf[i] = 0x10101010 + i;
+	}
+
+	CLI_printf("Read buf init\n");
+	for(i=0; i<16; i++ )
+	{
+		CLI_printf("0x%08x\n", gBlockReadBuf[i]);
+	}
+
+	CLI_printf("Write buf init\n");
+	for(i=0; i<16; i++ )
+	{
+		CLI_printf("0x%08x\n", gBlockWriteBuf[i]);
+	}
 }
 
 static void sdio_test(const struct cli_cmd_entry *pEntry)
