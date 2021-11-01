@@ -40,17 +40,31 @@ static uint8_t cam;
 static void camISR() {
 
 }
-void cam_open (uint8_t cam_id) {
+void cam_open (uint8_t cam_id)
+{
+	int i = 0;
 	volatile UdmaCtrl_t*		pudma_ctrl = (UdmaCtrl_t*)UDMA_CH_ADDR_CTRL;
-	UdmaCamera_t*					pcam_regs = (UdmaCamera_t*)(UDMA_CH_ADDR_CAM);
-	uint8_t i2c_buffer[8];
+
+	/* Enable reset and enable uart clock */
+	pudma_ctrl->reg_rst |= (UDMA_CTRL_CAM0_CLKEN << cam_id);
+	pudma_ctrl->reg_rst &= ~(UDMA_CTRL_CAM0_CLKEN << cam_id);
+	pudma_ctrl->reg_cg |= (UDMA_CTRL_CAM0_CLKEN << cam_id);
+
+	//psdio_regs->clk_div_b.clk_div = 5;
+	//psdio_regs->clk_div_b.valid = 1;
+	hal_setpinmux(21, 0);
+	hal_setpinmux(22, 0);
+	hal_setpinmux(25, 0);
+	for(i=0; i<8; i++ )
+	{
+		//set pin muxes to sdio functionality
+		 hal_setpinmux(29+i, 0);
+	}
 
 	/* See if already initialized */
 	if (cam_semaphore_rx != NULL ){
 		return;
 	}
-	/* Enable reset and enable uart clock */
-	pudma_ctrl->reg_cg |= (UDMA_CTRL_CAM0_CLKEN);
 
 	/* Set semaphore */
 	SemaphoreHandle_t shSemaphoreHandle;		// FreeRTOS.h has a define for xSemaphoreHandle, so can't use that
@@ -61,7 +75,7 @@ void cam_open (uint8_t cam_id) {
 
 
 	/* Set handlers. */
-	pi_fc_event_handler_set(SOC_EVENT_UDMA_CAM_RX(0), camISR, cam_semaphore_rx);
+	pi_fc_event_handler_set(SOC_EVENT_UDMA_CAM_RX(cam_id), camISR, cam_semaphore_rx);
 	/* Enable SOC events propagation to FC. */
 	hal_soc_eu_set_fc_mask(SOC_EVENT_UDMA_CAM_RX(cam_id));
 
@@ -76,7 +90,8 @@ uint16_t udma_cam_control(udma_cam_control_type_t control_type, void* pparam) {
 	uint16_t i;
 	SemaphoreHandle_t shSemaphoreHandle;
 	camera_struct_t *camera;
-	camera = (camera_struct_t *)0x1A102300;  // Peripheral 5?
+	//camera = (camera_struct_t *)0x1A102300;  // Peripheral 5?
+	camera = (camera_struct_t *)(UDMA_CH_ADDR_CAM + 0 * UDMA_CH_SIZE);
 	shSemaphoreHandle = cam_semaphore_rx;
 
 	switch (control_type) {

@@ -13,14 +13,17 @@
 #include "libs/utils/include/dbg_uart.h"
 #include "drivers/include/udma_cam_driver.h"
 #include "hal/include/hal_pinmux.h"
+#include "hal/include/hal_gpio.h"
+
 //#include "include/estruct.h"
 #include "hal/include/adv_timer_unit_reg_defs.h"
 #include "hal/include/hal_fc_event.h"
 
-
 static int open(const struct cli_cmd_entry *pEntry);
 static int getframe(const struct cli_cmd_entry *pEntry);
 static int set_clock(const struct cli_cmd_entry *pEntry);
+
+static void ov2640Init(const struct cli_cmd_entry *pEntry);
 
 // cam menu
 const struct cli_cmd_entry cam_tests[] =
@@ -28,6 +31,7 @@ const struct cli_cmd_entry cam_tests[] =
   CLI_CMD_SIMPLE( "open", open, "Initialize Himax Sensor" ),
   CLI_CMD_WITH_ARG( "get", getframe, 0, "get image frames " ),
   CLI_CMD_WITH_ARG( "setclock", set_clock, 0, "set external clock for camera" ),
+  CLI_CMD_SIMPLE( "ovinit", ov2640Init, "Initialize ov2640 Sensor" ),
   CLI_CMD_TERMINATE()
 };
 static uint8_t picture[244*324];
@@ -75,6 +79,7 @@ char *message;
 int errors = 0;
 int i, length;
 message  = pvPortMalloc(80);
+#if 0
 hal_setpinmux(9,2);
 hal_set_gpio_mode(2,1);
 hal_set_gpio_interrupt(2,1,1);
@@ -83,11 +88,26 @@ pi_fc_event_handler_set(130, gpioISR, NULL);
 hal_soc_eu_set_fc_mask(130);
 hal_toggle_gpio(2);
 hal_toggle_gpio(2);
-//cam_open(0);
+#endif
+
+cam_open(0);
 sprintf(message,"Himax opened--ID = ");
 dbg_str(message);
-//sprintf(message,"%04x\r\n",udma_cam_control(kCamID, NULL));
-//dbg_str(message);
-//udma_cam_control(kCamInit, NULL);
+sprintf(message,"%04x\r\n",udma_cam_control(kCamID, NULL));
+dbg_str(message);
+udma_cam_control(kCamInit, NULL);
 vPortFree(message);
+}
+
+static void ov2640Init(const struct cli_cmd_entry *pEntry)
+{
+	hal_setpinmux(26, 2);		//IO_26, Padmux 0 = apbio_32
+	hal_set_gpio_mode(19, 1);	//Mode : 1 = Output, 0 = Input
+	hal_set_gpio(19);
+	vTaskDelay(200);
+	hal_clr_gpio(19);
+	vTaskDelay(200);
+	hal_set_gpio(19);
+	vTaskDelay(200);
+
 }

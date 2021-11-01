@@ -83,7 +83,7 @@ uint8_t udma_sdio_writeBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_
 	psdio_regs->tx_cfg_b.datasize = 2;
 
 	psdio_regs->tx_saddr = aBuf;
-	psdio_regs->tx_size = aBufLen;
+	psdio_regs->tx_size = aBufLen-1;
 
 	lData = 0;
 	psdio_regs->data_setup = 0x00000000;

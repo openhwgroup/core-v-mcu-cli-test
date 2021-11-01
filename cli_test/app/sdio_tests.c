@@ -29,8 +29,8 @@ static void sdio_cardRead(const struct cli_cmd_entry *pEntry);
 static void sdio_cardWrite(const struct cli_cmd_entry *pEntry);
 
 uint16_t gRelativeCardAddress = 0;
-uint32_t gBlockReadBuf[128] = {0};
-uint32_t gBlockWriteBuf[128] = {0};
+uint32_t gBlockReadBuf[130] = {0};
+uint32_t gBlockWriteBuf[130] = {0};
 // EFPGA menu
 const struct cli_cmd_entry sdio_cli_tests[] =
 {
