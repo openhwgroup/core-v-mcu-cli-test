@@ -172,11 +172,18 @@ def turn_on_display(size) :
   return screen
 
 def render_line(fld,screen):
-  y = int(fld[1],16)
-  offset = int(fld[2],16)
+  #print(fld)
+  #print(fld[1])
+  #print(fld[2])
+  y = int(fld[1],10)
+  offset = int(fld[2],10)
   count = len(fld) - 3
+  #print(y)
+  #print(offset)
+  #print(len(fld))
+  #print(count)
   for x in range (0, count):
-    color = (int(fld[x+3],16),int(fld[x+3],16),int(fld[x+3],16))
+    color = (int(fld[x+3],16) * 16 ,int(fld[x+3],16)* 16,int(fld[x+3],16)* 16)
     pygame.gfxdraw.pixel(screen,x+offset,y,color)
   if (y == 239) :
     pygame.draw.rect(screen,(0,255,0),[122,74,96,96],2)
@@ -224,6 +231,7 @@ if ser.isOpen():
                 exit()
             if (len(x) > 0) and (len(x.decode().split()) > 0) :
                 bitstream = x.decode().split()
+                #print(bitstream[0])
                 if bitstream[0] == "ScReEn96":
                     disp = turn_on_display(96)
                 elif bitstream[0] == "ScReEn320":
