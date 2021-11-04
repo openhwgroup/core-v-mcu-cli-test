@@ -83,7 +83,7 @@ uint8_t udma_sdio_writeBlockData(uint8_t sdio_id, uint32_t aNumOfBlocks, uint32_
 	psdio_regs->tx_cfg_b.datasize = 2;
 
 	psdio_regs->tx_saddr = aBuf;
-	psdio_regs->tx_size = aBufLen-1;
+	psdio_regs->tx_size = aBufLen;
 
 	lData = 0;
 	psdio_regs->data_setup = 0x00000000;
@@ -142,18 +142,18 @@ uint8_t udma_sdio_sendCmd(uint8_t sdio_id, uint8_t aCmdOpCode, uint8_t aRspType,
 
 	psdio_regs->start = 1;
 
-	while( psdio_regs->status_b.eot == 0 )
+	while( ( ( psdio_regs->status & ( REG_STATUS_EOT_MASK << REG_STATUS_EOT_LSB ) ) >> REG_STATUS_EOT_LSB ) == 0 )
 	{
-		if( psdio_regs->status_b.error == 1 )
+		if( ( ( psdio_regs->status & ( REG_STATUS_ERROR_MASK << REG_STATUS_ERROR_LSB ) ) >> REG_STATUS_ERROR_LSB ) == 1 )
 		{
-			lSts = psdio_regs->status_b.cmd_err_status;
+			lSts = (psdio_regs->status & ( REG_STATUS_CMD_ERR_STATUS_MASK << REG_STATUS_CMD_ERR_STATUS_LSB ) ) >> REG_STATUS_CMD_ERR_STATUS_LSB;
 			break;
 		}
 		else
 		{
-			if(++lLoopCounter >= 0x00800000 )
+			if(++lLoopCounter >= 0x00010000 )
 			{
-				lSts = 2;
+				lSts = 5;
 				break;
 			}
 		}

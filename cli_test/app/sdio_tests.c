@@ -61,6 +61,8 @@ static void sdio_cardWrite(const struct cli_cmd_entry *pEntry)
 	lSts = udma_sdio_sendCmd(0, lCmd, 0x02, lCmdArg, lRspBuf);
 
 	udma_sdio_clearDataSetup(0);
+	if( lSts == 5 )
+		udma_sdio_open(0);
 	CLI_printf("\nCMD %d Arg = 0x%08x sts 0x%02x\n",lCmd, lCmdArg, lSts);
 	CLI_printf("Rsp 0x%08x 0x%08x\n", lRspBuf[0], lRspBuf[1]);
 
@@ -87,6 +89,8 @@ static void sdio_cardRead(const struct cli_cmd_entry *pEntry)
 	lSts = udma_sdio_sendCmd(0, lCmd, 0x02, lCmdArg, lRspBuf);
 
 	udma_sdio_clearDataSetup(0);
+	if( lSts == 5 )
+			udma_sdio_open(0);
 	CLI_printf("\nCMD %d Arg = 0x%08x sts 0x%02x\n",lCmd, lCmdArg, lSts);
 	CLI_printf("Rsp 0x%08x 0x%08x\n", lRspBuf[0], lRspBuf[1]);
 	for(i=0; i<16; i++ )
@@ -228,7 +232,7 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 			dbg_str("Cmd Index correct\r\n");
 		}
 
-
+		vTaskDelay(50);
 		lCmd = 0x29;
 		lCmdArg = 0;
 		lCmdArg |= (1 << 30);	//Set to SDHC or SDXC card capacity (2-32GB)
@@ -264,6 +268,7 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 	else
 	{
 		dbg_str("Card init passed\r\n");
+		vTaskDelay(50);
 		i = 0;
 		lCmd = 0x02;
 		lSts = udma_sdio_sendCmd(0, lCmd, 0x03, 0x00000000, lRspBuf);	//CMD 02
@@ -277,6 +282,7 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 		CLI_printf("Product Serial Number = 0x%08x\n",( ( lRspBuf[1] & 0x00FFFFFF) << 8) | ( ( lRspBuf[0] & 0xFF000000) >> 24));
 		CLI_printf("Mfg Dt = 0x%08x\n", ( ( lRspBuf[0] & 0x000FFF00) >> 8));
 
+		vTaskDelay(50);
 		lCmd = 0x03;
 		lSts = udma_sdio_sendCmd(0, lCmd, 0x02, 0x00000000, lRspBuf);	//CMD 03
 		CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
