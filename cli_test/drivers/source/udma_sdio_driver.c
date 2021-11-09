@@ -41,7 +41,7 @@ uint16_t udma_sdio_open (uint8_t sdio_id)
 	pudma_ctrl->reg_rst &= ~(UDMA_CTRL_SDIO0_CLKEN << sdio_id);
 	pudma_ctrl->reg_cg |= (UDMA_CTRL_SDIO0_CLKEN << sdio_id);
 
-	psdio_regs->clk_div_b.clk_div = 5;
+	psdio_regs->clk_div_b.clk_div = 7;//5;
 	psdio_regs->clk_div_b.valid = 1;
 	//Restore pin muxes
 	for(i=0; i<6; i++ )

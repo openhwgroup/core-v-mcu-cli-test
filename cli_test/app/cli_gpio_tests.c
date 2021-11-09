@@ -585,15 +585,17 @@ void event_gpio_handler(void) {
 	event_flag = 1;
 }
 
-static unsigned int gpio_even_tests(gpio_struct_typedef *gpio) {
+static unsigned int gpio_even_tests(gpio_struct_typedef *gpio)
+{
 
 	gpio_struct_typedef lgpio;
 	gpio_hal_typedef hgpio;
 	uint32_t error = 0;
-	char *message;
-	message = pvPortMalloc(80);
+	uint32_t lLoopCounter = 0;
+	uint8_t	save_mux = 0;
 
-	hal_setpinmux(gpio->io_num, gpio->mux_sel);
+	save_mux = hal_getpinmux((uint8_t)gpio->io_num);
+	hal_setpinmux((uint8_t)gpio->io_num, gpio->mux_sel);
 	hal_clr_gpio((uint8_t)gpio->number);
 
 	hgpio.number = gpio->number;
@@ -611,7 +613,7 @@ static unsigned int gpio_even_tests(gpio_struct_typedef *gpio) {
 	hal_set_gpio_mode((uint8_t)(gpio->number), (uint8_t)(gpio->mode));
 	hal_set_gpio_interrupt((uint8_t)(gpio->number), (uint8_t)gpio->int_type,(uint8_t)gpio->int_en);
 	hal_read_gpio_status(&hgpio);
-	lgpio.mux_sel = hal_getpinmux(gpio->io_num);
+	lgpio.mux_sel = hal_getpinmux((uint8_t)gpio->io_num);
 	lgpio.number = hgpio.number;
 	lgpio.io_num = gpio->io_num;
 	lgpio.out_val = hgpio.out_val;
@@ -656,8 +658,14 @@ static unsigned int gpio_even_tests(gpio_struct_typedef *gpio) {
 		break;
 	}
 	//TODO: Break this loop with a counter and print the GPIO number.
+	lLoopCounter = 0;
 	while(event_flag == 0){
-		dbg_str("NO GPIO Interrupt triggered \r\n");
+		if(++lLoopCounter >= 0x00010000 )
+		{
+			error = 1;
+			CLI_printf("[NO GPIO Int] IONUM = %d Mux = %d GPIO = %d\n", gpio->io_num, gpio->mux_sel , gpio->number);
+			break;
+		}
 	}
 	if(event_flag == 0x1) {
 		hal_soc_eu_clear_fc_mask(128 + (uint8_t)gpio->number);
@@ -669,7 +677,8 @@ static unsigned int gpio_even_tests(gpio_struct_typedef *gpio) {
 		error = 1;
 	}
 
-	vPortFree(message);
+	hal_setpinmux((uint8_t)gpio->io_num, save_mux);
+
 	return error;
 }
 
