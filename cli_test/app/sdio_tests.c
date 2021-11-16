@@ -178,7 +178,7 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 	uint32_t lRspBuf[4] = {0};
 	uint32_t lCmdArg = 0;
 	uint32_t lCardStatus = 0;
-	uint16_t i = 0;
+	uint16_t i = 0, j = 0;
 
 	uint8_t lCheckPattern = 0xAA;
 	uint8_t lVoltageSupplied = 0x01;	//2.7 - 3.3v
@@ -191,7 +191,6 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 	lCmd = 0x0;
 	lSts = udma_sdio_sendCmd(0, lCmd, 0x00, 0x00000000, NULL);	//CMD 0
 	CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
-
 
 	lCmd = 0x08;
 	lCmdArg = 0;
@@ -217,81 +216,101 @@ static void sdio_cardInit(const struct cli_cmd_entry *pEntry)
 		dbg_str("Cmd Index correct\r\n");
 	}
 
-	for(i=0; i<5; i++ )
+	lCmd = 0x37;
+	lSts = udma_sdio_sendCmd(0, lCmd, 0x02, 0x00000000, lRspBuf);	//CMD 55
+	CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
+	lCardStatus = lRspBuf[0];
+	lRspCmdIndex = lRspBuf[1] & 0x3F;
+	CLI_printf("Rsp R1 card status = 0x%08x\n", lCardStatus);
+
+	CLI_printf("Rsp R1 cmd Index = 0x%02x\n", lRspCmdIndex);
+	if( lRspCmdIndex == lCmd )
 	{
-		lCmd = 0x37;
-		lSts = udma_sdio_sendCmd(0, lCmd, 0x02, 0x00000000, lRspBuf);	//CMD 55
-		CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
-		lCardStatus = lRspBuf[0];
-		lRspCmdIndex = lRspBuf[1] & 0x3F;
-		CLI_printf("Rsp R1 card status = 0x%08x\n", lCardStatus);
-
-		CLI_printf("Rsp R1 cmd Index = 0x%02x\n", lRspCmdIndex);
-		if( lRspCmdIndex == lCmd )
-		{
-			dbg_str("Cmd Index correct\r\n");
-		}
-
-		vTaskDelay(50);
-		lCmd = 0x29;
-		lCmdArg = 0;
-		lCmdArg |= (1 << 30);	//Set to SDHC or SDXC card capacity (2-32GB)
-		lCmdArg |= (1 << 19);	//
-		lCmdArg |= (1 << 28);	//
-
-		lSts = udma_sdio_sendCmd(0, lCmd, 0x02, lCmdArg, lRspBuf);	//ACMD 41
-		CLI_printf("\nCMD %d Arg = 0x%08x sts 0x%02x\n",lCmd, lCmdArg, lSts);
-		CLI_printf("Rsp R3 = 0x%08x\n", lRspBuf[0]);
-
-		lOperatingConditionRegister = ( lRspBuf[0] & 0x00FFFF00 ) >> 8;
-		lS18A = ( lRspBuf[0] & 0x01000000 ) >> 24;
-		lBusyBit = ( lRspBuf[0] & 0x80000000 ) >> 31;
-		lCCSBit = ( lRspBuf[0] & 0x40000000 ) >> 30;
-		lUHS2Bit = ( lRspBuf[0] & 0x20000000 ) >> 29;
-
-		CLI_printf("lS18A 0x%02x, lBusyBit 0x%02x, lCCSBit 0x%02x, lUHS2Bit 0x%02x\n", lS18A, lBusyBit, lCCSBit, lUHS2Bit);
-
-		lRspCmdIndex = lRspBuf[1] & 0x3F;
-		CLI_printf("Rsp R3 cmd Index = 0x%02x\n", lRspCmdIndex);
-		if( lRspCmdIndex == 0x3F )
-		{
-			dbg_str("Cmd Index correct\r\n");
-		}
-
-		if( lBusyBit == 1 )
-			break;
-
-		vTaskDelay(50);
+		dbg_str("Cmd Index correct\r\n");
 	}
-	if( i == 5 )
-		dbg_str("Card init failed\r\n");
-	else
+
+	if( lSts == 0 )
 	{
-		dbg_str("Card init passed\r\n");
-		vTaskDelay(50);
-		i = 0;
-		lCmd = 0x02;
-		lSts = udma_sdio_sendCmd(0, lCmd, 0x03, 0x00000000, lRspBuf);	//CMD 02
-		CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
-		CLI_printf("CID 0x%08x 0x%08x 0x%08x 0x%08x\n", lRspBuf[0], lRspBuf[1], lRspBuf[2], lRspBuf[3]);
+		for(i=0; i<5; i++ )
+		{
+			lCmd = 0x37;
+			lSts = udma_sdio_sendCmd(0, lCmd, 0x02, 0x00000000, lRspBuf);	//CMD 55
+			CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
+			lCardStatus = lRspBuf[0];
+			lRspCmdIndex = lRspBuf[1] & 0x3F;
+			CLI_printf("Rsp R1 card status = 0x%08x\n", lCardStatus);
 
-		CLI_printf("Manufacturer ID = 0x%02x\n", ( ( lRspBuf[3] & 0xFF000000) >> 24));
-		CLI_printf("OEM ID = 0x%04x\n", ( ( lRspBuf[3] & 0x00FFFF00) >> 8));
-		CLI_printf("Product Name = %c%c%c%c%c\n",  ( ( lRspBuf[3] & 0x000000FF) >> 0), ( ( lRspBuf[2] & 0xFF000000) >> 24),( ( lRspBuf[2] & 0x00FF0000) >> 16),( ( lRspBuf[2] & 0x0000FF00) >> 8),( ( lRspBuf[2] & 0x000000FF) >> 0) );
-		CLI_printf("Product Rev = 0x%02x\n",( ( lRspBuf[1] & 0xFF000000) >> 24));
-		CLI_printf("Product Serial Number = 0x%08x\n",( ( lRspBuf[1] & 0x00FFFFFF) << 8) | ( ( lRspBuf[0] & 0xFF000000) >> 24));
-		CLI_printf("Mfg Dt = 0x%08x\n", ( ( lRspBuf[0] & 0x000FFF00) >> 8));
+			CLI_printf("Rsp R1 cmd Index = 0x%02x\n", lRspCmdIndex);
+			if( lRspCmdIndex == lCmd )
+			{
+				dbg_str("Cmd Index correct\r\n");
+			}
 
-		vTaskDelay(50);
-		lCmd = 0x03;
-		lSts = udma_sdio_sendCmd(0, lCmd, 0x02, 0x00000000, lRspBuf);	//CMD 03
-		CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
-		CLI_printf("0x%08x\n", lRspBuf[0]);
-		gRelativeCardAddress = ( lRspBuf[0] & 0xFFFF0000 ) >> 16;
-		CLI_printf("RCA 0x%04x\n", gRelativeCardAddress);
+			vTaskDelay(50);
 
-		sdio_readCardSpecificData();
-		sdio_CardStandbyToTransferMode();
+			lCmd = 0x29;
+			lCmdArg = 0;
+			lCmdArg |= (1 << 31);	//
+			lCmdArg |= (1 << 30);	//Set to SDHC or SDXC card capacity (2-32GB)
+			lCmdArg |= (1 << 20);	//
+
+
+			lSts = udma_sdio_sendCmd(0, lCmd, 0x02, lCmdArg, lRspBuf);	//ACMD 41
+			CLI_printf("\nCMD %d Arg = 0x%08x sts 0x%02x\n",lCmd, lCmdArg, lSts);
+
+			CLI_printf("Rsp R3 = 0x%08x\n", lRspBuf[0]);
+
+			lOperatingConditionRegister = ( lRspBuf[0] & 0x00FFFF00 ) >> 8;
+			lS18A = ( lRspBuf[0] & 0x01000000 ) >> 24;
+			lBusyBit = ( lRspBuf[0] & 0x80000000 ) >> 31;
+			lCCSBit = ( lRspBuf[0] & 0x40000000 ) >> 30;
+			lUHS2Bit = ( lRspBuf[0] & 0x20000000 ) >> 29;
+
+			CLI_printf("lS18A 0x%02x, lBusyBit 0x%02x, lCCSBit 0x%02x, lUHS2Bit 0x%02x\n", lS18A, lBusyBit, lCCSBit, lUHS2Bit);
+
+			lRspCmdIndex = lRspBuf[1] & 0x3F;
+			CLI_printf("Rsp R3 cmd Index = 0x%02x\n", lRspCmdIndex);
+			if( lRspCmdIndex == 0x3F )
+			{
+				dbg_str("Cmd Index correct\r\n");
+			}
+
+			if( lBusyBit == 1 )
+				break;
+
+			vTaskDelay(50);
+		}
+
+		if( i == 5 )
+			dbg_str("Card init failed\r\n");
+		else
+		{
+			dbg_str("Card init passed\r\n");
+			vTaskDelay(50);
+			i = 0;
+			lCmd = 0x02;
+			lSts = udma_sdio_sendCmd(0, lCmd, 0x03, 0x00000000, lRspBuf);	//CMD 02
+			CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
+			CLI_printf("CID 0x%08x 0x%08x 0x%08x 0x%08x\n", lRspBuf[0], lRspBuf[1], lRspBuf[2], lRspBuf[3]);
+
+			CLI_printf("Manufacturer ID = 0x%02x\n", ( ( lRspBuf[3] & 0xFF000000) >> 24));
+			CLI_printf("OEM ID = 0x%04x\n", ( ( lRspBuf[3] & 0x00FFFF00) >> 8));
+			CLI_printf("Product Name = %c%c%c%c%c\n",  ( ( lRspBuf[3] & 0x000000FF) >> 0), ( ( lRspBuf[2] & 0xFF000000) >> 24),( ( lRspBuf[2] & 0x00FF0000) >> 16),( ( lRspBuf[2] & 0x0000FF00) >> 8),( ( lRspBuf[2] & 0x000000FF) >> 0) );
+			CLI_printf("Product Rev = 0x%02x\n",( ( lRspBuf[1] & 0xFF000000) >> 24));
+			CLI_printf("Product Serial Number = 0x%08x\n",( ( lRspBuf[1] & 0x00FFFFFF) << 8) | ( ( lRspBuf[0] & 0xFF000000) >> 24));
+			CLI_printf("Mfg Dt = 0x%08x\n", ( ( lRspBuf[0] & 0x000FFF00) >> 8));
+
+			vTaskDelay(50);
+			lCmd = 0x03;
+			lSts = udma_sdio_sendCmd(0, lCmd, 0x02, 0x00000000, lRspBuf);	//CMD 03
+			CLI_printf("\nCMD %d sts 0x%02x\n",lCmd, lSts);
+			CLI_printf("0x%08x\n", lRspBuf[0]);
+			gRelativeCardAddress = ( lRspBuf[0] & 0xFFFF0000 ) >> 16;
+			CLI_printf("RCA 0x%04x\n", gRelativeCardAddress);
+
+			sdio_readCardSpecificData();
+			sdio_CardStandbyToTransferMode();
+		}
 	}
 
 	for(i=0; i<128; i++ )
