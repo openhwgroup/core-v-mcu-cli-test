@@ -222,65 +222,65 @@ static void FLLTest(const struct cli_cmd_entry *pEntry)
 
 
 	*lFFL1StartAddress = 0x00000000;
-	*(lFFL1StartAddress + 4) = 0x00000000;
-	*(lFFL1StartAddress + 8) = 0x00000000;
-	*(lFFL1StartAddress + 0x0C) = 0x00000000;
+	*(lFFL1StartAddress + 1) = 0x00000000;
+	*(lFFL1StartAddress + 2) = 0x00000000;
+	*(lFFL1StartAddress + 3) = 0x00000000;
 
 	CLI_printf("FLL1 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL1StartAddress, *(lFFL1StartAddress + 4), *(lFFL1StartAddress + 8), *(lFFL1StartAddress + 0x0C) );
 
 	*lFFL1StartAddress = 0x05050505;
-	*(lFFL1StartAddress + 4) = 0x05050505;
-	*(lFFL1StartAddress + 8) = 0x05050505;
-	*(lFFL1StartAddress + 0x0C) = 0x05050505;
+	*(lFFL1StartAddress + 1) = 0x05050505;
+	*(lFFL1StartAddress + 2) = 0x05050505;
+	*(lFFL1StartAddress + 3) = 0x05050505;
 
 	CLI_printf("FLL1 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL1StartAddress, *(lFFL1StartAddress + 4), *(lFFL1StartAddress + 8), *(lFFL1StartAddress + 0x0C) );
 
 	*lFFL1StartAddress = 0x0A0A0A0A;
-	*(lFFL1StartAddress + 4) = 0x0A0A0A0A;
-	*(lFFL1StartAddress + 8) = 0x0A0A0A0A;
-	*(lFFL1StartAddress + 0x0C) = 0x0A0A0A0A;
+	*(lFFL1StartAddress + 1) = 0x0A0A0A0A;
+	*(lFFL1StartAddress + 2) = 0x0A0A0A0A;
+	*(lFFL1StartAddress + 3) = 0x0A0A0A0A;
 
 	CLI_printf("FLL1 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL1StartAddress, *(lFFL1StartAddress + 4), *(lFFL1StartAddress + 8), *(lFFL1StartAddress + 0x0C) );
 
 	*lFFL2StartAddress = 0x00000000;
-	*(lFFL2StartAddress + 4) = 0x00000000;
-	*(lFFL2StartAddress + 8) = 0x00000000;
-	*(lFFL2StartAddress + 0x0C) = 0x00000000;
+	*(lFFL2StartAddress + 1) = 0x00000000;
+	*(lFFL2StartAddress + 2) = 0x00000000;
+	*(lFFL2StartAddress + 3) = 0x00000000;
 
 	CLI_printf("FLL2 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL2StartAddress, *(lFFL2StartAddress + 4), *(lFFL2StartAddress + 8), *(lFFL2StartAddress + 0x0C) );
 
 	*lFFL2StartAddress = 0x05050505;
-	*(lFFL2StartAddress + 4) = 0x05050505;
-	*(lFFL2StartAddress + 8) = 0x05050505;
-	*(lFFL2StartAddress + 0x0C) = 0x05050505;
+	*(lFFL2StartAddress + 1) = 0x05050505;
+	*(lFFL2StartAddress + 2) = 0x05050505;
+	*(lFFL2StartAddress + 3) = 0x05050505;
 
 	CLI_printf("FLL2 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL2StartAddress, *(lFFL2StartAddress + 4), *(lFFL2StartAddress + 8), *(lFFL2StartAddress + 0x0C) );
 
 	*lFFL2StartAddress = 0x0A0A0A0A;
-	*(lFFL2StartAddress + 4) = 0x0A0A0A0A;
-	*(lFFL2StartAddress + 8) = 0x0A0A0A0A;
-	*(lFFL2StartAddress + 0x0C) = 0x0A0A0A0A;
+	*(lFFL2StartAddress + 1) = 0x0A0A0A0A;
+	*(lFFL2StartAddress + 2) = 0x0A0A0A0A;
+	*(lFFL2StartAddress + 3) = 0x0A0A0A0A;
 
 	CLI_printf("FLL2 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL2StartAddress, *(lFFL2StartAddress + 4), *(lFFL2StartAddress + 8), *(lFFL2StartAddress + 0x0C) );
 
 	*lFFL3StartAddress = 0x00000000;
-	*(lFFL3StartAddress + 4) = 0x00000000;
-	*(lFFL3StartAddress + 8) = 0x00000000;
-	*(lFFL3StartAddress + 0x0C) = 0x00000000;
+	*(lFFL3StartAddress + 1) = 0x00000000;
+	*(lFFL3StartAddress + 2) = 0x00000000;
+	*(lFFL3StartAddress + 3) = 0x00000000;
 
 	CLI_printf("FLL3 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL3StartAddress, *(lFFL3StartAddress + 4), *(lFFL3StartAddress + 8), *(lFFL3StartAddress + 0x0C) );
 
 	*lFFL3StartAddress = 0x05050505;
-	*(lFFL3StartAddress + 4) = 0x05050505;
-	*(lFFL3StartAddress + 8) = 0x05050505;
-	*(lFFL3StartAddress + 0x0C) = 0x05050505;
+	*(lFFL3StartAddress + 1) = 0x05050505;
+	*(lFFL3StartAddress + 2) = 0x05050505;
+	*(lFFL3StartAddress + 3) = 0x05050505;
 
 	CLI_printf("FLL3 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL3StartAddress, *(lFFL3StartAddress + 4), *(lFFL3StartAddress + 8), *(lFFL3StartAddress + 0x0C) );
 
 	*lFFL3StartAddress = 0x0A0A0A0A;
-	*(lFFL3StartAddress + 4) = 0x0A0A0A0A;
-	*(lFFL3StartAddress + 8) = 0x0A0A0A0A;
-	*(lFFL3StartAddress + 0x0C) = 0x0A0A0A0A;
+	*(lFFL3StartAddress + 1) = 0x0A0A0A0A;
+	*(lFFL3StartAddress + 2) = 0x0A0A0A0A;
+	*(lFFL3StartAddress + 3) = 0x0A0A0A0A;
 
 	CLI_printf("FLL3 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL3StartAddress, *(lFFL3StartAddress + 4), *(lFFL3StartAddress + 8), *(lFFL3StartAddress + 0x0C) );
 }
