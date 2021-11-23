@@ -84,10 +84,45 @@ void system_init(void)
 	soc->soft_reset = 1;
 	uint32_t val = 0;
 	timer_irq_disable();
+
+	uint32_t *lFFL1StartAddress = (uint32_t *)FLL1_START_ADDR;
+	uint32_t *lFFL2StartAddress = (uint32_t *)FLL2_START_ADDR;
+	uint32_t *lFFL3StartAddress = (uint32_t *)FLL3_START_ADDR;
+
+	//FLL1 is connected to soc_clk_o. Run at reference clock, use by pass.
+	//FLL1 Config 0 register
+	*lFFL1StartAddress = 0;
+	//FLL1 Config 1 register
+	*(lFFL1StartAddress + 1) = 0x0000000C;	//Already this is the default value set in HW.
+	//FLL1 Config 2 register
+	*(lFFL1StartAddress + 2) = 0;
+	//FLL1 Config 3 register
+	*(lFFL1StartAddress + 3) = 0;
+
+
+	//FLL2 is connected to peripheral clock. Run at half of reference clock. Set the divisor to 0 and disable bypass
+	//FLL2 Config 0 register
+	*lFFL2StartAddress = 0;		//Set divisor to half of reference clock.
+	//FLL2 Config 1 register
+	*(lFFL2StartAddress + 1) = 0;	//Disable bypass.
+	//FLL2 Config 2 register
+	*(lFFL2StartAddress + 2) = 0;
+	//FLL2 Config 3 register
+	*(lFFL2StartAddress + 3) = 0;
+
+	//FLL3 is connected to Cluster clock. Run at quarter of reference clock. Set the divisor to 1 and disable bypass
+	//FLL3 Config 0 register
+	*lFFL3StartAddress = 0x00000010;	//Set divisor to quarter of reference clock.
+	//FLL3 Config 1 register
+	*(lFFL3StartAddress + 1) = 0;	//Disable bypass.
+	//FLL3 Config 2 register
+	*(lFFL3StartAddress + 2) = 0;
+	//FLL3 Config 3 register
+	*(lFFL3StartAddress + 3) = 0;
 	/* init flls */
-	for (int i = 0; i < ARCHI_NB_FLL; i++) {
-		pi_fll_init(i, 0);
-	}
+	//for (int i = 0; i < ARCHI_NB_FLL; i++) {
+	//	pi_fll_init(i, 0);
+	//}
 
 	/* make sure irq (itc) is a good state */
 //	irq_init();

@@ -1,3 +1,4 @@
 .settings/language.settings.xml
 /Release/
 /Debug/
+/verilator/
