@@ -208,6 +208,9 @@ int main(void)
 			hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
 
 	udma_uart_open (id,115200);
+	dbg_str(__DATE__);
+	dbg_str("  ");
+	dbg_str(__TIME__);
 	dbg_str("\nA2 Bootloader Bootsel=");
 
 	if (bootsel == 1) dbg_str("1");
