@@ -125,7 +125,7 @@ static void efpgaio_sct_test_all(const struct cli_cmd_entry *pEntry)
 	uint32_t efpgaio_num = 0;
 
 	gDebugEnabledFlg = 0;
-	for( efpgaio_num = 0; efpgaio_num <= 40; efpgaio_num++ )
+	for( efpgaio_num = 0; efpgaio_num < 40; efpgaio_num++ )
 	{
 		lTestResult = efpgaio_set_clr_toggle_mode_test(efpgaio_num);
 		if( lTestResult == 0 )
@@ -177,7 +177,7 @@ static uint32_t efpgaio_set_clr_toggle_mode_test(uint32_t aEfpgaio_num)
 	apb_soc_ctrl_typedef *lsoc_ctrl;  //Somesh: We need to use SocCtrl_t present in hal_apb_soc_ctrl_regs.h
 	int i = 0;
 
-	if( ( aEfpgaio_num >= 4 ) && ( aEfpgaio_num <=40 ) )
+	if( ( aEfpgaio_num >= 4 ) && ( aEfpgaio_num < 40 ) )
 	{
 		lsoc_ctrl = (apb_soc_ctrl_typedef*)APB_SOC_CTRL_BASE_ADDR;
 		if( lsoc_ctrl->ena_efpga == 0 ) //efpga not initialized
@@ -192,7 +192,10 @@ static uint32_t efpgaio_set_clr_toggle_mode_test(uint32_t aEfpgaio_num)
 			dbg_str("eFPGA events READY\r\n");
 		}
 
-		lIONumber = aEfpgaio_num +7;
+		if( aEfpgaio_num <= 36 )
+			lIONumber = aEfpgaio_num + 7;
+		else
+			lIONumber = aEfpgaio_num + 8;
 
 		//TODO: Save pin mux value and restore
 		save_mux = hal_getpinmux((uint8_t)lIONumber);

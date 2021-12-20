@@ -28,6 +28,10 @@
 #include "I2CProtocol.h"
 #include "crc.h"
 
+#define FLL1_START_ADDR 0x1A100000
+#define FLL2_START_ADDR 0x1A100010
+#define FLL3_START_ADDR 0x1A100020
+
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate);
 uint16_t udma_uart_writeraw(uint8_t uart_id, uint16_t write_len, uint8_t* write_buffer) ;
 extern uint8_t gStopUartMsgFlg;
@@ -152,11 +156,47 @@ static void bootFromRom(int hyperflash, int qpi)
 }
 
 
+
 int main(void)
 {
 	int id = 1, i = 0;
 	unsigned int bootsel, flash_present;
 	char tstring[8];
+	uint32_t *lFFL1StartAddress = (uint32_t *)FLL1_START_ADDR;
+	uint32_t *lFFL2StartAddress = (uint32_t *)FLL2_START_ADDR;
+	uint32_t *lFFL3StartAddress = (uint32_t *)FLL3_START_ADDR;
+
+	//FLL1 is connected to soc_clk_o. Run at reference clock, use by pass.
+	//FLL1 Config 0 register
+	*lFFL1StartAddress = 0;
+	//FLL1 Config 1 register
+	*(lFFL1StartAddress + 1) = 0x0000000C;	//Already this is the default value set in HW.
+	//FLL1 Config 2 register
+	*(lFFL1StartAddress + 2) = 0;
+	//FLL1 Config 3 register
+	*(lFFL1StartAddress + 3) = 0;
+
+
+	//FLL2 is connected to peripheral clock. Run at half of reference clock. Set the divisor to 0 and disable bypass
+	//FLL2 Config 0 register
+	*lFFL2StartAddress = 0;		//Set divisor to half of reference clock.
+	//FLL2 Config 1 register
+	*(lFFL2StartAddress + 1) = 0;	//Disable bypass.
+	//FLL2 Config 2 register
+	*(lFFL2StartAddress + 2) = 0;
+	//FLL2 Config 3 register
+	*(lFFL2StartAddress + 3) = 0;
+
+	//FLL3 is connected to Cluster clock. Run at quarter of reference clock. Set the divisor to 1 and disable bypass
+	//FLL3 Config 0 register
+	*lFFL3StartAddress = 0x00000010;	//Set divisor to quarter of reference clock.
+	//FLL3 Config 1 register
+	*(lFFL3StartAddress + 1) = 0;	//Disable bypass.
+	//FLL3 Config 2 register
+	*(lFFL3StartAddress + 2) = 0;
+	//FLL3 Config 3 register
+	*(lFFL3StartAddress + 3) = 0;
+
 	//TODO: FLL clock settings need to be taken care in the actual chip.
 	//TODO: 5000000 to be changed to #define PERIPHERAL_CLOCK_FREQ_IN_HZ
 	volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;
@@ -168,10 +208,18 @@ int main(void)
 			hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
 
 	udma_uart_open (id,115200);
+	dbg_str(__DATE__);
+	dbg_str("  ");
+	dbg_str(__TIME__);
 	dbg_str("\nA2 Bootloader Bootsel=");
 
 	if (bootsel == 1) dbg_str("1");
 	else dbg_str("0");
+#ifdef VERILATOR
+	dbg_str("\nJumping to address 0x1C000880");
+	jump_to_address(0x1C000880);
+#endif
+
 	udma_qspim_open(0, 2500000);
 	udma_flash_reset_enable(0, 0);
 	//for (i = 0; i < 10000; i++);

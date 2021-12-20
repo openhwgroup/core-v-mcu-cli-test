@@ -122,7 +122,8 @@ reg_cfg_t himaxRegInit[] = {
     {IMG_ORIENTATION, 0x01}, // change the orientation
     {0x0104, 0x01},
     {0x0100, 0x01},
-	{0x0602, 0x11}
+	//{0x0601, 0x11}	//Test pattern walking ones
+	//{0x0601, 0x01}	//Test pattern colour bar
 };
 
 #endif

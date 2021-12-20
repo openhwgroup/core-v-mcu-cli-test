@@ -37,7 +37,7 @@
 #define N_I2SC               0
 #define N_CSI2               0
 #define N_HYPER              0
-#define N_SDIO               0
+#define N_SDIO               1
 #define N_CAM                1
 #define N_JTAG               0
 #define N_MRAM               0
@@ -76,8 +76,8 @@
 #define UDMA_CH_ADDR_SDIO       (0x1A102000 + 6 * 0x80)
 #define UDMA_SDIO_ID(id)        (5 + id)
 #define UDMA_CH_ADDR_SDIO0      (0x1A102000 + 6 * 0x80)
-#define UDMA_CH_ADDR_CAM        (0x1A102000 + 6 * 0x80)
-#define UDMA_CAM_ID(id)         (5 + id)
+#define UDMA_CH_ADDR_CAM        (0x1A102000 + 7 * 0x80)
+#define UDMA_CAM_ID(id)         (6 + id)
 #define UDMA_CH_ADDR_CAM0       (0x1A102000 + 6 * 0x80)
 #define UDMA_CH_ADDR_JTAG       (0x1A102000 + 7 * 0x80)
 #define UDMA_JTAG_ID(id)        (6 + id)
@@ -105,7 +105,7 @@
 #define UDMA_CTRL_CSI20_CLKEN      (1 << 5)
 #define UDMA_CTRL_HYPER0_CLKEN     (1 << 5)
 #define UDMA_CTRL_SDIO0_CLKEN      (1 << 5)
-#define UDMA_CTRL_CAM0_CLKEN       (1 << 5)
+#define UDMA_CTRL_CAM0_CLKEN       (1 << 6)
 #define UDMA_CTRL_JTAG0_CLKEN      (1 << 6)
 #define UDMA_CTRL_MRAM0_CLKEN      (1 << 6)
 #define UDMA_CTRL_FILTER0_CLKEN    (1 << 6)
@@ -113,7 +113,11 @@
 #define UDMA_CTRL_EXT_PER0_CLKEN   (1 << 8)
 
 //  FLL configuration information
-#define FLL_START_ADDR 0x1A100000
+#define FLL1_START_ADDR 0x1A100000
+
+#define FLL2_START_ADDR 0x1A100010
+
+#define FLL3_START_ADDR 0x1A100020
 
 //  GPIO configuration information
 #define GPIO_START_ADDR 0x1A101000

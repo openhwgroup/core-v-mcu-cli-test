@@ -175,6 +175,7 @@ void CLI_task( void *pParameter )
 
     CLI_printf("#*******************\n");
     CLI_printf("Command Line Interface\n");
+    CLI_printf("%s %s\n", __DATE__, __TIME__ );
     CLI_printf("App SW Version: %s\n", SOFTWARE_VERSION_STR );
     CLI_printf("#*******************\n");
     CLI_print_prompt();

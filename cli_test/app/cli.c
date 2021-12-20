@@ -50,6 +50,7 @@ extern const struct cli_cmd_entry i2cs_functions[];
 extern const struct cli_cmd_entry efpga_cli_tests[];
 extern const struct cli_cmd_entry fcb_cli_tests[];
 extern const struct cli_cmd_entry qspi_cli_tests[];
+extern const struct cli_cmd_entry sdio_cli_tests[];
 extern const struct cli_cmd_entry cam_tests[];
 
 
@@ -57,6 +58,8 @@ extern const struct cli_cmd_entry cam_tests[];
 static void misc_info(const struct cli_cmd_entry *pEntry);
 static void debug_on_off(const struct cli_cmd_entry *pEntry);
 static void simulator_on_off(const struct cli_cmd_entry *pEntry);
+static void FLLTest(const struct cli_cmd_entry *pEntry);
+
 // UART functions
 static void uart1_tx(const struct cli_cmd_entry *pEntry);
 
@@ -78,6 +81,7 @@ const struct cli_cmd_entry misc_functions[] =
 		CLI_CMD_SIMPLE( "info", misc_info, "print build info" ),
 		CLI_CMD_SIMPLE( "dbg", debug_on_off, "debug prints on / off" ),
 		CLI_CMD_SIMPLE( "simul", simulator_on_off, "debug prints on / off" ),
+		CLI_CMD_SIMPLE( "flltest", FLLTest, "debug prints on / off" ),
 		CLI_CMD_TERMINATE()
 };
 
@@ -133,6 +137,7 @@ const struct cli_cmd_entry my_main_menu[] = {
 		CLI_CMD_SUBMENU( "efpga", 	efpga_cli_tests,    "commands for efpga connectivity"),
 		CLI_CMD_SUBMENU( "fcb", 	fcb_cli_tests,    "commands for fabric control block tests"),
 		CLI_CMD_SUBMENU( "qspi", qspi_cli_tests, "commands for efpga tests"),
+		CLI_CMD_SUBMENU( "sdio", sdio_cli_tests, "commands for sdio tests"),
 		CLI_CMD_SUBMENU( "cam", cam_tests, "commands for Himax camera tests"),
 		CLI_CMD_TERMINATE()
 
@@ -201,6 +206,83 @@ static void simulator_on_off(const struct cli_cmd_entry *pEntry)
 	CLI_cmd_stack_clear();
 	memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );
 	dbg_str("<<DONE>>\r\n");
+}
+
+static void FLLTest(const struct cli_cmd_entry *pEntry)
+{
+	(void)pEntry;
+	// Add functionality here
+	uint32_t *lFFL1StartAddress = (uint32_t *)FLL1_START_ADDR;
+	uint32_t *lFFL2StartAddress = (uint32_t *)FLL2_START_ADDR;
+	uint32_t *lFFL3StartAddress = (uint32_t *)FLL3_START_ADDR;
+
+	CLI_printf("FLL1 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL1StartAddress, *(lFFL1StartAddress + 1), *(lFFL1StartAddress + 2), *(lFFL1StartAddress + 3) );
+	CLI_printf("FLL2 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL2StartAddress, *(lFFL2StartAddress + 1), *(lFFL2StartAddress + 2), *(lFFL2StartAddress + 3) );
+	CLI_printf("FLL3 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL3StartAddress, *(lFFL3StartAddress + 1), *(lFFL3StartAddress + 2), *(lFFL3StartAddress + 3) );
+
+
+	*lFFL1StartAddress = 0x00000000;
+	*(lFFL1StartAddress + 1) = 0x00000000;
+	*(lFFL1StartAddress + 2) = 0x00000000;
+	*(lFFL1StartAddress + 3) = 0x00000000;
+
+	CLI_printf("FLL1 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL1StartAddress, *(lFFL1StartAddress + 1), *(lFFL1StartAddress + 2), *(lFFL1StartAddress + 3) );
+
+	*lFFL1StartAddress = 0x05050505;
+	*(lFFL1StartAddress + 1) = 0x05050505;
+	*(lFFL1StartAddress + 2) = 0x05050505;
+	*(lFFL1StartAddress + 3) = 0x05050505;
+
+	CLI_printf("FLL1 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL1StartAddress, *(lFFL1StartAddress + 1), *(lFFL1StartAddress + 2), *(lFFL1StartAddress + 3) );
+
+	*lFFL1StartAddress = 0x0A0A0A0A;
+	*(lFFL1StartAddress + 1) = 0x0A0A0A0A;
+	*(lFFL1StartAddress + 2) = 0x0A0A0A0A;
+	*(lFFL1StartAddress + 3) = 0x0A0A0A0A;
+
+	CLI_printf("FLL1 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL1StartAddress, *(lFFL1StartAddress + 1), *(lFFL1StartAddress + 2), *(lFFL1StartAddress + 3) );
+
+	*lFFL2StartAddress = 0x00000000;
+	*(lFFL2StartAddress + 1) = 0x00000000;
+	*(lFFL2StartAddress + 2) = 0x00000000;
+	*(lFFL2StartAddress + 3) = 0x00000000;
+
+	CLI_printf("FLL2 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL2StartAddress, *(lFFL2StartAddress + 1), *(lFFL2StartAddress + 2), *(lFFL2StartAddress + 3) );
+
+	*lFFL2StartAddress = 0x05050505;
+	*(lFFL2StartAddress + 1) = 0x05050505;
+	*(lFFL2StartAddress + 2) = 0x05050505;
+	*(lFFL2StartAddress + 3) = 0x05050505;
+
+	CLI_printf("FLL2 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL2StartAddress, *(lFFL2StartAddress + 1), *(lFFL2StartAddress + 2), *(lFFL2StartAddress + 3) );
+
+	*lFFL2StartAddress = 0x0A0A0A0A;
+	*(lFFL2StartAddress + 1) = 0x0A0A0A0A;
+	*(lFFL2StartAddress + 2) = 0x0A0A0A0A;
+	*(lFFL2StartAddress + 3) = 0x0A0A0A0A;
+
+	CLI_printf("FLL2 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL2StartAddress, *(lFFL2StartAddress + 1), *(lFFL2StartAddress + 2), *(lFFL2StartAddress + 3) );
+
+	*lFFL3StartAddress = 0x00000000;
+	*(lFFL3StartAddress + 1) = 0x00000000;
+	*(lFFL3StartAddress + 2) = 0x00000000;
+	*(lFFL3StartAddress + 3) = 0x00000000;
+
+	CLI_printf("FLL3 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL3StartAddress, *(lFFL3StartAddress + 1), *(lFFL3StartAddress + 2), *(lFFL3StartAddress + 3) );
+
+	*lFFL3StartAddress = 0x05050505;
+	*(lFFL3StartAddress + 1) = 0x05050505;
+	*(lFFL3StartAddress + 2) = 0x05050505;
+	*(lFFL3StartAddress + 3) = 0x05050505;
+
+	CLI_printf("FLL3 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL3StartAddress, *(lFFL3StartAddress + 1), *(lFFL3StartAddress + 2), *(lFFL3StartAddress + 3) );
+
+	*lFFL3StartAddress = 0x0A0A0A0A;
+	*(lFFL3StartAddress + 1) = 0x0A0A0A0A;
+	*(lFFL3StartAddress + 2) = 0x0A0A0A0A;
+	*(lFFL3StartAddress + 3) = 0x0A0A0A0A;
+
+	CLI_printf("FLL3 0x%08x 0x%08x 0x%08x 0x%08x\n",*lFFL3StartAddress, *(lFFL3StartAddress + 1), *(lFFL3StartAddress + 2), *(lFFL3StartAddress + 3) );
 }
 
 // UART functions
