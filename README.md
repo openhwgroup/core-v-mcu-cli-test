@@ -37,9 +37,9 @@ git clone git@github.com:Quicklogic-Corp/core-v-mcu-cli-test.git core-v-mcu-cli-
 cd core-v-mcu-cli-test/cl_test
 ./cli_build <my_new_repo>
 ~~~
-The cli_build will create a binary image (image.bin) in the Default directory directory that can be programmed into ans SF3  PMOD plugged into the JXADC Pmod slot.
+The cli_build will create a binary image (image.bin) in the Default directory directory that can be programmed into an HS2  PMOD plugged into the lower row of the JB Pmod slot.
 
-To program the SPI flash device requires the uart1 connection on the JC Pmod. (a USB2UART Pmod on the top row of JC will connect the uart1).
+To program the SPI flash device requires the uart1 connection on the upper row of the JB Pmod. (a USB2UART Pmod on the top row of JB will connect the uart1).
 From the core-v-mcu-cli_test/cli_test run the following command
 ~~~
 python spi_load /dev/ttyUSB0
