@@ -28,9 +28,13 @@
 #include "I2CProtocol.h"
 #include "crc.h"
 
+
+#define FAKE_PLL		0
+#define PERCEPTIA_PLL	1
+
 #define FLL1_START_ADDR 0x1A100000
-#define FLL2_START_ADDR 0x1A100010
-#define FLL3_START_ADDR 0x1A100020
+#define FLL2_START_ADDR 0x1A100020
+#define FLL3_START_ADDR 0x1A100040
 
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate);
 uint16_t udma_uart_writeraw(uint8_t uart_id, uint16_t write_len, uint8_t* write_buffer) ;
@@ -162,10 +166,12 @@ int main(void)
 	int id = 1, i = 0;
 	unsigned int bootsel, flash_present;
 	char tstring[8];
-	uint32_t *lFFL1StartAddress = (uint32_t *)FLL1_START_ADDR;
-	uint32_t *lFFL2StartAddress = (uint32_t *)FLL2_START_ADDR;
-	uint32_t *lFFL3StartAddress = (uint32_t *)FLL3_START_ADDR;
+	uint32_t lCfgVal = 0;
+	volatile uint32_t *lFFL1StartAddress = (uint32_t *)FLL1_START_ADDR;
+	volatile uint32_t *lFFL2StartAddress = (uint32_t *)FLL2_START_ADDR;
+	volatile uint32_t *lFFL3StartAddress = (uint32_t *)FLL3_START_ADDR;
 
+#if FAKE_PLL == 1
 	//FLL1 is connected to soc_clk_o. Run at reference clock, use by pass.
 	//FLL1 Config 0 register
 	*lFFL1StartAddress = 0;
@@ -197,6 +203,86 @@ int main(void)
 	//FLL3 Config 3 register
 	*(lFFL3StartAddress + 3) = 0;
 
+#elif (PERCEPTIA_PLL == 1 )
+
+	*(uint32_t*)0x1c000000 = 0x55667788;
+
+	//FLL1 is connected to soc_clk_o. Run at reference clock, use by pass.
+	//FLL1 Config 0 register
+	*(lFFL1StartAddress + 1) = 4;//Bypass on;
+	*lFFL1StartAddress = 4;   //Reset high
+	*lFFL1StartAddress = 0;   //PS0_L1 Cfg[1:0] = 00; PS0_L2 Cfg [11:4] =0
+
+	//FLL1 Config 2 register
+	*(lFFL1StartAddress + 2) = 0x64;
+	//FLL1 Config 3 register
+	*(lFFL1StartAddress + 3) = 0x269;
+
+	//FLL1 Config 1 register
+	lCfgVal = 4; // bypass
+	lCfgVal |= (1 << 0 ); //PS0_EN
+	lCfgVal |= (0x28 << 4 ); //MULT_INT	0x28 = 40 (40*10 = 400MHz)
+	lCfgVal |= (1 << 27 ); //INTEGER_MODE is enabled
+	lCfgVal |= (1 << 28 ); //PRESCALE value (Divide Ratio R = 1)
+	*(lFFL1StartAddress + 1) = lCfgVal;
+	
+	*lFFL1StartAddress = 4;   // release reset
+	while (!(*(lFFL1StartAddress+2)& 0x80000000)) ;
+
+	*(lFFL1StartAddress + 1) &= ~(0x4) ;//Bypass off;
+/*-------------------------------------------------------------------------*/
+	//FLL2 Config 0 register
+	*(lFFL2StartAddress + 1) = 4;//Bypass on;
+	*lFFL2StartAddress = 4;   //Reset high
+	*lFFL2StartAddress = 0;   //Reset Low
+	*lFFL2StartAddress |= 1;   //PS0_L1 1 which is /2
+
+	//FLL2 Config 2 register
+	*(lFFL2StartAddress + 2) = 0x64;
+	//FLL2 Config 3 register
+	*(lFFL2StartAddress + 3) = 0x269;
+
+	//FLL2 Config 1 register
+	lCfgVal = 4; // bypass
+	lCfgVal |= (1 << 0 ); //PS0_EN
+	lCfgVal |= (0x28 << 4 ); //MULT_INT	0x28 = 40 (40*10 = 400MHz)
+	lCfgVal |= (1 << 27 ); //INTEGER_MODE is enabled
+	lCfgVal |= (1 << 28 ); //PRESCALE value (Divide Ratio R = 1)
+	*(lFFL2StartAddress + 1) = lCfgVal;
+	
+	*lFFL2StartAddress |= 1<<2;   // release reset
+	while (!(*(lFFL2StartAddress+2)& 0x80000000)) ;
+
+	*(lFFL2StartAddress + 1) &= ~(0x4) ;//Bypass off;
+
+/*-------------------------------------------------------------------------*/
+	//FLL3 Config 0 register
+	*(lFFL3StartAddress + 1) = 4;//Bypass on;
+	*lFFL3StartAddress = 4;   //Reset high
+	*lFFL3StartAddress = 0;   //Reset Low
+	*lFFL3StartAddress |= 2;   //PS0_L1 2 which is /4
+
+	//FLL3 Config 2 register
+	*(lFFL3StartAddress + 2) = 0x64;
+	//FLL3 Config 3 register
+	*(lFFL3StartAddress + 3) = 0x269;
+
+	//FLL3 Config 1 register
+	lCfgVal = 4; // bypass
+	lCfgVal |= (1 << 0 ); //PS0_EN
+	lCfgVal |= (0x28 << 4 ); //MULT_INT	0x28 = 40 (40*10 = 400MHz)
+	lCfgVal |= (1 << 27 ); //INTEGER_MODE is enabled
+	lCfgVal |= (1 << 28 ); //PRESCALE value (Divide Ratio R = 1)
+	*(lFFL3StartAddress + 1) = lCfgVal;
+	
+	*lFFL3StartAddress |= 1<<2;   // release reset
+	while (!(*(lFFL3StartAddress+2)& 0x80000000)) ;
+
+	*(lFFL3StartAddress + 1) &= ~(0x4) ;//Bypass off;
+
+#else
+	#error "Enable any one of the PLL configurations FAKE_PLL or PERCEPTIA_PLL"
+#endif
 	//TODO: FLL clock settings need to be taken care in the actual chip.
 	//TODO: 5000000 to be changed to #define PERIPHERAL_CLOCK_FREQ_IN_HZ
 	volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;

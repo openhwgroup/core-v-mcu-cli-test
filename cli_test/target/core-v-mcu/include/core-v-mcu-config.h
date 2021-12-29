@@ -115,9 +115,9 @@
 //  FLL configuration information
 #define FLL1_START_ADDR 0x1A100000
 
-#define FLL2_START_ADDR 0x1A100010
+#define FLL2_START_ADDR 0x1A100020
 
-#define FLL3_START_ADDR 0x1A100020
+#define FLL3_START_ADDR 0x1A100040
 
 //  GPIO configuration information
 #define GPIO_START_ADDR 0x1A101000
