@@ -24,6 +24,9 @@
 #define BUILD_DATE 0x20210623
 #define BUILD_TIME 0x00111431
 
+#define FAKE_PLL		0
+#define PERCEPTIA_PLL	1
+
 //  SOC options
 #define N_IO                 48
 #define N_SYSIO              3
