@@ -114,8 +114,10 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 0:		//Timer number
 			{
 				adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_0_config_register = 0; // FLL, up/done no prescaler
-				adv_timer->timer_0_config_register_b.clock_sel = 1;
+				adv_timer->timer_0_config_register = 0;
+				adv_timer->timer_0_config_register_b.clock_sel = 1;	//reference clock
+				adv_timer->timer_0_config_register_b.prescaler_value = 8;
+
 				adv_timer->timer_0_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )  //Channel number
 				{
@@ -478,8 +480,10 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 1:			//Timer number
 			{
 				adv_timer->timer_1_cmd_register = 1 << REG_TIMER_1_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_1_config_register = 0; // FLL, up/done no prescaler
+				adv_timer->timer_1_config_register = 0;
 				adv_timer->timer_1_config_register_b.clock_sel = 1;
+				adv_timer->timer_1_config_register_b.prescaler_value = 8;
+
 				adv_timer->timer_1_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )
 				{
@@ -842,8 +846,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 2:			//Timer number
 			{
 				adv_timer->timer_2_cmd_register = 1 << REG_TIMER_2_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_2_config_register = 0; // FLL, up/done no prescaler
+				adv_timer->timer_2_config_register = 0; //
 				adv_timer->timer_2_config_register_b.clock_sel = 1;
+				adv_timer->timer_2_config_register_b.prescaler_value = 8;
 				adv_timer->timer_2_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )
 				{
@@ -1206,8 +1211,9 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 3:			//Timer number
 			{
 				adv_timer->timer_3_cmd_register = 1 << REG_TIMER_3_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_3_config_register = 0; // FLL, up/done no prescaler
+				adv_timer->timer_3_config_register = 0;
 				adv_timer->timer_3_config_register_b.clock_sel = 1;
+				adv_timer->timer_3_config_register_b.prescaler_value = 8;
 				adv_timer->timer_3_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )
 				{

@@ -274,7 +274,7 @@ uint32_t udma_flash_readid(uint8_t qspim_id, uint8_t cs) {
 
 	*pcmd++ = kSPIm_Cfg | aucclkdiv;
 	*pcmd++ = kSPIm_SOT | cs;
-	*pcmd++ = kSPIm_SendCmd | (0x7009e); // readid command
+	*pcmd++ = kSPIm_SendCmd | (0x7009f); // readid command
 	*pcmd++ = kSPIm_RxData | (0x00470000 | (4-1)) ; // 4 words recieved
 	*pcmd++ = kSPIm_EOT  | 1; // generate event
 
