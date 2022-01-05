@@ -28,6 +28,9 @@ typedef union {
 } split_4Byte_t ;
 
 extern uint8_t gQSPIFlashPresentFlg;
+extern uint8_t gMicronFlashDetectedFlg;
+
+uint8_t gQuadModeSupportedFlg = 0;
 
 extern FLASH_DEVICE_OBJECT gFlashDeviceObject;
 
@@ -510,9 +513,16 @@ static void flash_init(const struct cli_cmd_entry *pEntry)
 
 	if( gQSPIFlashPresentFlg == 1 )
 	{
-		Driver_Init(&gFlashDeviceObject);
+		if( gMicronFlashDetectedFlg == 1 )
+		{
+			Driver_Init(&gFlashDeviceObject);
 
-		dbg_str("<<DONE>>\r\n");
+			dbg_str("<<DONE>>\r\n");
+		}
+		else
+		{
+			CLI_printf("NON MICRON FLASH INIT <<ABSENT>>\n");
+		}
 	}
 	else
 	{
@@ -724,57 +734,71 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 	//lLongVal.w = 0;
 	if( gQSPIFlashPresentFlg == 1 )
 	{
-		for(i=0; i<8; i++ )
+		if( gMicronFlashDetectedFlg == 1 )
 		{
-			//Save pin muxes
-			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-		}
-
-		for(i=0; i<8; i++ )
-		{
-			//set pin muxes
-			hal_setpinmux(13+i, 0);
-		}
-
-		CLI_uint32_required( "addr", &lAddress );
-
-		if( CLI_is_more_args() ){
-			lExpValTrueOrFalse = 1;
-			CLI_uint32_required("exp", &lExpVal.w);
-		}
-
-		dbg_str("Qspi Flash Read\n");
-		//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-
-		//udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
-		//udma_flash_read_quad(0, 0, lAddress, &xValue.b[0], 4);
-		//if( flashRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
-		if( flashQuadOutputFastRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
-			CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
-		else
-			dbg_str("flashRead_Micron Error\n");
-
-		if( lExpValTrueOrFalse )
-		{
-			if( xValue.w == lExpVal.w )
+			if( gQuadModeSupportedFlg == 1 )
 			{
-				CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
+				for(i=0; i<8; i++ )
+				{
+					//Save pin muxes
+					lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+				}
+
+				for(i=0; i<8; i++ )
+				{
+					//set pin muxes
+					hal_setpinmux(13+i, 0);
+				}
+
+				CLI_uint32_required( "addr", &lAddress );
+
+				if( CLI_is_more_args() ){
+					lExpValTrueOrFalse = 1;
+					CLI_uint32_required("exp", &lExpVal.w);
+				}
+
+				dbg_str("Qspi Flash Read\n");
+				//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+
+				//udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
+				//udma_flash_read_quad(0, 0, lAddress, &xValue.b[0], 4);
+				//if( flashRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
+				if( flashQuadOutputFastRead_Micron(lAddress, &xValue.b[0], 4) == 0 )
+					CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
+				else
+					dbg_str("flashRead_Micron Error\n");
+
+				if( lExpValTrueOrFalse )
+				{
+					if( xValue.w == lExpVal.w )
+					{
+						CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<PASSED>>\n",lAddress, lExpVal.w, xValue.w);
+					}
+					else
+					{
+						CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
+					}
+				}
+				else
+				{
+					dbg_str("qpeek <<DONE>>\r\n");
+				}
+
+				//Restore pin muxes
+				for(i=0; i<8; i++ )
+				{
+					//Save pin muxes
+					 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+				}
 			}
 			else
 			{
-				CLI_printf("flash qpeek 0x%08x exp val = 0x%08x / read val = 0x%08x <<FAILED>>\n",lAddress, lExpVal.w, xValue.w);
+				CLI_printf("FLASH DOES NOT SUPPORT QUAD MODE <<FAILED>>\n");
 			}
 		}
 		else
 		{
-			dbg_str("qpeek <<DONE>>\r\n");
-		}
-
-		//Restore pin muxes
-		for(i=0; i<8; i++ )
-		{
-			//Save pin muxes
-			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+			CLI_printf("NON MICRON FLASH QUAD MODE NOT SUPPORTED <<FAILED>>\n");
 		}
 	}
 	else
@@ -795,40 +819,54 @@ static void flash_quad_poke(const struct cli_cmd_entry *pEntry)
 
 	if( gQSPIFlashPresentFlg == 1 )
 	{
-		for( i=0 ;i <32; i++ )
+		if( gMicronFlashDetectedFlg == 1 )
 		{
-			gBuf[i] = i;
+			if( gQuadModeSupportedFlg == 1 )
+			{
+				for( i=0 ;i <32; i++ )
+				{
+					gBuf[i] = i;
+				}
+				xValue.w = 0;
+				for(i=0; i<8; i++ )
+				{
+					//Save pin muxes
+					lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+				}
+
+				for(i=0; i<8; i++ )
+				{
+					//set pin muxes
+					hal_setpinmux(13+i, 0);
+				}
+
+				CLI_uint32_required( "addr", &lAddress );
+				CLI_uint32_required( "value", &xValue.w);
+
+				dbg_str("Qspi Flash write\n");
+				//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+				//udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
+
+				//flashWrite_Micron(lAddress, &xValue.b[0], 4);
+				flashQuadInputFastProgram_Micron(lAddress, &xValue.b[0], 4);
+				//flashQuadInputFastProgram_Micron(0, gBuf, 32);
+				dbg_str("qpoke <<DONE>>\r\n");
+
+				//Restore pin muxes
+				for(i=0; i<8; i++ )
+				{
+					//Save pin muxes
+					 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+				}
+			}
+			else
+			{
+				CLI_printf("FLASH DOES NOT SUPPORT QUAD MODE <<FAILED>>\n");
+			}
 		}
-		xValue.w = 0;
-		for(i=0; i<8; i++ )
+		else
 		{
-			//Save pin muxes
-			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-		}
-
-		for(i=0; i<8; i++ )
-		{
-			//set pin muxes
-			hal_setpinmux(13+i, 0);
-		}
-
-		CLI_uint32_required( "addr", &lAddress );
-		CLI_uint32_required( "value", &xValue.w);
-
-		dbg_str("Qspi Flash write\n");
-		//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		//udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
-
-		//flashWrite_Micron(lAddress, &xValue.b[0], 4);
-		flashQuadInputFastProgram_Micron(lAddress, &xValue.b[0], 4);
-		//flashQuadInputFastProgram_Micron(0, gBuf, 32);
-		dbg_str("qpoke <<DONE>>\r\n");
-
-		//Restore pin muxes
-		for(i=0; i<8; i++ )
-		{
-			//Save pin muxes
-			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
+			CLI_printf("NON MICRON FLASH QUAD MODE NOT SUPPORTED <<FAILED>>\n");
 		}
 	}
 	else

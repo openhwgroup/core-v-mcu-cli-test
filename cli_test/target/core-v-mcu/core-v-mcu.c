@@ -43,6 +43,7 @@
 
 FLASH_DEVICE_OBJECT gFlashDeviceObject;
 uint8_t gQSPIFlashPresentFlg = 0;
+uint8_t gMicronFlashDetectedFlg = 0;
 
 /* test some assumptions we make about compiler settings */
 static_assert(sizeof(uintptr_t) == 4,
@@ -176,6 +177,7 @@ uint8_t setFLLFrequencyInIntegerMode(uint8_t aFLLNum, uint8_t aRefFreqInMHz, uin
 int handler_count[32];
 void system_init(void)
 {
+	uint32_t lFlashID = 0;
 	SocCtrl_t *soc=APB_SOC_CTRL_ADDR;
 	soc->soft_reset = 1;
 	uint32_t val = 0;
@@ -364,13 +366,20 @@ for (int i = 0 ; i < 32 ; i ++){
 
 	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
-	if( ( udma_flash_readid(0,0) == 0xFFFFFFFF ) || ( udma_flash_readid(0,0) == 0 ) )
+	lFlashID = udma_flash_readid(0,0);
+	if( ( lFlashID == 0xFFFFFFFF ) || ( lFlashID == 0 ) )
 	{
 		gQSPIFlashPresentFlg = 0;
 	}
 	else
 	{
 		gQSPIFlashPresentFlg = 1;
+		if( ( lFlashID & 0xFF ) == 0x20 )
+		{
+			gMicronFlashDetectedFlg = 1;
+		}
+		else
+			gMicronFlashDetectedFlg = 0;
 	}
 
 	hal_set_apb_i2cs_slave_on_off(1);

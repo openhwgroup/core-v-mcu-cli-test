@@ -45,6 +45,9 @@
 #include "N25Q.h" 			/* Header file with global prototypes */
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
+
+extern uint8_t gQuadModeSupportedFlg;
+
 /* Serialize.h
  *
  * Serialize.h contains the signature for Serialize_SPI function.
@@ -480,7 +483,10 @@ ReturnType Driver_Init(FLASH_DEVICE_OBJECT *flash_device_object)
 		/* verify current addr mode */
 		fdo->GenOp.ReadFlagStatusRegister(&flag);
 		if (flag & 1)   /* test addressing bit of flag status reg (bit 0) */
+		{
 			fdo->Desc.NumAddrByte = FLASH_4_BYTE_ADDR_MODE;
+			gQuadModeSupportedFlg = 1;
+		}
 #endif
 
 		return Flash_Success;
