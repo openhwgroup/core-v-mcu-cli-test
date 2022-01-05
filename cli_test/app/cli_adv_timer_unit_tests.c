@@ -101,7 +101,7 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 	uint32_t lTestStatus = 0;
 	uint32_t lEventNum = 0;
 	uint32_t RegReadVal = 0;
-
+	uint32_t lRegCfgVal = 0;
 	if( ( aAdvTimerNum >= 4 ) && ( aAdvTimerChannelNum >= 4 ) )
 	{
 		lTestStatus = 0xDEADCAFE;	//Invalid timer or channel number
@@ -114,9 +114,12 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 0:		//Timer number
 			{
 				adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_0_config_register = 0;
-				adv_timer->timer_0_config_register_b.clock_sel = 1;	//reference clock
-				adv_timer->timer_0_config_register_b.prescaler_value = 8;
+
+				lRegCfgVal = 0;
+				lRegCfgVal = 8 << REG_TIMER_0_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal = 1 << REG_TIMER_0_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
+				adv_timer->timer_0_config_register = lRegCfgVal;
 
 				adv_timer->timer_0_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )  //Channel number
@@ -480,9 +483,12 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 1:			//Timer number
 			{
 				adv_timer->timer_1_cmd_register = 1 << REG_TIMER_1_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_1_config_register = 0;
-				adv_timer->timer_1_config_register_b.clock_sel = 1;
-				adv_timer->timer_1_config_register_b.prescaler_value = 8;
+
+				lRegCfgVal = 0;
+				lRegCfgVal = 8 << REG_TIMER_1_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal = 1 << REG_TIMER_1_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
+				adv_timer->timer_1_config_register = lRegCfgVal;
 
 				adv_timer->timer_1_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )
@@ -846,9 +852,13 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 2:			//Timer number
 			{
 				adv_timer->timer_2_cmd_register = 1 << REG_TIMER_2_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_2_config_register = 0; //
-				adv_timer->timer_2_config_register_b.clock_sel = 1;
-				adv_timer->timer_2_config_register_b.prescaler_value = 8;
+
+				lRegCfgVal = 0;
+				lRegCfgVal = 8 << REG_TIMER_2_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal = 1 << REG_TIMER_2_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
+				adv_timer->timer_2_config_register = lRegCfgVal; //
+
 				adv_timer->timer_2_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )
 				{
@@ -1211,9 +1221,13 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 			case 3:			//Timer number
 			{
 				adv_timer->timer_3_cmd_register = 1 << REG_TIMER_3_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_3_config_register = 0;
-				adv_timer->timer_3_config_register_b.clock_sel = 1;
-				adv_timer->timer_3_config_register_b.prescaler_value = 8;
+
+				lRegCfgVal = 0;
+				lRegCfgVal = 8 << REG_TIMER_3_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal = 1 << REG_TIMER_3_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
+				adv_timer->timer_3_config_register = lRegCfgVal;
+
 				adv_timer->timer_3_threshold_register = 0x20000;
 				if( aAdvTimerChannelNum == 0 )
 				{
