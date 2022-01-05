@@ -116,8 +116,8 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 				adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
 
 				lRegCfgVal = 0;
-				lRegCfgVal = 8 << REG_TIMER_0_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
-				lRegCfgVal = 1 << REG_TIMER_0_CONFIG_REGISTER_CLOCK_SEL_LSB;
+				lRegCfgVal |= 8 << REG_TIMER_0_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_0_CONFIG_REGISTER_CLOCK_SEL_LSB;
 
 				adv_timer->timer_0_config_register = lRegCfgVal;
 
@@ -485,8 +485,8 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 				adv_timer->timer_1_cmd_register = 1 << REG_TIMER_1_CMD_REGISTER_RESET_COMMAND_LSB; // reset
 
 				lRegCfgVal = 0;
-				lRegCfgVal = 8 << REG_TIMER_1_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
-				lRegCfgVal = 1 << REG_TIMER_1_CONFIG_REGISTER_CLOCK_SEL_LSB;
+				lRegCfgVal |= 8 << REG_TIMER_1_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_1_CONFIG_REGISTER_CLOCK_SEL_LSB;
 
 				adv_timer->timer_1_config_register = lRegCfgVal;
 
@@ -854,8 +854,8 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 				adv_timer->timer_2_cmd_register = 1 << REG_TIMER_2_CMD_REGISTER_RESET_COMMAND_LSB; // reset
 
 				lRegCfgVal = 0;
-				lRegCfgVal = 8 << REG_TIMER_2_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
-				lRegCfgVal = 1 << REG_TIMER_2_CONFIG_REGISTER_CLOCK_SEL_LSB;
+				lRegCfgVal |= 8 << REG_TIMER_2_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_2_CONFIG_REGISTER_CLOCK_SEL_LSB;
 
 				adv_timer->timer_2_config_register = lRegCfgVal; //
 
@@ -1223,8 +1223,8 @@ static uint32_t testAdvTimerForFourEvents(uint32_t aAdvTimerNum, uint32_t aAdvTi
 				adv_timer->timer_3_cmd_register = 1 << REG_TIMER_3_CMD_REGISTER_RESET_COMMAND_LSB; // reset
 
 				lRegCfgVal = 0;
-				lRegCfgVal = 8 << REG_TIMER_3_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
-				lRegCfgVal = 1 << REG_TIMER_3_CONFIG_REGISTER_CLOCK_SEL_LSB;
+				lRegCfgVal |= 8 << REG_TIMER_3_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_3_CONFIG_REGISTER_CLOCK_SEL_LSB;
 
 				adv_timer->timer_3_config_register = lRegCfgVal;
 
