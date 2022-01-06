@@ -60,6 +60,7 @@ static void test_all_events(const struct cli_cmd_entry *pEntry);
 static uint32_t testEvents(uint32_t aEventNum);
 
 extern int handler_count[];
+extern uint32_t gSpecialHandlingIRQCnt;
 
 // IO menu
 const struct cli_cmd_entry intr_functions[] =
@@ -288,6 +289,7 @@ static uint32_t testEvents(uint32_t aEventNum)
 	uint32_t lErrors = 0;
 	uint32_t levent_err0 = 0;
 	uint32_t lTestStatus = 0;
+	uint32_t lRegCfgVal = 0;
 	int lCurrentCount = 0;
 	uint32_t RegReadVal = 0;
 	uint8_t lI2CTxBuf[4] = {0};
@@ -319,6 +321,8 @@ static uint32_t testEvents(uint32_t aEventNum)
 		}
 		else
 		{
+			if( ( aEventNum == 18 ) || ( aEventNum == 19 ) )
+				gSpecialHandlingIRQCnt = 0;	//Reset the counter to zero before enabling the interrupt
 			//open the event interrupt mask.
 			csr_read_set(CSR_MIE, BIT(aEventNum));
 			RegReadVal = csr_read(CSR_MIE);
@@ -331,9 +335,9 @@ static uint32_t testEvents(uint32_t aEventNum)
 		{
 			if( ( aEventNum == 18 ) || ( aEventNum == 19 ) )
 			{
-				lCurrentCount = handler_count[aEventNum];
+				//lCurrentCount = handler_count[aEventNum];
 				vTaskDelay(2);
-				if( ( handler_count[aEventNum] - lCurrentCount)  >= 5 )
+				if( gSpecialHandlingIRQCnt  >= 5 )
 				{
 					dbg_str("<<PASSED>>\r\n");
 				}
@@ -381,9 +385,14 @@ static uint32_t testEvents(uint32_t aEventNum)
 			if( aEventNum == 21 )
 			{
 				adv_timer = (AdvTimerUnit_t*) ADV_TIMER_START_ADDR;
+
+				lRegCfgVal = 0;
+				lRegCfgVal |= 8 << REG_TIMER_0_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_0_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
 				adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_0_config_register = 0; // FLL, up/done no prescaler
-				adv_timer->timer_0_config_register_b.clock_sel = 1;
+				adv_timer->timer_0_config_register = lRegCfgVal;
+
 				adv_timer->timer_0_threshold_register = 0x20000;
 				adv_timer->timer_0_threshold_channel_0_reg = 0x30001;
 
@@ -410,9 +419,14 @@ static uint32_t testEvents(uint32_t aEventNum)
 			else if( aEventNum == 22 )
 			{
 				adv_timer = (AdvTimerUnit_t*) ADV_TIMER_START_ADDR;
+
+				lRegCfgVal = 0;
+				lRegCfgVal |= 8 << REG_TIMER_0_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_0_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
 				adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_0_config_register = 0; // FLL, up/done no prescaler
-				adv_timer->timer_0_config_register_b.clock_sel = 1;
+				adv_timer->timer_0_config_register = lRegCfgVal;
+
 				adv_timer->timer_0_threshold_register = 0x20000;
 				adv_timer->timer_0_threshold_channel_0_reg = 0x30001;
 
@@ -439,9 +453,13 @@ static uint32_t testEvents(uint32_t aEventNum)
 			else if( aEventNum == 23 )
 			{
 				adv_timer = (AdvTimerUnit_t*) ADV_TIMER_START_ADDR;
+				lRegCfgVal = 0;
+				lRegCfgVal |= 8 << REG_TIMER_0_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_0_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
 				adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_0_config_register = 0; // FLL, up/done no prescaler
-				adv_timer->timer_0_config_register_b.clock_sel = 1;
+				adv_timer->timer_0_config_register = lRegCfgVal;
+
 				adv_timer->timer_0_threshold_register = 0x20000;
 				adv_timer->timer_0_threshold_channel_0_reg = 0x30001;
 
@@ -468,9 +486,14 @@ static uint32_t testEvents(uint32_t aEventNum)
 			else if( aEventNum == 24 )
 			{
 				adv_timer = (AdvTimerUnit_t*) ADV_TIMER_START_ADDR;
+
+				lRegCfgVal = 0;
+				lRegCfgVal |= 8 << REG_TIMER_0_CONFIG_REGISTER_PRESCALER_VALUE_LSB;
+				lRegCfgVal |= 1 << REG_TIMER_0_CONFIG_REGISTER_CLOCK_SEL_LSB;
+
 				adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
-				adv_timer->timer_0_config_register = 0; // FLL, up/done no prescaler
-				adv_timer->timer_0_config_register_b.clock_sel = 1;
+				adv_timer->timer_0_config_register = lRegCfgVal;
+
 				adv_timer->timer_0_threshold_register = 0x20000;
 				adv_timer->timer_0_threshold_channel_0_reg = 0x30001;
 
@@ -564,14 +587,17 @@ static uint32_t testEvents(uint32_t aEventNum)
 #endif
 			//Turn off interrupt 11.
 			csr_read_clear(CSR_MIE, BIT(11));
+
 			//Save existing handler_count.
-			lCurrentCount = handler_count[aEventNum];
+			//lCurrentCount = handler_count[aEventNum];
+			gSpecialHandlingIRQCnt = 0;
 			//Trigger the 31 error event, by running a gpio event test without enabling interrupt 11.
 			lErrors = gpio_event_test_forevent31();
 
 			vTaskDelay(1);
 			levent_err0 = ApbEventCntrl->event_err0;
-			if( handler_count[aEventNum] == ( lCurrentCount + 1) )
+			//if( handler_count[aEventNum] == ( lCurrentCount + 1) )
+			if( gSpecialHandlingIRQCnt >= 1 )
 			{
 				csr_read_set(CSR_MIE, BIT(11));
 				vTaskDelay(2);

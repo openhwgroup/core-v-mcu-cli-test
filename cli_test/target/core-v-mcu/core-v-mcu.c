@@ -175,6 +175,7 @@ uint8_t setFLLFrequencyInIntegerMode(uint8_t aFLLNum, uint8_t aRefFreqInMHz, uin
 
 
 int handler_count[32];
+uint32_t gSpecialHandlingIRQCnt = 0;
 void system_init(void)
 {
 	uint32_t lFlashID = 0;
@@ -409,12 +410,30 @@ void timer_irq_handler(uint32_t mcause)
 
 void undefined_handler(uint32_t mcause)
 {
+	uint32_t RegReadVal = 0;
 #ifdef __PULP_USE_LIBC
 	abort();
 #else
 //	taskDISABLE_INTERRUPTS();
 //	for(;;);
-	handler_count[mcause]++;
+	if( ( mcause == 18 ) || ( mcause == 19 ) || ( mcause == 31 ))
+	{
+		gSpecialHandlingIRQCnt++;
+		if( gSpecialHandlingIRQCnt >= 20 )
+		{
+			RegReadVal = csr_read(CSR_MIE);
+			if( ( RegReadVal & BIT(mcause) ) != 0 )	//Check if the event interrupt mask is open.
+			{
+				//close the event interrupt mask.
+				csr_read_clear(CSR_MIE, BIT(mcause));
+			}
+		}
+	}
+	else
+	{
+		handler_count[mcause]++;
+	}
+
 #endif
 }
 
