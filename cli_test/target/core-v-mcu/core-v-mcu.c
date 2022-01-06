@@ -363,7 +363,7 @@ for (int i = 0 ; i < 32 ; i ++){
 	for (uint8_t id = 0; id != N_I2CM; id++) {
 		udma_i2cm_open(id, 400000);  //200000
 	}
-	udma_qspim_open(0,5000000);
+	udma_qspim_open(0,2500000);
 
 	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
