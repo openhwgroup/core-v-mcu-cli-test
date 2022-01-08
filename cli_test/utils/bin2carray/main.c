@@ -19,7 +19,8 @@ int main(int argc, char *argv[])
         printf("Converting %s to c array file.\n", argv[1]);
 
         lBinFileReadPtr = fopen(argv[1],"rb");  // r for read, b for binary
-        lCArrayFileWritePtr = fopen ("A2_App.c","w");
+
+        lCArrayFileWritePtr = fopen ("../../../generated_c_array_file/A2_App.c","w");
 
         if(  ( lBinFileReadPtr ) && ( lCArrayFileWritePtr ) )
         {
@@ -27,8 +28,8 @@ int main(int argc, char *argv[])
             lBinFileSize = ftell(lBinFileReadPtr); // get current file pointer
             fseek(lBinFileReadPtr, 0, SEEK_SET); // seek back to beginning of file
             printf("File [%s] is of %ld bytes\n",argv[1], lBinFileSize);
-
-            fprintf(lCArrayFileWritePtr, "const unsigned char gArnold2AppFWBuf[%ld] = {\n",lBinFileSize);
+            fprintf(lCArrayFileWritePtr, "#include <stdint.h>\n\n");
+            fprintf(lCArrayFileWritePtr, "const uint8_t gArnold2AppFWBuf[%ld] = {\n",lBinFileSize);
             while( lBinFileSize )
             {
                 fread(&lData, sizeof(lData), 1, lBinFileReadPtr);
@@ -39,7 +40,13 @@ int main(int argc, char *argv[])
                 if( ( lBinFileSize %16 ) == 0 )
                     fprintf(lCArrayFileWritePtr, "\n");
             }
-            fprintf(lCArrayFileWritePtr, "};\n");
+            fprintf(lCArrayFileWritePtr, "};\n\n");
+
+            fprintf(lCArrayFileWritePtr,"uint32_t getSizeOfA2FwBuf(void)\n");
+            fprintf(lCArrayFileWritePtr,"{\n\t");
+            fprintf(lCArrayFileWritePtr,"return sizeof(gArnold2AppFWBuf);\n");
+            fprintf(lCArrayFileWritePtr,"}\n\n");
+
             fclose(lBinFileReadPtr);
             fclose(lCArrayFileWritePtr);
 

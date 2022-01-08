@@ -82,7 +82,7 @@ int main(void)
 			{
 				TM_I2C_Read(I2C1, A2_BL_I2C_SLAVE_ADDRESS_7BIT, I2C_MASTER_REG_MSG_APB_I2C, &lData);
 
-				if( lData == A2_RESET_REASON_POR)
+				if( (lData == A2_RESET_REASON_POR) || ( lData == A2_RESET_REASON_WDT) || (lData ==  A2_RESET_REASON_BUTTON_PRESS) )
 				{
 					TM_DISCO_LedOff(LED_BLUE);
 					TM_DISCO_LedOff(LED_ORANGE);
