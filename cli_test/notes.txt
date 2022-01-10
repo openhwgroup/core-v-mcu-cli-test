@@ -35,3 +35,15 @@ init
 program Default/cli.bin 0x0
 
 Programming will start indicating the progress on Arnold2 UART terminal
+
+To change the bootsel pin status:
+Open the terminal connected to UART 1 of Arnold2. 
+Load the bit file. 
+Once the bit file is programmed, and running, check the status of bootsel print.
+If boot sel status is to be changed, first set SW0 to low (south) and the set SW1 to high or low.
+Then press reset button. Now the SW1 (bootsel) will be taken correctly.
+
+When connecting JTAG interface to debug make sure that the SW0 switch is in high position (north) for the debugger to work.
+
+For any change in SW0 or SW1 settings to be reflected, press reset button.
+

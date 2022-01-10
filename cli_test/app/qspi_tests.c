@@ -31,6 +31,7 @@ extern uint8_t gQSPIFlashPresentFlg;
 extern uint8_t gMicronFlashDetectedFlg;
 
 uint8_t gQuadModeSupportedFlg = 0;
+uint8_t gMicronFlashInitDoneFlag = 0;
 
 extern FLASH_DEVICE_OBJECT gFlashDeviceObject;
 
@@ -194,6 +195,8 @@ char*  pzArg = NULL;
 	uint32_t lSubSectorNum = 0;
 	uint16_t lSectorsToErase = 0;
 	// Add functionality here
+	if( gMicronFlashInitDoneFlag == 0 )
+		flash_init(NULL);
 	CLI_string_ptr_required("Loading file: ", &pzArg);
 	CLI_uint32_required( "addr", &fl_addr );
 		if (pzArg != NULL) {
@@ -515,9 +518,13 @@ static void flash_init(const struct cli_cmd_entry *pEntry)
 	{
 		if( gMicronFlashDetectedFlg == 1 )
 		{
-			Driver_Init(&gFlashDeviceObject);
+			if( gMicronFlashInitDoneFlag == 0 )
+			{
+				Driver_Init(&gFlashDeviceObject);
 
-			dbg_str("<<DONE>>\r\n");
+				dbg_str("<<DONE>>\r\n");
+				gMicronFlashInitDoneFlag = 1;
+			}
 		}
 		else
 		{
