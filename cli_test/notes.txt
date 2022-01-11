@@ -139,6 +139,45 @@ Connect 2 grounds between STM and Nexsys
 6. Once the application is loaded, the orange led will glow indicating the completion of loading the application code. The blue LED will keep blinking to indicate that STM32 is in a while (1) loop.
 7. Arnold 2 should have loaded the application and this can be verified by connecting a termial to UART0 and checking if the command line is up. I2C BL JMP 1c000880 is printed on the terminal connected to UART1 of Arnold2.
 
+I2C protocol between an external host and Arnold2 bootloader
+
+Arnold2 bootloader is running as an I2C slave with a 8-bit slave address 0x62
+
+Protocol structure
+2 Bytes   Start Of Frame (SOF)
+4 Bytes   RAM address
+1 Byte    Command type
+1 Byte    Data length
+240 Bytes Payload data
+2 Bytes   CRC  (Optional)
+
+Start Of Frame (SOF) indicates the message direction. A2 to Host is 0x5A70 and Host to A2 is 0xA507
+RAM address indicates the A2 RAM address which needs to be written to read from.
+
+All command and responses are implemented in the 1 byte I2C to APB / APB to I2C single-byte message register, except load memory command and jump to address command.
+The command load memory uses the 256 byte deep FIFO to communicate with I2C slave. It uses the above mentioned protocol structure.
+
+Arnold2 slave on booting up writes the reason for power on and waits for the host to connect on I2C bus.
+
+- Initial connection process
+The external host connects to the I2C slave and reads the reset reason.
+Depending on the reset reason the host decides whether to program Arnold2 or not.
+
+- Programming Arnold2 via I2C
+1. The I2C master (external host) after the initial connection process, checks if the I2C slave (Arnold2) is ready. There are 2 options with CRC and without CRC.
+Both options are supported by the example implementation.
+
+2. The host waits until there is a response from the slave to be ready. Once the slave replies with a ready status, the host proceeds next.
+
+3. The host sends the firmware data using the load command to the slave. If the CRC is enabled the host calculates the CRC and sends it in the CRC field.
+
+4. The slave upon receiving the firmware data, checks the CRC and copies the data into the RAM addresss specified - if CRC is enabled or if CRC is disabled, the slave directly copies the data into the RAM address specified.
+
+5. If the CRC check has failed, the slave informs the host, so that the host can retry the frame.
+
+6. Once all firmware data is pushed to the slave, the host issues a jump to address command with the RAM address to jump.
+
+7. The slave (Arnold2) jumps to the RAM address mentioned by the host.
 
 Programming QSPI flash
 
