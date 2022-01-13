@@ -222,11 +222,11 @@ void system_init(void)
 
 #elif (PERCEPTIA_PLL == 1 )
 
-    setFLLFrequencyInIntegerMode(0, 10, 40, 1, 0, 0);   // 400
+    setFLLFrequencyInIntegerMode(0, 10, 40, 1, 0, 1);   // 400
 
-    setFLLFrequencyInIntegerMode(1, 10, 20, 1, 0, 0);   // 200
+    setFLLFrequencyInIntegerMode(1, 10, 40, 1, 0, 2);   // 200
 
-    setFLLFrequencyInIntegerMode(2, 10, 10, 1, 0, 0);   // 100
+    setFLLFrequencyInIntegerMode(2, 10, 40, 1, 0, 4);   // 100
 
 #if 0
 	*(uint32_t*)0x1c000000 = 0x55667788;
