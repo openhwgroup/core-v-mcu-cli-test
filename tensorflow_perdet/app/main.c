@@ -68,6 +68,7 @@
 #include <stdarg.h>
 
 char gsPrintfBuffer[256] = {0};
+uint8_t gDebugEnabledFlg = 0;
 
 /* Prepare hardware to run the demo. */
 static void prvSetupHardware( void );
@@ -132,6 +133,8 @@ void DebugLog(const char* s)
 int oPrintf(const char* format, ...)
 {
 	int lRetVal = 0;
+	if( gDebugEnabledFlg == 0 )
+		return 0;
 	va_list args;
 	va_start(args, format);
 	lRetVal = MicroVsnprintf(gsPrintfBuffer, 256, format, args);

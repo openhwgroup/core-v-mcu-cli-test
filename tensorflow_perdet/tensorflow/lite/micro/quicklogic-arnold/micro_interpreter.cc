@@ -32,6 +32,7 @@ limitations under the License.
 #include "accel.h"
 #include "arnold_apb_ctl.h"
 
+extern uint8_t gDebugEnabledFlg;
 extern "C" int oPrintf(const char* format, ...);
 
 extern bool fpga_programmed;
@@ -216,7 +217,10 @@ namespace tflite {
   }
 } // namespace
 
-void PrintTensor(TfLiteTensor* ptensor, int itensor, int inode, int itensorx, bool fPrintData) {
+void PrintTensor(TfLiteTensor* ptensor, int itensor, int inode, int itensorx, bool fPrintData)
+{
+	if(gDebugEnabledFlg == 0 )
+		return;
   oPrintf("tensor[%d](%x)->bytes=%d ", itensor, ptensor, ptensor->bytes);
   switch (ptensor->type) {
     case 2: oPrintf("Int32"); break;
@@ -275,7 +279,10 @@ void PrintTensor(TfLiteTensor* ptensor, int itensor, int inode, int itensorx, bo
 
 
 
-void PrintNode(TfLiteNode* pnode) {
+void PrintNode(TfLiteNode* pnode)
+{
+	if( gDebugEnabledFlg == 0 )
+		return 0;
   oPrintf("user_data=%x\n", pnode->user_data);
   oPrintf("builtin_data=%x\n", pnode->builtin_data);
   oPrintf("custom_initial_data=%x\n", pnode->custom_initial_data);

@@ -378,7 +378,7 @@ TfLiteStatus Eval(TfLiteContext* context, TfLiteNode* node) {
                       nullptr, output);
       } else if (node->custom_initial_data_size & accel_sw) {
         EvalQuantizedSW_SIMD(context, node, params, data, input, filter, bias, nullptr,
-                      nullptr, output, 1);//(node->custom_initial_data_size & accel_print) ? true : false);
+                      nullptr, output, (node->custom_initial_data_size & accel_print) ? true : false);
       } else if (node->custom_initial_data_size & accel_fpga) {
         EvalQuantizedFPGA_SIMD(context, node, params, data, input, filter, bias, nullptr,
                       nullptr, output, (node->custom_initial_data_size & accel_print) ? true : false);
