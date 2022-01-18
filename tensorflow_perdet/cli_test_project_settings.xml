@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<cdtprojectproperties>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.IncludePaths">
+<language name="Assembly Source File">
+<includepath workspace_path="true">/${ProjName}/kernel/portable/GCC/RISC-V/chip_specific_extensions/PULPissimo</includepath>
+
+</language>
+<language name="C Source File">
+<includepath workspace_path="true">/${ProjName}</includepath>
+<includepath workspace_path="true">/${ProjName}/kernel/include</includepath>
+<includepath workspace_path="true">/${ProjName}/kernel/portable/GCC/RISC-V</includepath>
+
+</language>
+<language name="C++ Source File">
+
+</language>
+<language name="Object File">
+
+</language>
+</section>
+<section name="org.eclipse.cdt.internal.ui.wizards.settingswizards.Macros">
+<language name="Assembly Source File">
+<macro>
+<name>portasmHANDLE_INTERRUPT</name><value>vSystemIrqHandler</value>
+</macro>
+<macro>
+<name>portasmSKIP_ADDITIONAL_REGISTERS</name><value/>
+</macro>
+<macro>
+<name>off__PULP_USE_LIBC</name><value/>
+</macro>
+
+</language>
+<language name="C Source File">
+<macro>
+<name>PI_LOG_LOCAL_LEVEL</name><value>5</value>
+</macro>
+<macro>
+<name>off__PULP_USE_LIBC</name><value/>
+</macro>
+<macro>
+<name>STREAM_CHECK_ITERATIONS</name><value>2</value>
+</macro>
+<macro>
+<name>portasmHANDLE_INTERRUPT</name><value>vSystemIrqHandler</value>
+</macro>
+<macro>
+<name>DEBUG</name><value/>
+</macro>
+<macro>
+<name>ASYNC</name><value>0</value>
+</macro>
+<macro>
+<name>__PULP__</name><value>1</value>
+</macro>
+<macro>
+<name>FEATURE_CLUSTER</name><value>0</value>
+</macro>
+
+</language>
+<language name="C++ Source File">
+<macro>
+<name>__PULP__</name><value>1</value>
+</macro>
+<macro>
+<name>ASYNC</name><value>0</value>
+</macro>
+<macro>
+<name>TRACE_UART</name><value/>
+</macro>
+<macro>
+<name>PI_LOG_LOCAL_LEVEL</name><value>5</value>
+</macro>
+<macro>
+<name>DEBUG</name><value/>
+</macro>
+
+</language>
+<language name="Object File">
+
+</language>
+</section>
+</cdtprojectproperties>
