@@ -78,7 +78,7 @@ void person_detection_task( void *pParameter );
 
 int MicroVsnprintf(char* output, int len, const char* format, va_list args);
 int oPrintf(const char* format, ...);
-void CLI_printf( const char *fmt, ... );
+void CLI_printf( uint8_t aUartPortNum, const char *fmt, ... );
 
 
 int main(void)
@@ -116,8 +116,7 @@ void vToggleLED( void )
 	gpio_pin_toggle( 0x5 );
 }
 /*-----------------------------------------------------------*/
-
-void DebugLog(const char* s)
+void CLI_Puts(uint8_t aPortNum, const char* s)
 {
 	uint8_t lChar = 0;
 	uint8_t lCR = 0x0D;
@@ -125,10 +124,15 @@ void DebugLog(const char* s)
 	{
 		lChar = *s;
 		if( lChar == '\n')
-			udma_uart_writeraw(0,1,&lCR);
-		udma_uart_writeraw(0,1,&lChar);
+			udma_uart_writeraw(aPortNum,1,&lCR);
+		udma_uart_writeraw(aPortNum,1,&lChar);
 		s++;
 	}
+}
+
+void DebugLog(const char* s)
+{
+	CLI_Puts(0,s);
 }
 
 /*
@@ -150,11 +154,11 @@ int oPrintf(const char* format, ...)
 }
 
 /* workhorse for printf() */
-void CLI_vprintf( const char *fmt, va_list ap )
+void CLI_vprintf(uint8_t aUartPortNum, const char *fmt, va_list ap )
 {
     vsnprintf( gsPrintfBuffer, sizeof(gsPrintfBuffer)-1, fmt, ap );
     gsPrintfBuffer[ sizeof(gsPrintfBuffer) - 1 ] = 0;
-    DebugLog(gsPrintfBuffer);
+    CLI_Puts(aUartPortNum,gsPrintfBuffer);
 }
 
 /*
@@ -163,12 +167,12 @@ void CLI_vprintf( const char *fmt, va_list ap )
  *
  * */
 /* printf for test purposes */
-void CLI_printf( const char *fmt, ... )
+void CLI_printf(uint8_t aUartPortNum, const char *fmt, ... )
 {
     va_list ap;
 
     va_start(ap,fmt);
-    CLI_vprintf( fmt, ap );
+    CLI_vprintf(aUartPortNum, fmt, ap );
     va_end(ap);
 }
 

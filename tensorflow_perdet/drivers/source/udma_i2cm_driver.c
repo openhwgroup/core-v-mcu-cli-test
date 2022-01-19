@@ -99,32 +99,43 @@ uint8_t udma_i2cm_16read8(uint8_t i2cm_id, uint8_t i2cm_addr, uint16_t reg_addr,
 }
 
 static uint8_t auccmd_tx[32];
-uint8_t udma_i2cm_write (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr, uint16_t write_len, uint8_t *write_data,  bool more_follows) {
-	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
-	uint8_t*					pcmd = auccmd_tx;
-	uint8_t*					pdata = write_data;
-
+uint8_t udma_i2cm_write (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr, uint16_t write_len, uint8_t *write_data,  bool more_follows)
+{
+	UdmaI2cm_t *pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	uint8_t *pcmd = auccmd_tx;
+	uint8_t *pdata = write_data;
+	uint32_t lCounter = 0;
 	uint8_t lStatus = pdFALSE;
 
 	configASSERT(write_len < 256);
 
+	*pcmd++ = kI2cmCmdCfg;
+	*pcmd++ = aucclkdiv[1];
+	*pcmd++ = aucclkdiv[0];
+	*pcmd++ = kI2cmCmdStart;			// Put Start transaction on I2C bus
+	*pcmd++ = kI2cmCmdRpt; 				// Set up for several writes: i2cm_CMD_RPT
+	*pcmd++ = (uint8_t)(write_len + 2);	// I@CM_ADDR + REG_ADDR + data
+	*pcmd++ = kI2cmCmdWr; 				// Command to repeat: I2C CMD_WR
+	*pcmd++ = i2cm_addr & 0xfe; 		// Clear R/WRbar bit from i2c device's address to indicate write
+	*pcmd++ = reg_addr;					// Target address for following data
+	for (int i = 0; i != write_len; i++) {
+		*pcmd++ = *pdata++;
+	}
+	pi2cm_regs->tx_saddr = auccmd_tx;
+	pi2cm_regs->tx_size = (uint32_t)(pcmd - auccmd_tx);
+	pi2cm_regs->tx_cfg_b.en = 1;
 
-		*pcmd++ = kI2cmCmdCfg;
-		*pcmd++ = aucclkdiv[1];
-		*pcmd++ = aucclkdiv[0];
-		*pcmd++ = kI2cmCmdStart;			// Put Start transaction on I2C bus
-		*pcmd++ = kI2cmCmdRpt; 				// Set up for several writes: i2cm_CMD_RPT
-		*pcmd++ = (uint8_t)(write_len + 2);	// I@CM_ADDR + REG_ADDR + data
-		*pcmd++ = kI2cmCmdWr; 				// Command to repeat: I2C CMD_WR
-		*pcmd++ = i2cm_addr & 0xfe; 		// Clear R/WRbar bit from i2c device's address to indicate write
-		*pcmd++ = reg_addr;					// Target address for following data
-		for (int i = 0; i != write_len; i++) {
-			*pcmd++ = *pdata++;
+	lCounter = 0;
+	while (pi2cm_regs->tx_size != 0) {
+		lCounter++;
+		if( lCounter >= 0x00100000 )
+		{
+			lStatus = 3;	//Time out
+			break;
 		}
-		pi2cm_regs->tx_saddr = auccmd_tx;
-		pi2cm_regs->tx_size = (uint32_t)(pcmd - auccmd_tx);
-		pi2cm_regs->tx_cfg_b.en = 1;
-
+	}
+	if( lStatus != 3 ) //Not timed out
+	{
 		// Block until UDMA transaction is completed
 		//xSemaphoreTake( shSemaphoreHandleTx, SEMAPHORE_WAIT_TIME_IN_MS );
 		//xSemaphoreGive( shSemaphoreHandleTx );
@@ -133,42 +144,49 @@ uint8_t udma_i2cm_write (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr, u
 			_udma_i2cm_send_stop(i2cm_id);
 		}
 		lStatus = pdTRUE;
+	}
+	else
+	{
+		lStatus = pdFALSE;
+	}
 
 	return lStatus;
 }
 
-uint8_t _udma_i2cm_write_addr_plus_regaddr (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr) {
-	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
-	uint8_t*					pcmd = auccmd_tx;
+uint8_t _udma_i2cm_write_addr_plus_regaddr (uint8_t i2cm_id, uint8_t i2cm_addr, uint8_t reg_addr)
+{
+	UdmaI2cm_t *pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
+	uint8_t *pcmd = auccmd_tx;
 	uint8_t lStatus = pdFALSE;
 
-		pi2cm_regs->tx_cfg_b.en = 0;
-		*pcmd++ = kI2cmCmdCfg;
-		*pcmd++ = aucclkdiv[1];
-		*pcmd++ = aucclkdiv[0];
-		*pcmd++ = kI2cmCmdStart;		// Put Start transaction on I2C bus
-		*pcmd++ = kI2cmCmdWr;		// Write device's address (next byte)
-		*pcmd++ = i2cm_addr & 0xfe; 	// Clear R/WRbar bit from i2c device's address to indicate write
-		*pcmd++ = kI2cmCmdWr; 		// I2C CMD_WR
-		pi2cm_regs->tx_saddr = auccmd_tx;
-		pi2cm_regs->tx_size = (uint32_t)(pcmd - auccmd_tx);
-		pi2cm_regs->tx_cfg_b.en = 1;
+	pi2cm_regs->tx_cfg_b.en = 0;
+	*pcmd++ = kI2cmCmdCfg;
+	*pcmd++ = aucclkdiv[1];
+	*pcmd++ = aucclkdiv[0];
+	*pcmd++ = kI2cmCmdStart;		// Put Start transaction on I2C bus
+	*pcmd++ = kI2cmCmdWr;		// Write device's address (next byte)
+	*pcmd++ = i2cm_addr & 0xfe; 	// Clear R/WRbar bit from i2c device's address to indicate write
+	*pcmd++ = kI2cmCmdWr; 		// I2C CMD_WR
+	pi2cm_regs->tx_saddr = auccmd_tx;
+	pi2cm_regs->tx_size = (uint32_t)(pcmd - auccmd_tx);
+	pi2cm_regs->tx_cfg_b.en = 1;
 
 
-			//pi2cm_regs->tx_cfg_b.en = 0;
-			pcmd = auccmd_tx;
-			*pcmd++ = reg_addr;
-			pi2cm_regs->tx_saddr = auccmd_tx;
-			pi2cm_regs->tx_size = (uint32_t)(pcmd - auccmd_tx);
-			pi2cm_regs->tx_cfg_b.en = 1;
+	//pi2cm_regs->tx_cfg_b.en = 0;
+	pcmd = auccmd_tx;
+	*pcmd++ = reg_addr;
+	pi2cm_regs->tx_saddr = auccmd_tx;
+	pi2cm_regs->tx_size = (uint32_t)(pcmd - auccmd_tx);
+	pi2cm_regs->tx_cfg_b.en = 1;
 
-			// Block until UDMA operation is completed
-			//xSemaphoreTake( shSemaphoreHandle, SEMAPHORE_WAIT_TIME_IN_MS );
-			//xSemaphoreGive( shSemaphoreHandle );
-			lStatus = pdTRUE;
+	// Block until UDMA operation is completed
+	//xSemaphoreTake( shSemaphoreHandle, SEMAPHORE_WAIT_TIME_IN_MS );
+	//xSemaphoreGive( shSemaphoreHandle );
+	lStatus = pdTRUE;
 
 	return lStatus;
 }
+
 uint8_t _udma_i2cm_write_addr_plus_reg16addr (uint8_t i2cm_id, uint8_t i2cm_addr, uint16_t reg_addr) {
 	UdmaI2cm_t*					pi2cm_regs = (UdmaI2cm_t*)(UDMA_CH_ADDR_I2CM + i2cm_id * UDMA_CH_SIZE);
 	uint8_t*					pcmd = auccmd_tx;

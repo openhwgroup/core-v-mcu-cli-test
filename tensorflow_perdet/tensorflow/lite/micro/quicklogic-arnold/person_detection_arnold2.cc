@@ -27,9 +27,11 @@ limitations under the License.
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"    
 
+#define SEND_PIC_ON_UART_1		1
+
 extern "C" void person_detection_task( void *pParameter );
 extern "C" int oPrintf(const char* format, ...);
-extern "C" void CLI_printf( const char *fmt, ... );
+extern "C" void CLI_printf(uint8_t aUartPortNum, const char *fmt, ... );
 extern "C" {
 #include "include/programFPGA.h"
 
@@ -56,7 +58,7 @@ void person_detection_task( void *pParameter )
 
     fpga_programmed = false;
     camera_present = false;
-    CLI_printf("Person detection demo\n");
+    CLI_printf(0, "Person detection demo\n");
     oPrintf("fpga_programmed = %x / %d \n",camera_present, fpga_programmed);
     //programFPGA();
     //fpga_programmed = true;
@@ -108,6 +110,23 @@ void person_detection_task( void *pParameter )
 	// Copy an image with a person into the memory area used for the input.
 	const uint8_t* person_data = g_person_data;
 
+// SHow us the picture
+#if (SEND_PIC_ON_UART_1 == 1 )
+	CLI_printf(0,"Displaying pic on UART1, Use 'python3 spi_load.py /dev/ttyUSBx' to view\n");
+	CLI_printf(1,"ScReEn96 96\n");
+	for (int j = 0; j<96; j++) {
+		for (int k = 0; k < 96; k += 32) {
+			int l = 0;
+			CLI_printf(1,"ImAgE %d %d",j,k);
+			while (l < 32)
+				CLI_printf(1," %02x",person_data[j*96+k+(l++)] & 0xf);
+			CLI_printf(1,"\n");
+			for (int m=0; m < 20000; m++)
+				asm volatile("nop");
+		}
+	}
+#endif
+
 	for (int i = 0; i < input->bytes; ++i) {
 	    input->data.uint8[i] = person_data[i];
 	}
@@ -115,7 +134,7 @@ void person_detection_task( void *pParameter )
 
 	// Run the model on this input and make sure it succeeds.
 	//gpio->out31_00 = (1<<6);
-	CLI_printf("[i/p: person data] running. . .\n");
+	CLI_printf(0, "[i/p: person data] running. . .\n");
 	TfLiteStatus invoke_status = interpreter.Invoke();
 	//gpio->out31_00 = 0;
 	if (invoke_status != kTfLiteOk) {
@@ -147,13 +166,27 @@ void person_detection_task( void *pParameter )
 	// Now test with a different input, from an image without a person.
 	const uint8_t* no_person_data = g_no_person_data;
 
+#if (SEND_PIC_ON_UART_1 == 1 )
+	for (int j = 0; j<96; j++) {
+		for (int k = 0; k < 96; k += 32) {
+			int l = 0;
+			CLI_printf(1,"ImAgE %d %d",j,k);
+			while (l < 32)
+				CLI_printf(1," %02x",no_person_data[j*96+k+(l++)] & 0xf);
+			CLI_printf(1,"\n");
+			for (int m=0; m < 20000; m++)
+				asm volatile("nop");
+		}
+	}
+#endif
+
 	for (int i = 0; i < input->bytes; ++i) {
 		input->data.uint8[i] = no_person_data[i];
 	}
 
 	// Run the model on this "No Person" input
 	//gpio->out31_00 = (1<<6);
-	CLI_printf("[i/p: no person data] running. . .\n");
+	CLI_printf(0, "[i/p: no person data] running. . .\n");
 	invoke_status = interpreter.Invoke();
 	//gpio->out31_00 = 0;
 	if (invoke_status != kTfLiteOk) {
