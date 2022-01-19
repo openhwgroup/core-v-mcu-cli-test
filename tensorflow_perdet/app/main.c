@@ -66,17 +66,19 @@
 
 #include "hal/include/hal_udma_i2cm_reg_defs.h"
 #include <stdarg.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 char gsPrintfBuffer[256] = {0};
 uint8_t gDebugEnabledFlg = 0;
 
 /* Prepare hardware to run the demo. */
 static void prvSetupHardware( void );
-
+void person_detection_task( void *pParameter );
 
 int MicroVsnprintf(char* output, int len, const char* format, va_list args);
 int oPrintf(const char* format, ...);
-
+void CLI_printf( const char *fmt, ... );
 
 
 int main(void)
@@ -88,7 +90,7 @@ int main(void)
 
 	//CLI_start_task( my_main_menu );
     //person_detect_task_start(NULL);
-    person_detection_task();
+    person_detection_task(0);
 	/* Start the tasks and timer running. */
 	//vTaskStartScheduler();
 	/* If all is well, the scheduler will now be running, and the following
@@ -129,7 +131,11 @@ void DebugLog(const char* s)
 	}
 }
 
-
+/*
+ * Use oPrintf to print debug messages as it can be turned off with gDebugEnabledFlg
+ *
+ *
+ * */
 int oPrintf(const char* format, ...)
 {
 	int lRetVal = 0;
@@ -143,7 +149,28 @@ int oPrintf(const char* format, ...)
 	return lRetVal;
 }
 
+/* workhorse for printf() */
+void CLI_vprintf( const char *fmt, va_list ap )
+{
+    vsnprintf( gsPrintfBuffer, sizeof(gsPrintfBuffer)-1, fmt, ap );
+    gsPrintfBuffer[ sizeof(gsPrintfBuffer) - 1 ] = 0;
+    DebugLog(gsPrintfBuffer);
+}
 
+/*
+ * Use CLI_printf to print normal messages to indicate to user and not for debug
+ *
+ *
+ * */
+/* printf for test purposes */
+void CLI_printf( const char *fmt, ... )
+{
+    va_list ap;
+
+    va_start(ap,fmt);
+    CLI_vprintf( fmt, ap );
+    va_end(ap);
+}
 
 
 

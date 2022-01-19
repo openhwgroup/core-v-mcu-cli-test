@@ -29,6 +29,7 @@ limitations under the License.
 
 extern "C" void person_detection_task( void *pParameter );
 extern "C" int oPrintf(const char* format, ...);
+extern "C" void CLI_printf( const char *fmt, ... );
 extern "C" {
 #include "include/programFPGA.h"
 
@@ -55,6 +56,7 @@ void person_detection_task( void *pParameter )
 
     fpga_programmed = false;
     camera_present = false;
+    CLI_printf("Person detection demo\n");
     oPrintf("fpga_programmed = %x / %d \n",camera_present, fpga_programmed);
     //programFPGA();
     //fpga_programmed = true;
@@ -113,7 +115,7 @@ void person_detection_task( void *pParameter )
 
 	// Run the model on this input and make sure it succeeds.
 	//gpio->out31_00 = (1<<6);
-	TF_LITE_REPORT_ERROR(error_reporter, "[i/p: person data] running. . .\n");
+	CLI_printf("[i/p: person data] running. . .\n");
 	TfLiteStatus invoke_status = interpreter.Invoke();
 	//gpio->out31_00 = 0;
 	if (invoke_status != kTfLiteOk) {
@@ -151,7 +153,7 @@ void person_detection_task( void *pParameter )
 
 	// Run the model on this "No Person" input
 	//gpio->out31_00 = (1<<6);
-	TF_LITE_REPORT_ERROR(error_reporter, "[i/p: no person data] running. . .\n");
+	CLI_printf("[i/p: no person data] running. . .\n");
 	invoke_status = interpreter.Invoke();
 	//gpio->out31_00 = 0;
 	if (invoke_status != kTfLiteOk) {
