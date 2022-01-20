@@ -27,7 +27,7 @@ limitations under the License.
 #include "tensorflow/lite/schema/schema_generated.h"
 #include "tensorflow/lite/version.h"    
 
-#define SEND_PIC_ON_UART_1		1
+#define SEND_PIC_ON_UART_1		0
 
 
 extern "C" void person_detection_task( void *pParameter );
@@ -46,7 +46,7 @@ extern "C" {
 bool fpga_programmed;
 extern uint8_t camera_present;
 
-static uint8_t picture[(PICTURE_X_SIZE+4) * (PICTURE_Y_SIZE + 4) ];
+//static uint8_t picture[(PICTURE_X_SIZE+4) * (PICTURE_Y_SIZE + 4) ];
 
 // Create an area of memory to use for input, output, and intermediate arrays.
 constexpr int tensor_arena_size = 93 * 1024;
@@ -65,7 +65,7 @@ void person_detection_task( void *pParameter )
 
     fpga_programmed = false;
     CLI_printf(0, "Person detection demo\n");
-#if 0
+#if 1
     oPrintf("fpga_programmed = %x / %d \n",camera_present, fpga_programmed);
     //programFPGA();
     //fpga_programmed = true;
@@ -224,13 +224,64 @@ void person_detection_task( void *pParameter )
 
 #endif
 
-    for(;;) {
+    for(;;)
+    {
     	if( camera_present )
     	{
 #if 1
-    		initPictureBuf(PICTURE_X_SIZE, PICTURE_Y_SIZE, picture);
-    		cam_grab_frame(PICTURE_X_SIZE,PICTURE_Y_SIZE, picture);
-    		displayFrame(PICTURE_X_SIZE,PICTURE_Y_SIZE,picture );
+    		initPictureBuf(PICTURE_X_SIZE, PICTURE_Y_SIZE, tensor_arena);
+    		cam_grab_frame(PICTURE_X_SIZE,PICTURE_Y_SIZE, tensor_arena);
+    		displayFrame(PICTURE_X_SIZE,PICTURE_Y_SIZE,tensor_arena );
+
+			for (int i = 0; i < 96; ++i)
+			{
+				for (int j = 0; j<96; j++)
+				{
+				  input->data.uint8[i*96+j] = tensor_arena[74*324+i*324+144+j];
+				}
+			}
+
+			CLI_printf(1,"ScReEn96 96\n");
+			for (int j = 0; j<96; j++)
+			{
+				for (int k = 0; k < 96; k += 32)
+				{
+					int l = 0;
+					CLI_printf(1, "ImAgE %d %d",j,k);
+					while (l < 32)
+						CLI_printf(1," %02x",input->data.uint8[j*96+k+(l++)] & 0xf);
+					CLI_printf(1,"\n");
+					//for (int m=0; m < 20000; m++)
+					//	asm volatile("nop");
+				}
+			}
+			// Run the model on this "No Person" input
+			//gpio->out31_00 = (1<<6);
+			CLI_printf(0, "[i/p: Himax camera data] running. . .\n");
+			invoke_status = interpreter.Invoke();
+			//gpio->out31_00 = 0;
+			if (invoke_status != kTfLiteOk) {
+				TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed\n");
+			}
+			TF_LITE_MICRO_EXPECT_EQ(kTfLiteOk, invoke_status);
+
+			// Get the output from the model, and make sure it's the expected size and
+			// type.
+			output = interpreter.output(0);
+			TF_LITE_MICRO_EXPECT_EQ(4, output->dims->size);
+			TF_LITE_MICRO_EXPECT_EQ(1, output->dims->data[0]);
+			TF_LITE_MICRO_EXPECT_EQ(1, output->dims->data[1]);
+			TF_LITE_MICRO_EXPECT_EQ(1, output->dims->data[2]);
+			TF_LITE_MICRO_EXPECT_EQ(kCategoryCount, output->dims->data[3]);
+			TF_LITE_MICRO_EXPECT_EQ(kTfLiteUInt8, output->type);
+
+			// Make sure that the expected "No Person" score is higher.
+			person_score = output->data.uint8[kPersonIndex];
+			no_person_score = output->data.uint8[kNotAPersonIndex];
+			TF_LITE_REPORT_ERROR(
+					error_reporter,
+					"Himax Camera image.  person score: %d, no person score: %d\n", person_score,
+					no_person_score);
 #endif
     	}
     }
