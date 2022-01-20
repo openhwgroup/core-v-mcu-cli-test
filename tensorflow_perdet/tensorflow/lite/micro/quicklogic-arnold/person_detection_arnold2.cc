@@ -29,17 +29,24 @@ limitations under the License.
 
 #define SEND_PIC_ON_UART_1		1
 
+
 extern "C" void person_detection_task( void *pParameter );
 extern "C" int oPrintf(const char* format, ...);
 extern "C" void CLI_printf(uint8_t aUartPortNum, const char *fmt, ... );
+extern "C" uint8_t cam_grab_frame (int x, int y, void* pparam);
+extern "C" void initPictureBuf(int x, int y, uint8_t* pictureBuf);
+extern "C" void displayFrame(int x, int y, uint8_t* pictureBuf);
+
 extern "C" {
 #include "include/programFPGA.h"
+#include "target/core-v-mcu/include/core-v-mcu-system.h"
 
 }
 
 bool fpga_programmed;
-bool camera_present;
+extern uint8_t camera_present;
 
+static uint8_t picture[(PICTURE_X_SIZE+4) * (PICTURE_Y_SIZE + 4) ];
 
 // Create an area of memory to use for input, output, and intermediate arrays.
 constexpr int tensor_arena_size = 93 * 1024;
@@ -57,8 +64,8 @@ void person_detection_task( void *pParameter )
 {
 
     fpga_programmed = false;
-    camera_present = false;
     CLI_printf(0, "Person detection demo\n");
+#if 0
     oPrintf("fpga_programmed = %x / %d \n",camera_present, fpga_programmed);
     //programFPGA();
     //fpga_programmed = true;
@@ -119,7 +126,7 @@ void person_detection_task( void *pParameter )
 			int l = 0;
 			CLI_printf(1,"ImAgE %d %d",j,k);
 			while (l < 32)
-				CLI_printf(1," %02x",person_data[j*96+k+(l++)] & 0xf);
+				CLI_printf(1," %02x",person_data[j*96+k+(l++)]);
 			CLI_printf(1,"\n");
 			for (int m=0; m < 20000; m++)
 				asm volatile("nop");
@@ -172,7 +179,7 @@ void person_detection_task( void *pParameter )
 			int l = 0;
 			CLI_printf(1,"ImAgE %d %d",j,k);
 			while (l < 32)
-				CLI_printf(1," %02x",no_person_data[j*96+k+(l++)] & 0xf);
+				CLI_printf(1," %02x",no_person_data[j*96+k+(l++)]);
 			CLI_printf(1,"\n");
 			for (int m=0; m < 20000; m++)
 				asm volatile("nop");
@@ -215,10 +222,17 @@ void person_detection_task( void *pParameter )
 
 	TF_LITE_REPORT_ERROR(error_reporter, "Ran successfully\n");
 
-
+#endif
 
     for(;;) {
-        ;
+    	if( camera_present )
+    	{
+#if 1
+    		initPictureBuf(PICTURE_X_SIZE, PICTURE_Y_SIZE, picture);
+    		cam_grab_frame(PICTURE_X_SIZE,PICTURE_Y_SIZE, picture);
+    		displayFrame(PICTURE_X_SIZE,PICTURE_Y_SIZE,picture );
+#endif
+    	}
     }
 }
 
