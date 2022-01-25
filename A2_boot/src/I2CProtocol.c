@@ -3,11 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include "hal_apb_i2cs.h"
+#include "bootloader.h"
 #include "I2CProtocol.h"
 #include "crc.h"
 #include "dbg.h"
 
-uint8_t gStopUartMsgFlg = 0;
+extern uint8_t gStopUartMsgFlg;
+extern uint8_t gStopUartBootLoaderFlg;
+
+uint8_t gStopI2CBootLoaderFlg = 0;
 uint8_t gsI2CProtocolFrameRxBuf[256] = {0};
 uint8_t gUseCRCFlg = 0;
 
@@ -145,6 +149,7 @@ void processI2CProtocolFrames(void)
 	if( hal_get_i2cs_msg_i2c_apb_status() != 0 )
 	{
 		gStopUartMsgFlg = 1;
+		gStopUartBootLoaderFlg = 1;
 		if( hal_get_i2cs_msg_i2c_apb() == A2_I2C_BL_WITHOUT_CRC_IS_READY_CHECK_CMD )
 		{
 			gUseCRCFlg = 0;

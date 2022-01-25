@@ -28,11 +28,13 @@
 #include <stdio.h>
 #include "core-v-mcu-config.h"
 #include "apb_soc_ctrl_reg_defs.h"
+#include "bootloader.h"
 #include <string.h>
 #include "flash.h"
 #include "dbg.h"
 #include "hal_apb_i2cs.h"
 #include "I2CProtocol.h"
+#include "uartProtocol.h"
 #include "crc.h"
 
 //#defines
@@ -41,6 +43,8 @@
 
 //Function prototypes
 uint16_t udma_uart_open (uint8_t uart_id, uint32_t xbaudrate);
+uint16_t udma_uart_writeraw(uint8_t uart_id, uint16_t write_len, uint8_t* write_buffer);
+uint8_t udma_uart_readraw(uint8_t uart_id, uint16_t read_len, uint8_t* read_buffer);
 uint16_t udma_qspim_open (uint8_t qspim_id, uint32_t clk_freq);
 void udma_flash_readid(uint32_t l2addr);
 uint32_t udma_flash_reset_enable(uint8_t qspim_id, uint8_t cs);
@@ -50,7 +54,10 @@ void dbg_str(const char *s);
 
 __attribute__((noreturn)) void changeStack(boot_code_t *data, unsigned int entry, unsigned int stack);
 
-extern uint8_t gStopUartMsgFlg;
+uint8_t gStopUartMsgFlg = 0;
+
+extern uint8_t gStopUartBootLoaderFlg;
+extern uint8_t gStopI2CBootLoaderFlg;
 
 PLP_L2_DATA static boot_code_t    bootCode;
 
@@ -194,11 +201,13 @@ void setFLLInResetAndBypass(uint8_t aFLLNum)
 
 int main(void)
 {
-    uint8_t i = 0, flash_present = 0;
-    uint32_t bootsel = 0;
+	int id = 1;
+    uint8_t i = 0;
+    uint8_t lChar = 0;
     uint32_t lFlashID = 0;
+	volatile unsigned int bootsel, flash_present, resetreason;
 	char tstring[8] = {0};
-	volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;
+    volatile SocCtrl_t* psoc = (SocCtrl_t*)SOC_CTRL_START_ADDR;
 
 	//TODO: FLL clock settings need to be taken care in the actual chip.
 	//TODO: 5000000 to be changed to #define PERIPHERAL_CLOCK_FREQ_IN_HZ
@@ -206,6 +215,8 @@ int main(void)
 	//Set soc clock, peripheral clock and cluster clock in reset and bypass mode.
     for (i=0;i<3;i++)
         setFLLInResetAndBypass(i);
+	resetreason = psoc->reset_reason;
+	bootsel = psoc->bootsel & 0x1;
 
 	bootsel = psoc->bootsel & 0x1;	//This reads the bootsel pin status
 
@@ -217,19 +228,17 @@ int main(void)
 	if( hal_get_apb_i2cs_slave_address() !=  MY_I2C_SLAVE_ADDRESS )
 		hal_set_apb_i2cs_slave_address(MY_I2C_SLAVE_ADDRESS);
 
+	udma_uart_open (0, 115200);	//UART 1 is used to print debug msgs from Bootloader
 	udma_uart_open (1, 115200);	//UART 1 is used to print debug msgs from Bootloader
 	dbg_str(__DATE__);
 	dbg_str("  ");
 	dbg_str(__TIME__);
 	dbg_str("\nA2 Bootloader Bootsel=");
 
-    if (bootsel == 1)
-    	dbg_str("1 ");
-	else
-		dbg_str("0 ");
-
-    //For verilator we do not have a SPI flash model.
-    //So we jump directly to the app in verilator simulation
+    if (bootsel == 1) dbg_str("1 ");
+	else dbg_str("0 ");
+    dbg_str("rr=");
+    dbg_hex8(resetreason);
 #ifdef VERILATOR
 	dbg_str("\nJumping to address 0x1C000880");
 	jump_to_address(0x1C000880);
@@ -278,15 +287,56 @@ int main(void)
 		while (1) {
 			if (psoc->jtagreg != 0x1)
 				jump_to_address(0x1C008080);
+
+			//if( udma_uart_readraw(0,1,&lChar) == 1 )
+			//	udma_uart_writeraw(0,1,&lChar);
+#if 1
 			//Perform I2C bootloader functionality
-			processI2CProtocolFrames();
+			if( gStopUartBootLoaderFlg == 0 )
+				processUartProtocolFrames();
+			if( gStopI2CBootLoaderFlg == 0 )
+				processI2CProtocolFrames();
 			bootsel++;		//Reusing bootsel variable as a counter
-			if( bootsel >= 500000 )
+			if( bootsel >= 1000 )
 			{
 				if( gStopUartMsgFlg == 0 )	//Flag to control the continuous print of characters
+				{
 					dbg_str(tstring);
+					sendUartBootMeFrame();
+				}
+				//sendUartA2ResetReasonFrame(A2_UART_RESET_REASON_POR);
 				bootsel = 0;
 			}
+#endif
 		}
 	}
 }
+
+
+//stops parsing, if a NULL or space or is encountered or entire length of the buffer is read
+uint32_t atoh(uint8_t *aBuf, uint16_t aSize)
+{
+    uint16_t i = 0;
+    uint32_t lValue = 0;
+    uint8_t lChar = 0;
+
+    for(i=0; ( (i < aSize ) && (aBuf[i] != '\0') && (aBuf[i] != ' ') ); i++)
+    {
+        if( (aBuf[i] >= '0') && ( aBuf[i] <= '9') )
+        {
+            lChar = aBuf[i] - '0';
+        }
+        else if( (aBuf[i] >= 'A') && ( aBuf[i] <= 'F') )
+        {
+            lChar = (aBuf[i] - 'A') + 10;
+        }
+        else if( (aBuf[i] >= 'a') && ( aBuf[i] <= 'f') )
+        {
+            lChar = (aBuf[i] - 'a') + 10;
+        }
+        lValue *= 16;
+        lValue += lChar;
+    }
+    return lValue;
+}
+
