@@ -137,47 +137,55 @@ uint8_t runUartProtocolStMc(uint8_t aByteFrom)
 					gsDestinationAddressSizeInBytes = 2;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else if( gsSRecordType == '1')
 				{
 					gsDestinationAddressSizeInBytes = 2;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else if( gsSRecordType == '2' )
 				{
 					gsDestinationAddressSizeInBytes = 3;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else if( gsSRecordType == '3')
 				{
 					gsDestinationAddressSizeInBytes = 4;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else if( gsSRecordType == '5' )
 				{
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else if( gsSRecordType == '7' )
 				{
 					gsDestinationAddressSizeInBytes = 4;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else if( gsSRecordType == '8')
 				{
 					gsDestinationAddressSizeInBytes = 3;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else if( gsSRecordType == '9' )
 				{
 					gsDestinationAddressSizeInBytes = 2;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_COUNT;
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum = 0;
 				}
 				else
 				{
@@ -196,6 +204,7 @@ uint8_t runUartProtocolStMc(uint8_t aByteFrom)
 					gsTotalCountInBytes = atoh(gsUartProtocolConvToHexBuf, gsUart0FillIndex);
 					gsDataCountInBytes = gsTotalCountInBytes - gsDestinationAddressSizeInBytes - 1; // 1 for CRC
 					gsUart0FillIndex = 0;
+					gsCalculatedChkSum += gsTotalCountInBytes;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_DESTINATION_ADDRESS;
 				}
 			}
@@ -209,10 +218,14 @@ uint8_t runUartProtocolStMc(uint8_t aByteFrom)
 				{
 					gsUartProtocolConvToHexBuf[gsUart0FillIndex++] = 0;
 					gsDestinationAddress = atoh(gsUartProtocolConvToHexBuf, gsUart0FillIndex);
+					gsCalculatedChkSum += (gsDestinationAddress & 0xFF);
+					gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF00) >> 8 );
+					gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF0000) >> 16 );
+					gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF000000) >> 24 );
 					gsUart0FillIndex = 0;
 					gsDataRxdCounterInCharacters = 0;
 					gsMemoryWriteBufIndex = 0;
-					gsCalculatedChkSum = 0;
+
 					if( ( gsSRecordType == '0') || ( gsSRecordType == '1') || ( gsSRecordType == '2') || (gsSRecordType == '3' ) )
 						gsUart0ProtocolState = UART0_PROTOCOL_GET_DATA;
 					else if( ( gsSRecordType == '7') || ( gsSRecordType == '8') || (gsSRecordType == '9' ) )
@@ -234,42 +247,11 @@ uint8_t runUartProtocolStMc(uint8_t aByteFrom)
 				gsDataRxdCounterInCharacters++;
 				if( gsDataRxdCounterInCharacters >= (2 * gsDataCountInBytes) )
 				{
-					if( ( gsSRecordType == '1') || ( gsSRecordType == '2') || (gsSRecordType == '3' ) )
-					{
-						if( gsDestinationAddress != 0 )
-						{
-							//swapBytes(gsSwappedMemoryWriteBuf, gsMemoryWriteBuf, 4, gsMemoryWriteBufIndex );
-							//memcpy( (void *)(long)gsDestinationAddress, (void *)(long)gsSwappedMemoryWriteBuf, gsMemoryWriteBufIndex);
-							memcpy( (void *)(long)gsDestinationAddress, (void *)(long)gsMemoryWriteBuf, gsMemoryWriteBufIndex);
-							/*for(i=0; i<gsMemoryWriteBufIndex; i++)
-							{
-								dbg_hex8(gsSwappedMemoryWriteBuf[i]);
-							}
-							dbg_str("\n");
-							*/
-							//lDestinationPtr = (uint8_t *)gsDestinationAddress;
-							if( memcmp( (void *)(long)gsDestinationAddress, (void *)(long)gsMemoryWriteBuf, gsMemoryWriteBufIndex) != 0 )
-							{
-								dbg_str("\nERROR ");
-								dbg_hex32(gsDestinationAddress);
-								dbg_str(" \n");
-							}
-						}
-					}
-					gsCalculatedChkSum += gsTotalCountInBytes;
-					gsCalculatedChkSum += (gsDestinationAddress & 0xFF);
-					gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF00) >> 8 );
-					gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF0000) >> 16 );
-					gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF000000) >> 24 );
 					for( i=0; i<gsMemoryWriteBufIndex; i++)
 						gsCalculatedChkSum += gsMemoryWriteBuf[i];	//Add: Add each byte
 
-					gsCalculatedChkSum &= 0xFF;	//Mask: Discard the most significant byte
-					gsCalculatedChkSum ^= 0xFF; //Complement: Compute the ones' complement of the LSB
-
 					gsUart0FillIndex = 0;
 					gsDataRxdCounterInCharacters = 0;
-					gsMemoryWriteBufIndex = 0;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_CRC;
 				}
 			}
@@ -283,7 +265,41 @@ uint8_t runUartProtocolStMc(uint8_t aByteFrom)
 				{
 					gsUartProtocolConvToHexBuf[gsUart0FillIndex++] = 0;
 					gsCRCVal = atoh(gsUartProtocolConvToHexBuf, gsUart0FillIndex);
+
+					gsCalculatedChkSum &= 0xFF;	//Mask: Discard the most significant byte
+					gsCalculatedChkSum ^= 0xFF; //Complement: Compute the ones' complement of the LSB
+
+					if( gsCalculatedChkSum == gsCRCVal )
+					{
+						if( gsDestinationAddress != 0 )
+						{
+							if( ( gsSRecordType == '1') || ( gsSRecordType == '2') || (gsSRecordType == '3' ) )
+							{
+								memcpy( (void *)(long)gsDestinationAddress, (void *)(long)gsMemoryWriteBuf, gsMemoryWriteBufIndex);
+							}
+							else if( ( gsSRecordType == '7') || ( gsSRecordType == '8') || (gsSRecordType == '9' ) )
+							{
+								dbg_str("\nUART BL JMP ");
+								dbg_hex32(gsDestinationAddress);
+								dbg_str(" ");
+								jump_to_address(gsDestinationAddress);
+							}
+						}
+						else
+						{
+							//It could be a S0 frame, do nothing.
+						}
+						sendUartOKorNotOKFrame(1);
+					}
+					else
+					{
+						dbg_str("\nCHKSUM ERR ");
+						dbg_hex8(gsCalculatedChkSum);
+						dbg_hex8(gsCRCVal);
+						sendUartOKorNotOKFrame(0);
+					}
 					gsUart0FillIndex = 0;
+					gsMemoryWriteBufIndex = 0;
 					gsUart0ProtocolState = UART0_PROTOCOL_GET_TERMINATION_CHARACTER;
 				}
 			}
@@ -295,59 +311,6 @@ uint8_t runUartProtocolStMc(uint8_t aByteFrom)
 				{
 					//?
 				}
-				if( ( gsSRecordType == '7') || ( gsSRecordType == '8') || (gsSRecordType == '9' ) )
-				{
-					gsUart0ProtocolState = UART0_PROTOCOL_JUMP_TO_ADDRESS;
-				}
-				else
-				{
-					//Reset all variables and jump to idle state
-					gsSRecordType = 0;
-					gsDestinationAddress = 0;
-					gsDataRxdCounterInCharacters = 0;
-					gsDestinationAddressSizeInBytes = 0;
-					gsCalculatedChkSum = 0;
-					gsCRCVal = 0;
-					gsUart0FillIndex = 0;
-					gsMemoryWriteBufIndex = 0;
-					gsTotalCountInBytes = 0;
-					gsStMcRetVal = 1;
-					gsUart0ProtocolState = UART0_PROTOCOL_STATE_IDLE;
-					if( gsCalculatedChkSum == gsCRCVal )
-						sendUartOKorNotOKFrame(1);
-					else
-					{
-						dbg_hex8(gsCalculatedChkSum);
-						dbg_hex8(gsCRCVal);
-						sendUartOKorNotOKFrame(0);
-					}
-				}
-			}
-			break;
-		case UART0_PROTOCOL_JUMP_TO_ADDRESS:
-			gsCalculatedChkSum += gsTotalCountInBytes;
-			gsCalculatedChkSum += (gsDestinationAddress & 0xFF);
-			gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF00) >> 8 );
-			gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF0000) >> 16 );
-			gsCalculatedChkSum += ( (gsDestinationAddress & 0xFF000000) >> 24 );
-			gsCalculatedChkSum &= 0xFF;	//Mask: Discard the most significant byte
-			gsCalculatedChkSum ^= 0xFF; //Complement: Compute the ones' complement of the LSB
-			if( gsCalculatedChkSum == gsCRCVal )
-			{
-				dbg_str("\nUART BL JMP ");
-				dbg_hex32(gsDestinationAddress);
-				dbg_str(" ");
-				jump_to_address(gsDestinationAddress);
-			}
-			else
-			{
-				dbg_str("\nCHKSUM ERR ");
-				dbg_hex32(gsDestinationAddress);
-				dbg_str(" ");
-				dbg_hex8(gsCalculatedChkSum);
-				dbg_str(" / ");
-				dbg_hex8(gsCRCVal);
-
 				//Reset all variables and jump to idle state
 				gsSRecordType = 0;
 				gsDestinationAddress = 0;
@@ -360,8 +323,10 @@ uint8_t runUartProtocolStMc(uint8_t aByteFrom)
 				gsTotalCountInBytes = 0;
 				gsStMcRetVal = 1;
 				gsUart0ProtocolState = UART0_PROTOCOL_STATE_IDLE;
+
 			}
 			break;
+
 		default :
 			break;
 	}

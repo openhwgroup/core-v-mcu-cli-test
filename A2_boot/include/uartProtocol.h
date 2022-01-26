@@ -21,7 +21,6 @@ typedef enum {
 	UART0_PROTOCOL_GET_DATA,
 	UART0_PROTOCOL_GET_CRC,
 	UART0_PROTOCOL_GET_TERMINATION_CHARACTER,
-	UART0_PROTOCOL_JUMP_TO_ADDRESS,
 }uart0ProtocolState_t;
 
 void processUartProtocolFrames(void);
