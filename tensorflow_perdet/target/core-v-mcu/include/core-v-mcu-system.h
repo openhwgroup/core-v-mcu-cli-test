@@ -26,7 +26,11 @@
 #include <stdbool.h>
 
 //
+#define HEAP_SIZE (2*1024)
+#define DEFAULT_SYSTEM_CLOCK 5000000u /* Default System clock value */
 
+#define PICTURE_X_SIZE	240
+#define PICTURE_Y_SIZE	320
 
 extern volatile uint32_t system_core_clock;
 

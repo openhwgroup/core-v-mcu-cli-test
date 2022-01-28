@@ -175,6 +175,8 @@ static void misc_info(const struct cli_cmd_entry *pEntry)
 	pzTemp[15] += (char)((xval >>  8) & 0xFU);
 
 	CLI_printf("HW build_info %s\n", pzTemp);
+	CLI_printf("SW build_info %s %s\n", __DATE__, __TIME__ );
+
 	dbg_str("<<DONE>>\r\n");
 }
 

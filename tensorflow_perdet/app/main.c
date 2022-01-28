@@ -1,76 +1,25 @@
-/*
- * FreeRTOS Kernel V10.2.1
- * Copyright (C) 2019 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
- * Copyright (C) 2020 ETH Zurich
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
- * http://www.FreeRTOS.org
- * http://aws.amazon.com/freertos
- *
- * 1 tab == 8 spaces!
- */
 
-
-/*
- * Create implementation of vPortSetupTimerInterrupt() if the CLINT is not
- * available, but make sure the configCLINT_BASE_ADDRESS constant is still
- * defined.
- *
- * Define vPortHandleInterrupt to whatever the interrupt handler is called.  In
- * this case done by defining vPortHandleInterrupt=SystemIrqHandler on the
- * assembler command line as SystemIrqHandler is referenced from both FreeRTOS
- * code and the libraries that come with the Vega board.
- */
-
-/* PULPissimo includes. */
 #include "target/core-v-mcu/include/core-v-mcu-config.h"
 #include "target/core-v-mcu/include/core-v-mcu-system.h"
 #include "hal/include/hal_timer_irq.h"
 #include "hal/include/hal_fll.h"
 #include "hal/include/hal_irq.h"
 #include "drivers/include/udma_uart_driver.h"
-
-/******************************************************************************
- * This project provides two demo applications.  A simple blinky style project,
- * and a more comprehensive test and demo application.  The
- * mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting (defined in this file) is used to
- * select between the two.  The simply blinky demo is implemented and described
- * in main_blinky.c.  The more comprehensive test and demo application is
- * implemented and described in main_full.c.
- *
- * This file implements the code that is not demo specific, including the
- * hardware setup and standard FreeRTOS hook functions.
- *
- * ENSURE TO READ THE DOCUMENTATION PAGE FOR THIS PORT AND DEMO APPLICATION ON
- * THE http://www.FreeRTOS.org WEB SITE FOR FULL INFORMATION ON USING THIS DEMO
- * APPLICATION, AND ITS ASSOCIATE FreeRTOS ARCHITECTURE PORT!
- *
- */
-
-
 #include "hal/include/hal_udma_i2cm_reg_defs.h"
+#include <drivers/include/udma_i2cm_driver.h>
+#include "hal/include/adv_timer_unit_reg_defs.h"
+
+#include "drivers/include/himax.h"
+#include "drivers/include/camera.h"
 #include <stdarg.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+static uint8_t cam;
 char gsPrintfBuffer[256] = {0};
 uint8_t gDebugEnabledFlg = 0;
+
+uint8_t camera_present = 0;
 
 /* Prepare hardware to run the demo. */
 static void prvSetupHardware( void );
@@ -78,29 +27,45 @@ void person_detection_task( void *pParameter );
 
 int MicroVsnprintf(char* output, int len, const char* format, va_list args);
 int oPrintf(const char* format, ...);
-void CLI_printf( const char *fmt, ... );
+void CLI_printf( uint8_t aUartPortNum, const char *fmt, ... );
 
+void genHimaxCamClock(void);
+void cam_interface_init (uint16_t x, uint16_t y);
 
 int main(void)
 {
+	volatile int i = 0;
+	uint16_t retval = 0;
+	cam = 0x48; // Himax address
     prvSetupHardware();
 
-	/* The mainCREATE_SIMPLE_BLINKY_DEMO_ONLY setting is described at the top
-	of this file. */
+    _himaxRegWrite(SW_RESET, HIMAX_RESET);
 
-	//CLI_start_task( my_main_menu );
-    //person_detect_task_start(NULL);
+    for(i=0;i<99900;i++);
+
+    i = 0;
+    udma_i2cm_16read8(0, cam, MODEL_ID_H, 2, &retval, 0);
+	retval = (retval >> 8) & 0xff | (retval <<8);
+
+	CLI_printf(0, "0x%04x\n",retval);
+
+	if( retval == 0x01b0 )
+	{
+		for(i=0; i<(sizeof(himaxRegInit)/sizeof(reg_cfg_t)); i++) {
+			_himaxRegWrite(himaxRegInit[i].addr, himaxRegInit[i].data);
+		}
+		cam_interface_init(PICTURE_X_SIZE,PICTURE_Y_SIZE);
+		genHimaxCamClock();
+		CLI_printf(1,"ScReEn320\n");
+		camera_present = 1;
+	}
+
     person_detection_task(0);
-	/* Start the tasks and timer running. */
-	//vTaskStartScheduler();
-	/* If all is well, the scheduler will now be running, and the following
-		line will never be reached.  If the following line does execute, then
-		there was insufficient FreeRTOS heap memory available for the Idle and/or
-		timer tasks to be created.  See the memory management section on the
-		FreeRTOS web site for more details on the FreeRTOS heap
-		http://www.freertos.org/a00111.html. */
 
-	while(1);
+	while(1)
+	{
+		;
+	}
 }
 /*-----------------------------------------------------------*/
 
@@ -116,8 +81,7 @@ void vToggleLED( void )
 	gpio_pin_toggle( 0x5 );
 }
 /*-----------------------------------------------------------*/
-
-void DebugLog(const char* s)
+void CLI_Puts(uint8_t aPortNum, const char* s)
 {
 	uint8_t lChar = 0;
 	uint8_t lCR = 0x0D;
@@ -125,10 +89,15 @@ void DebugLog(const char* s)
 	{
 		lChar = *s;
 		if( lChar == '\n')
-			udma_uart_writeraw(0,1,&lCR);
-		udma_uart_writeraw(0,1,&lChar);
+			udma_uart_writeraw(aPortNum,1,&lCR);
+		udma_uart_writeraw(aPortNum,1,&lChar);
 		s++;
 	}
+}
+
+void DebugLog(const char* s)
+{
+	CLI_Puts(0,s);
 }
 
 /*
@@ -150,11 +119,11 @@ int oPrintf(const char* format, ...)
 }
 
 /* workhorse for printf() */
-void CLI_vprintf( const char *fmt, va_list ap )
+void CLI_vprintf(uint8_t aUartPortNum, const char *fmt, va_list ap )
 {
     vsnprintf( gsPrintfBuffer, sizeof(gsPrintfBuffer)-1, fmt, ap );
     gsPrintfBuffer[ sizeof(gsPrintfBuffer) - 1 ] = 0;
-    DebugLog(gsPrintfBuffer);
+    CLI_Puts(aUartPortNum,gsPrintfBuffer);
 }
 
 /*
@@ -163,14 +132,38 @@ void CLI_vprintf( const char *fmt, va_list ap )
  *
  * */
 /* printf for test purposes */
-void CLI_printf( const char *fmt, ... )
+void CLI_printf(uint8_t aUartPortNum, const char *fmt, ... )
 {
     va_list ap;
 
     va_start(ap,fmt);
-    CLI_vprintf( fmt, ap );
+    CLI_vprintf(aUartPortNum, fmt, ap );
     va_end(ap);
 }
 
+void _himaxRegWrite(unsigned int addr, unsigned char value)
+{
+	uint8_t naddr;
+	uint16_t data;
+	naddr = (addr>>8) & 0xff;
+	data = (value << 8) | (addr & 0xff);
+	udma_i2cm_write (0, cam, naddr, 2, &data, 0);
+   //     i2c_16write8(cam,addr,value);
+}
 
+
+
+void genHimaxCamClock(void)
+{
+	AdvTimerUnit_t *adv_timer;
+
+	adv_timer = (AdvTimerUnit_t*) ADV_TIMER_START_ADDR;
+	adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset
+	adv_timer->timer_0_config_register = 0; // FLL, up/done no prescaler
+	adv_timer->timer_0_threshold_register = 0x20000;
+	adv_timer->timer_0_threshold_channel_0_reg = 0x30001;
+	adv_timer->adv_timer_cfg_register = 0x1; // enable clock for timer0
+	adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_START_COMMAND_LSB; //start
+
+}
 

@@ -28,6 +28,7 @@
 #include "hal/include/hal_fc_event.h"
 /* TODO: weird include */
 #include "target/core-v-mcu/include/core-v-mcu-properties.h"
+#include "target/core-v-mcu/include/core-v-mcu-system.h"
 #include "hal/include/hal_irq.h"
 #include "hal/include/hal_soc_eu.h"
 #include "hal/include/hal_apb_soc_ctrl_reg_defs.h"
@@ -35,10 +36,11 @@
 #include "drivers/include/udma_uart_driver.h"
 #include "drivers/include/udma_i2cm_driver.h"
 
-#include "hal/include/hal_apb_i2cs.h"
+#include "hal/include/hal_udma_cam_reg_defs.h"
+#include "drivers/include/camera.h"
 
-#define HEAP_SIZE (2*1024)
-#define DEFAULT_SYSTEM_CLOCK 5000000u /* Default System clock value */
+
+
 
 /* test some assumptions we make about compiler settings */
 static_assert(sizeof(uintptr_t) == 4,
@@ -158,6 +160,115 @@ uint8_t setFLLFrequencyInIntegerMode(uint8_t aFLLNum, uint8_t aRefFreqInMHz, uin
     return lSts;
 }
 
+void udma_cam_open (uint8_t cam_id)
+{
+	int i = 0;
+	volatile UdmaCtrl_t*pudma_ctrl = (UdmaCtrl_t*)UDMA_CH_ADDR_CTRL;
+
+	/* Enable reset and enable uart clock */
+	pudma_ctrl->reg_rst |= (UDMA_CTRL_CAM0_CLKEN << cam_id);
+	pudma_ctrl->reg_rst &= ~(UDMA_CTRL_CAM0_CLKEN << cam_id);
+	pudma_ctrl->reg_cg |= (UDMA_CTRL_CAM0_CLKEN << cam_id);
+
+	//psdio_regs->clk_div_b.clk_div = 5;
+	//psdio_regs->clk_div_b.valid = 1;
+	hal_setpinmux(21, 0); 	//cam0_vsync
+	hal_setpinmux(22, 0);	//cam0_hsync
+	hal_setpinmux(25, 0);	//cam0_clk
+	for(i=0; i<8; i++ )
+	{
+		//set pin muxes to cam functionality
+		 hal_setpinmux(29+i, 0);
+	}
+	return;
+}
+
+void cam_interface_init (uint16_t x, uint16_t y)
+{
+	camera_struct_t *camera;
+
+	uint16_t lXCoordOfUpperRightCorner = 0; // X coordinate of upper right corner of slice
+	uint16_t lYCoordOfUpperRightCorner = 0; // Y coordinate of upper right corner of slice
+
+	lXCoordOfUpperRightCorner = x + 3;
+	lYCoordOfUpperRightCorner = y + 3;
+	//camera = (camera_struct_t *)0x1A102300;  // Peripheral 5?
+	camera = (camera_struct_t *)(UDMA_CH_ADDR_CAM + 0 * UDMA_CH_SIZE);
+	camera->cfg_ll = 0<<16 | 0;
+	camera->cfg_ur = ( ( lYCoordOfUpperRightCorner << 16 ) | lXCoordOfUpperRightCorner );
+	//camera->cfg_ur = 323<<16 | 243; // 320 x 240 ?
+	camera->cfg_filter = (1 << 16) | (1 << 8) | 1;
+	//camera->cfg_size = 324;
+	camera->cfg_size = y + 4;
+	camera->vsync_pol = 1;
+	camera->cfg_glob = (0 << 0) | //  framedrop disabled
+			(000000 << 1) | // number of frames to drop
+			(0 << 7) | // Frame slice disabled
+			(004 << 8) | // Format binary 100 = ByPass little endian
+			(0000 << 11);  // Shift value ignored in bypass
+}
+
+uint8_t cam_grab_frame (int x, int y, uint8_t* pparam)
+{
+	uint32_t lCounter = 0;
+	uint8_t lStatus = 0;
+	uint16_t lX = x+4;
+	uint16_t lY = y+4;
+
+	camera_struct_t *camera;
+	//camera = (camera_struct_t *)0x1A102300;  // Peripheral 5?
+	camera = (camera_struct_t *)(UDMA_CH_ADDR_CAM + 0 * UDMA_CH_SIZE);
+
+	camera->rx_saddr = pparam;
+	camera->rx_size = (lX * lY);
+	camera->rx_cfg = 0x12;  // start 16-bit transfers
+	camera->cfg_glob = camera->cfg_glob | (1 << 31) ; // enable 1 == go
+
+	lCounter = 0;
+	while (camera->rx_size != 0) {
+		lCounter++;
+		if( lCounter >= 0x00100000 )
+		{
+			lStatus = 3;	//Time out
+			break;
+		}
+	}
+	//configASSERT( xSemaphoreTake( shSemaphoreHandle, 1000000 ) == pdTRUE );
+	camera->cfg_glob = camera->cfg_glob & (0x7fffffff) ; // enable 1 == go
+	//configASSERT( xSemaphoreGive( shSemaphoreHandle ) == pdTRUE );
+	return lStatus;
+
+}
+
+void initPictureBuf(int x, int y, uint8_t* pictureBuf)
+{
+	volatile int i = 0, j = 0, k = 0;
+
+	for (i = 0; i < (x+4); i++)
+	{
+		for (j = 0; j< (y+4); j++)
+		{
+			pictureBuf[i*324+j] = 0xAA;
+		}
+	}
+}
+
+void displayFrame(int x, int y, uint8_t* pictureBuf)
+{
+	volatile int i = 0, j = 0, k = 0;
+
+	for (i = 0; i<x; i++)
+	{
+		for (j = 0; j < y; j += 16)
+		{
+			CLI_printf(1,"ImAgE %d %d",i,j);
+			k = 0;
+			while( k <16 )
+				CLI_printf(1," %02x",pictureBuf[i*324+j+(k++)] & 0xf);
+			CLI_printf(1,"\n");
+		}
+	}
+}
 
 void system_init(void)
 {
@@ -177,6 +288,7 @@ void system_init(void)
 	for (uint8_t id = 0; id != N_I2CM; id++) {
 		udma_i2cm_open(id, 400000);  //200000
 	}
+	udma_cam_open(0);
 }
 
 

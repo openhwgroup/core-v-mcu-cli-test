@@ -9,15 +9,7 @@ typedef struct {
 	uint8_t Data[2];		//Indicate start of data.
 }__attribute__((packed))I2CProtocolFrame_t;
 
-typedef union {
-	uint32_t w;
-	uint8_t b[4];
-} split_4Byte_t ;
 
-typedef union {
-	uint16_t hw;
-	uint8_t b[2];
-} split_2Byte_t ;
 
 #define I2C_PROTOCOL_MAX_PAYLOAD_SIZE            240
 
@@ -45,10 +37,6 @@ void processI2CProtocolFrames(void);
 uint8_t sendI2CProtocolFrame(uint8_t *aI2CProtocolFrameBuf, uint8_t aFrameSize);
 void parseI2CProtocolFrame(uint8_t *aBuf, uint16_t aLen);
 
-static inline void __attribute__((noreturn)) jump_to_address(unsigned int address) {
-  void (*entry)() = (void (*)())((long)address);
-  entry();
-  while(1);
-}
+
 
 #endif
