@@ -176,6 +176,8 @@ uint8_t setFLLFrequencyInIntegerMode(uint8_t aFLLNum, uint8_t aRefFreqInMHz, uin
 
 int handler_count[32];
 uint32_t gSpecialHandlingIRQCnt = 0;
+uint8_t gQSPIIdNum = 0;
+
 void system_init(void)
 {
 	uint32_t lFlashID = 0;
@@ -363,14 +365,40 @@ for (int i = 0 ; i < 32 ; i ++){
 	for (uint8_t id = 0; id != N_I2CM; id++) {
 		udma_i2cm_open(id, 400000);  //200000
 	}
-	udma_qspim_open(0,2500000);
 
+	setQspimPinMux(0);
+	udma_qspim_open(0,2500000);
 	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
 	lFlashID = udma_flash_readid(0,0);
+	restoreQspimPinMux(0);
+
 	if( ( lFlashID == 0xFFFFFFFF ) || ( lFlashID == 0 ) )
 	{
-		gQSPIFlashPresentFlg = 0;
+		setQspimPinMux(1);
+		udma_qspim_open(1,2500000);
+		udma_qspim_control((uint8_t) 1, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+
+		lFlashID = 0;
+		lFlashID = udma_flash_readid(1,0);
+		restoreQspimPinMux(0);
+		if( ( lFlashID == 0xFFFFFFFF ) || ( lFlashID == 0 ) )
+		{
+
+			gQSPIFlashPresentFlg = 0;
+			gQSPIIdNum = 0xFF;
+		}
+		else
+		{
+			gQSPIFlashPresentFlg = 1;
+			if( ( lFlashID & 0xFF ) == 0x20 )
+			{
+				gMicronFlashDetectedFlg = 1;
+				gQSPIIdNum = 1;
+			}
+			else
+				gMicronFlashDetectedFlg = 0;
+		}
 	}
 	else
 	{
@@ -378,6 +406,7 @@ for (int i = 0 ; i < 32 ; i ++){
 		if( ( lFlashID & 0xFF ) == 0x20 )
 		{
 			gMicronFlashDetectedFlg = 1;
+			gQSPIIdNum = 0;
 		}
 		else
 			gMicronFlashDetectedFlg = 0;

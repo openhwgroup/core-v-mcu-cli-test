@@ -54,7 +54,10 @@ void dbg_str(const char *s);
 
 __attribute__((noreturn)) void changeStack(boot_code_t *data, unsigned int entry, unsigned int stack);
 
-uint8_t gStopUartMsgFlg = 0;
+//All the global variables are initialized to 0 by the assembly code in crto.s.
+//So not initializing it here.
+
+uint8_t gStopUartMsgFlg;
 
 extern uint8_t gStopUartBootLoaderFlg;
 extern uint8_t gStopI2CBootLoaderFlg;
@@ -288,26 +291,23 @@ int main(void)
 			if (psoc->jtagreg != 0x1)
 				jump_to_address(0x1C008080);
 
-			//if( udma_uart_readraw(0,1,&lChar) == 1 )
-			//	udma_uart_writeraw(0,1,&lChar);
-#if 1
-			//Perform I2C bootloader functionality
+			//Perform UART bootloader functionality
 			if( gStopUartBootLoaderFlg == 0 )
 				processUartProtocolFrames();
+			//Perform I2C bootloader functionality
 			if( gStopI2CBootLoaderFlg == 0 )
 				processI2CProtocolFrames();
 			bootsel++;		//Reusing bootsel variable as a counter
-			if( bootsel >= 1000 )
+			if( bootsel >= 90000 )
 			{
 				if( gStopUartMsgFlg == 0 )	//Flag to control the continuous print of characters
 				{
 					dbg_str(tstring);
 					sendUartBootMeFrame();
 				}
-				//sendUartA2ResetReasonFrame(A2_UART_RESET_REASON_POR);
 				bootsel = 0;
 			}
-#endif
+
 		}
 	}
 }

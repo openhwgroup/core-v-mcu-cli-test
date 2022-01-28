@@ -11,12 +11,15 @@
 extern uint8_t gStopUartMsgFlg;
 extern uint8_t gStopUartBootLoaderFlg;
 
-uint8_t gStopI2CBootLoaderFlg = 0;
-uint8_t gsI2CProtocolFrameRxBuf[256] = {0};
-uint8_t gUseCRCFlg = 0;
+//All the global variables are initialized to 0 by the assembly code in crto.s.
+//So not initializing it here.
 
-static uint8_t gsI2CProtocolFrameTxBuf[16] = {0};
-static uint16_t gsI2CProtocolFrameCounter = 0;
+uint8_t gStopI2CBootLoaderFlg;
+uint8_t gsI2CProtocolFrameRxBuf[256];
+uint8_t gUseCRCFlg;
+
+static uint8_t gsI2CProtocolFrameTxBuf[16];
+static uint16_t gsI2CProtocolFrameCounter;
 
 uint16_t I2CProtocolFrameCalChksum(uint8_t *cbuf, uint16_t pkt_size)
 {

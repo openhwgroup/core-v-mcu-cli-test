@@ -53,30 +53,13 @@ uint16_t udma_uart_writeraw(uint8_t uart_id, uint16_t write_len, uint8_t* write_
 
 uint8_t udma_uart_readraw(uint8_t uart_id, uint16_t read_len, uint8_t* read_buffer)
 {
-	uint8_t lSts = 1;
-	UdmaUart_t*				puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
-	volatile uint32_t lCounter = 0;
+	uint8_t lSts = 0;
+	UdmaUart_t *puart = (UdmaUart_t*)(UDMA_CH_ADDR_UART + uart_id * UDMA_CH_SIZE);
 
-	puart->uart_setup_b.rx_clean_fifo = 1;
-	lCounter++;lCounter++;lCounter++;lCounter++;lCounter++;	//Just adding a delay here
-	puart->uart_setup_b.rx_clean_fifo = 0;
-
-	puart->rx_saddr = (uint32_t)read_buffer;
-	puart->rx_size = read_len;
-	puart->rx_cfg_b.en = 1; //enable the transfer
-
-	lCounter = 0;
-	while (puart->rx_size != 0)
+	if( puart->valid_b.rx_data_valid == 1 )
 	{
-		lCounter++;
-		if( lCounter >= UART_LOOP_COUNTER_BREAK_VAL )
-		{
-			lCounter = 0;
-			lSts = UART_STATUS_TIMEOUT;
-			break;
-		}
+		*read_buffer = puart->data_b.rx_data;
+		lSts = 1;
 	}
-
-
 	return lSts;
 }

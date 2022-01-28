@@ -147,7 +147,7 @@ void _himaxRegWrite(unsigned int addr, unsigned char value)
 	uint16_t data;
 	naddr = (addr>>8) & 0xff;
 	data = (value << 8) | (addr & 0xff);
-	udma_i2cm_write (0, cam, naddr, 2, &data, 0);
+	udma_i2cm_write (1, cam, naddr, 2, &data, 0);
    //     i2c_16write8(cam,addr,value);
 }
 

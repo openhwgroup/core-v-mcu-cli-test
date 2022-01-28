@@ -52,6 +52,7 @@ static uint8 gsTxBuf[32] = {0};
 static uint16 gsTxFillBufIndex = 0;
 
 extern uint8_t aucclkdiv;
+extern uint8_t gQSPIIdNum;
 
 /*******************************************************************************
      SPI Rodan controller init
@@ -129,7 +130,7 @@ void ConfigureSpi(SpiConfigOptions opt)
 
 SPI_STATUS Serialize_SPI_A2_UDMAQSPI(uint8 *aSendBuf,uint16 aSendLen, uint8 *aRecvBuf,uint16 aRecvLen)
 {
-	uint8_t qspim_id = 0;
+	uint8_t qspim_id;
 	uint8_t cs = 0;
 	uint16_t i = 0;
 	uint32_t*	pcmd = cmdBuf;
@@ -141,6 +142,7 @@ SPI_STATUS Serialize_SPI_A2_UDMAQSPI(uint8 *aSendBuf,uint16 aSendLen, uint8 *aRe
 	uint16 lRemainder = 0;
 	uint16 lTxExtraBytes = 0;
 
+	qspim_id = gQSPIIdNum;
 
 	UdmaQspi_t*	pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
 
@@ -168,7 +170,7 @@ SPI_STATUS Serialize_SPI_A2_UDMAQSPI(uint8 *aSendBuf,uint16 aSendLen, uint8 *aRe
 
 
 	//ConfigureSpi(optBefore);
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	udma_qspim_control(qspim_id, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
 	pqspim_regs->rx_cfg_b.en = 0;
 	pqspim_regs->tx_cfg_b.en = 0;

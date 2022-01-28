@@ -50,6 +50,7 @@ void spi_cmd_isr() {
 void spi_eot_isr() {
 	isr_count += 0x1000000;
 }
+
 uint16_t udma_qspim_open (uint8_t qspim_id, uint32_t clk_freq) {
 	volatile UdmaCtrl_t*		pudma_ctrl = (UdmaCtrl_t*)UDMA_CH_ADDR_CTRL;
 	UdmaQspi_t*					pqspim_regs = (UdmaQspi_t*)(UDMA_CH_ADDR_QSPIM + qspim_id * UDMA_CH_SIZE);
@@ -60,9 +61,21 @@ uint16_t udma_qspim_open (uint8_t qspim_id, uint32_t clk_freq) {
 		return 1;
 	}
 	/* Enable reset and enable uart clock */
-	pudma_ctrl->reg_rst |= (UDMA_CTRL_QSPIM0_CLKEN << qspim_id);
-	pudma_ctrl->reg_rst &= ~(UDMA_CTRL_QSPIM0_CLKEN << qspim_id);
-	pudma_ctrl->reg_cg |= (UDMA_CTRL_QSPIM0_CLKEN << qspim_id);
+	if( qspim_id == 0 )
+	{
+		pudma_ctrl->reg_rst |= ( UDMA_CTRL_QSPIM0_CLKEN ) ;
+		pudma_ctrl->reg_rst &= ~(UDMA_CTRL_QSPIM0_CLKEN);
+		pudma_ctrl->reg_cg |= (UDMA_CTRL_QSPIM0_CLKEN );
+	}
+	else if( qspim_id == 1 )
+	{
+#if(NEW_BIT_FILE == 1 )
+		pudma_ctrl->reg_rst |= ( UDMA_CTRL_QSPIM1_CLKEN ) ;
+		pudma_ctrl->reg_rst &= ~(UDMA_CTRL_QSPIM1_CLKEN);
+		pudma_ctrl->reg_cg |= (UDMA_CTRL_QSPIM1_CLKEN );
+#endif
+	}
+
 
 	/* Set semaphore */
 	SemaphoreHandle_t shSemaphoreHandle;		// FreeRTOS.h has a define for xSemaphoreHandle, so can't use that
@@ -111,8 +124,18 @@ uint16_t udma_qspim_control(uint8_t qspim_id, udma_qspim_control_type_t control_
 
 	switch(control_type) {
 	case kQSPImReset:
-		pudma_ctrl->reg_rst |= (UDMA_CTRL_QSPIM0_CLKEN << qspim_id);
-		pudma_ctrl->reg_rst &= ~(UDMA_CTRL_QSPIM0_CLKEN << qspim_id);
+		if( qspim_id == 0 )
+		{
+			pudma_ctrl->reg_rst |= (UDMA_CTRL_QSPIM0_CLKEN);
+			pudma_ctrl->reg_rst &= ~(UDMA_CTRL_QSPIM0_CLKEN);
+		}
+		else if( qspim_id == 1 )
+		{
+#if(NEW_BIT_FILE == 1 )
+			pudma_ctrl->reg_rst |= (UDMA_CTRL_QSPIM1_CLKEN);
+			pudma_ctrl->reg_rst &= ~(UDMA_CTRL_QSPIM1_CLKEN);
+#endif
+		}
 		break;
 	default:
 		configASSERT(0);
@@ -216,7 +239,7 @@ uint32_t udma_flash_reset_enable(uint8_t qspim_id, uint8_t cs)
 	uint32_t*	pcmd = auccmd;
 	uint32_t result = 0;
 
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	udma_qspim_control(qspim_id, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
 	pqspim_regs->cmd_cfg_b.en = 0;
 
@@ -240,7 +263,7 @@ uint32_t udma_flash_reset_memory(uint8_t qspim_id, uint8_t cs)
 	uint32_t*	pcmd = auccmd;
 	uint32_t result = 0;
 
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	udma_qspim_control(qspim_id, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
 	pqspim_regs->cmd_cfg_b.en = 0;
 
