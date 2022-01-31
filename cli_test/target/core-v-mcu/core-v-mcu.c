@@ -41,9 +41,9 @@
 #include "../../app/N25Q_16Mb-1Gb_Device_Driver V2.1/N25Q.h"
 #include "hal/include/hal_apb_i2cs.h"
 
-FLASH_DEVICE_OBJECT gFlashDeviceObject;
-uint8_t gQSPIFlashPresentFlg = 0;
-uint8_t gMicronFlashDetectedFlg = 0;
+FLASH_DEVICE_OBJECT gFlashDeviceObject[N_QSPIM];
+uint8_t gQSPIFlashPresentFlg[N_QSPIM] = {0};
+uint8_t gMicronFlashDetectedFlg[N_QSPIM] = {0};
 
 /* test some assumptions we make about compiler settings */
 static_assert(sizeof(uintptr_t) == 4,
@@ -184,6 +184,7 @@ void system_init(void)
 	SocCtrl_t *soc=APB_SOC_CTRL_ADDR;
 	soc->soft_reset = 1;
 	uint32_t val = 0;
+	uint8_t i = 0;
 	timer_irq_disable();
 
 	uint32_t *lFFL1StartAddress = (uint32_t *)FLL1_START_ADDR;
@@ -366,50 +367,30 @@ for (int i = 0 ; i < 32 ; i ++){
 		udma_i2cm_open(id, 400000);  //200000
 	}
 
-	setQspimPinMux(0);
-	udma_qspim_open(0,2500000);
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-
-	lFlashID = udma_flash_readid(0,0);
-	restoreQspimPinMux(0);
-
-	if( ( lFlashID == 0xFFFFFFFF ) || ( lFlashID == 0 ) )
+	for(i=0; i<N_QSPIM; i++ )
 	{
-		setQspimPinMux(1);
-		udma_qspim_open(1,2500000);
-		udma_qspim_control((uint8_t) 1, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		setQspimPinMux(i);
+		udma_qspim_open(i,2500000);
+		udma_qspim_control((uint8_t) i, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 
-		lFlashID = 0;
-		lFlashID = udma_flash_readid(1,0);
-		restoreQspimPinMux(0);
+		lFlashID = udma_flash_readid(i,0);
+
 		if( ( lFlashID == 0xFFFFFFFF ) || ( lFlashID == 0 ) )
 		{
-
-			gQSPIFlashPresentFlg = 0;
-			gQSPIIdNum = 0xFF;
+			gQSPIFlashPresentFlg[i] = 0;
 		}
 		else
 		{
-			gQSPIFlashPresentFlg = 1;
+			gQSPIFlashPresentFlg[i] = 1;
 			if( ( lFlashID & 0xFF ) == 0x20 )
 			{
-				gMicronFlashDetectedFlg = 1;
-				gQSPIIdNum = 1;
+				gMicronFlashDetectedFlg[i] = 1;
+				gQSPIIdNum = 0;
 			}
 			else
-				gMicronFlashDetectedFlg = 0;
+				gMicronFlashDetectedFlg[i] = 0;
 		}
-	}
-	else
-	{
-		gQSPIFlashPresentFlg = 1;
-		if( ( lFlashID & 0xFF ) == 0x20 )
-		{
-			gMicronFlashDetectedFlg = 1;
-			gQSPIIdNum = 0;
-		}
-		else
-			gMicronFlashDetectedFlg = 0;
+		restoreQspimPinMux(i);
 	}
 
 	hal_set_apb_i2cs_slave_on_off(1);

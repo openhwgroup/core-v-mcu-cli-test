@@ -46,7 +46,8 @@
 #include "libs/cli/include/cli.h"
 #include "libs/utils/include/dbg_uart.h"
 
-extern uint8_t gQuadModeSupportedFlg;
+extern uint8_t gQuadModeSupportedFlg[];
+extern uint8_t gQSPIIdNum;
 
 /* Serialize.h
  *
@@ -485,7 +486,7 @@ ReturnType Driver_Init(FLASH_DEVICE_OBJECT *flash_device_object)
 		if (flag & 1)   /* test addressing bit of flag status reg (bit 0) */
 		{
 			fdo->Desc.NumAddrByte = FLASH_4_BYTE_ADDR_MODE;
-			gQuadModeSupportedFlg = 1;
+			gQuadModeSupportedFlg[gQSPIIdNum] = 1;
 		}
 #endif
 
