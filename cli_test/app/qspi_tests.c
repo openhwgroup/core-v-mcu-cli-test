@@ -33,7 +33,7 @@ extern uint8_t gQSPIIdNum;
 
 uint8_t gQuadModeSupportedFlg[N_QSPIM] = {0};
 uint8_t gMicronFlashInitDoneFlag[N_QSPIM] = {0};
-uint8_t gMuxSelSaveBuf[8] = {0};
+uint8_t gMuxSelSaveBuf[10] = {0};
 
 extern FLASH_DEVICE_OBJECT gFlashDeviceObject[];
 
@@ -792,8 +792,6 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 	split_4Byte_t    lExpVal;
 	uint8_t 	lExpValTrueOrFalse = 0;
 	uint32_t	lAddress = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
-	uint8_t i = 0;
 
 	uint8_t lQSPIMIdNum = 0;
 
@@ -850,22 +848,19 @@ static void flash_poke(const struct cli_cmd_entry *pEntry)
 	// Add functionality here
 	split_4Byte_t	xValue;
 	uint32_t	lAddress = 0;
-	uint8_t i = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
 	uint8_t lQSPIMIdNum = 0;
+	xValue.w = 0;
 
 	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
-
-
 	gQSPIIdNum = lQSPIMIdNum;
-	xValue.w = 0;
+
+	CLI_uint32_required( "addr", &lAddress );
+	CLI_uint32_required( "value", &xValue.w);
+
 
 	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
 		setQspimPinMux(gQSPIIdNum);
-
-		CLI_uint32_required( "addr", &lAddress );
-		CLI_uint32_required( "value", &xValue.w);
 
 		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		dbg_str("Qspi Flash write\n");
@@ -890,8 +885,7 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 	//split_8Byte_t lLongVal;
 	uint8_t 	lExpValTrueOrFalse = 0;
 	uint32_t	lAddress = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
-	uint8_t i = 0;
+
 	uint8_t lQSPIMIdNum = 0;
 
 	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
@@ -967,7 +961,6 @@ static void flash_quad_poke(const struct cli_cmd_entry *pEntry)
 	split_4Byte_t	xValue;
 	uint32_t	lAddress = 0;
 	uint8_t i = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
 
 	uint8_t lQSPIMIdNum = 0;
 

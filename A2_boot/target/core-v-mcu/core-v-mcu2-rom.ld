@@ -17,7 +17,7 @@
 MEMORY
 {
   ROM         : ORIGIN = 0x1A000000, LENGTH = 0x2000
-  L2          : ORIGIN = 0x1C000000, LENGTH = 0x4000
+  L2          : ORIGIN = 0x1C07c000, LENGTH = 0x4000
 }
 
 SECTIONS
@@ -36,12 +36,12 @@ SECTIONS
      .ram :
      {
 	. = ALIGN(4);
-	_bss_start = .;   
+	_bss_start = .;
 	*(.ram*)
 	*(.bss*)
 	*(.sbss*)
 	. = ALIGN(4);
-	_bss_end = .;  
+	_bss_end = .;
      } > L2
 
      .stack :
