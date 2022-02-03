@@ -15,6 +15,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#define NUM_OF_OF_CAMERA_DATA_BITS_1	1
+#define NUM_OF_OF_CAMERA_DATA_BITS_4	4
+#define NUM_OF_OF_CAMERA_DATA_BITS_8	8
+
 static uint8_t cam;
 char gsPrintfBuffer[256] = {0};
 uint8_t gDebugEnabledFlg = 0;
@@ -28,9 +32,11 @@ void person_detection_task( void *pParameter );
 int MicroVsnprintf(char* output, int len, const char* format, va_list args);
 int oPrintf(const char* format, ...);
 void CLI_printf( uint8_t aUartPortNum, const char *fmt, ... );
-
+void _himaxRegWrite(unsigned int addr, unsigned char value);
 void genHimaxCamClock(void);
-void cam_interface_init (uint16_t x, uint16_t y);
+void cam_interface_init (uint16_t x, uint16_t y, uint8_t aBitMode);
+
+uint8_t gNumOfCamDataBits = NUM_OF_OF_CAMERA_DATA_BITS_4;
 
 int main(void)
 {
@@ -52,9 +58,25 @@ int main(void)
 	if( retval == 0x01b0 )
 	{
 		for(i=0; i<(sizeof(himaxRegInit)/sizeof(reg_cfg_t)); i++) {
-			_himaxRegWrite(himaxRegInit[i].addr, himaxRegInit[i].data);
+			if( himaxRegInit[i].addr == 0x3059 )
+			{
+				if( gNumOfCamDataBits == NUM_OF_OF_CAMERA_DATA_BITS_1 )
+				{
+					_himaxRegWrite(himaxRegInit[i].addr, 0x60);
+				}
+				else if( gNumOfCamDataBits == NUM_OF_OF_CAMERA_DATA_BITS_4 )
+				{
+					_himaxRegWrite(himaxRegInit[i].addr, 0x40);
+				}
+				else if( gNumOfCamDataBits == NUM_OF_OF_CAMERA_DATA_BITS_8 )
+				{
+					_himaxRegWrite(himaxRegInit[i].addr, 0x02);
+				}
+			}
+			else
+				_himaxRegWrite(himaxRegInit[i].addr, himaxRegInit[i].data);
 		}
-		cam_interface_init(PICTURE_X_SIZE,PICTURE_Y_SIZE);
+		cam_interface_init(PICTURE_X_SIZE,PICTURE_Y_SIZE, gNumOfCamDataBits);
 		genHimaxCamClock();
 		CLI_printf(1,"ScReEn320\n");
 		camera_present = 1;
@@ -147,7 +169,7 @@ void _himaxRegWrite(unsigned int addr, unsigned char value)
 	uint16_t data;
 	naddr = (addr>>8) & 0xff;
 	data = (value << 8) | (addr & 0xff);
-	udma_i2cm_write (1, cam, naddr, 2, &data, 0);
+	udma_i2cm_write (0, cam, naddr, 2, &data, 0);
    //     i2c_16write8(cam,addr,value);
 }
 
@@ -156,6 +178,9 @@ void _himaxRegWrite(unsigned int addr, unsigned char value)
 void genHimaxCamClock(void)
 {
 	AdvTimerUnit_t *adv_timer;
+
+	hal_setpinmux(11, 1); 	//apbio47 (IO_11) Set the led to different IO
+	hal_setpinmux(26, 0); 	//apbio32 (IO_26) JC8 is the clock input for camera module
 
 	adv_timer = (AdvTimerUnit_t*) ADV_TIMER_START_ADDR;
 	adv_timer->timer_0_cmd_register = 1 << REG_TIMER_0_CMD_REGISTER_RESET_COMMAND_LSB; // reset

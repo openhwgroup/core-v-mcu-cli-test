@@ -65,7 +65,7 @@ void person_detection_task( void *pParameter )
 
     fpga_programmed = false;
     CLI_printf(0, "Person detection demo\n");
-#if 1
+#if 0
     oPrintf("fpga_programmed = %x / %d \n",camera_present, fpga_programmed);
     //programFPGA();
     //fpga_programmed = true;
@@ -228,11 +228,11 @@ void person_detection_task( void *pParameter )
     {
     	if( camera_present )
     	{
-#if 1
+
     		initPictureBuf(PICTURE_X_SIZE, PICTURE_Y_SIZE, tensor_arena);
     		cam_grab_frame(PICTURE_X_SIZE,PICTURE_Y_SIZE, tensor_arena);
     		displayFrame(PICTURE_X_SIZE,PICTURE_Y_SIZE,tensor_arena );
-
+#if 0
 			for (int i = 0; i < 96; ++i)
 			{
 				for (int j = 0; j<96; j++)
