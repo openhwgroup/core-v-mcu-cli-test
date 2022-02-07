@@ -268,6 +268,7 @@ void initPictureBuf(int x, int y, uint8_t* pictureBuf)
 void displayFrame(int x, int y, uint8_t* pictureBuf)
 {
 	volatile int i = 0, j = 0, k = 0;
+	uint8_t lChar = 0;
 
 	for (i = 0; i<x; i++)
 	{
@@ -275,8 +276,13 @@ void displayFrame(int x, int y, uint8_t* pictureBuf)
 		{
 			CLI_printf(1,"ImAgE %d %d",i,j);
 			k = 0;
-			while( k <16 )
-				CLI_printf(1," %02x",pictureBuf[i*324+j+(k++)] & 0xf);
+			while( k <16 ) {
+				lChar = ( (pictureBuf[i*324+j+(k)] & 0x0f) << 4 );
+				lChar |= ( (pictureBuf[i*324+j+(k)] & 0xf0) >> 4 );
+				//CLI_printf(1," %02x",pictureBuf[i*324+j+(k++)] & 0xff);
+				CLI_printf(1," %02x",lChar);
+				k++;
+			}
 			CLI_printf(1,"\n");
 		}
 	}

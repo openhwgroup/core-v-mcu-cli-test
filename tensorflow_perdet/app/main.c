@@ -78,7 +78,7 @@ int main(void)
 		}
 		cam_interface_init(PICTURE_X_SIZE,PICTURE_Y_SIZE, gNumOfCamDataBits);
 		genHimaxCamClock();
-		//CLI_printf(1,"ScReEn320\n");
+		CLI_printf(1,"ScReEn320\n");
 		camera_present = 1;
 	}
 
