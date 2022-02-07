@@ -41,7 +41,7 @@
 #include "../../app/N25Q_16Mb-1Gb_Device_Driver V2.1/N25Q.h"
 #include "hal/include/hal_apb_i2cs.h"
 
-#define FOR_SIMULATION_TESTING 1
+#define FOR_SIMULATION_TESTING 0
 
 #if ( FOR_SIMULATION_TESTING == 1 )
 
