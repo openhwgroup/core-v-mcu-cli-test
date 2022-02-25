@@ -12,7 +12,7 @@ echo "Done. Generated c array file is in cli_test/utils/generated_c_array_file"
 
 echo "Generating interleaved RAM initalization files for simulation testing"
 cd ../../../InterleavedRAMFileGen/bin/Debug
-./InterleavedRAMFileGen ../../../../Default/cli_test.bin
+./InterleavedRAMFileGen -i ../../../../Default/cli_test.bin -o 0x800
 echo "Done. Generated files are in cli_test/utils/memoryInitFiles"
 
 echo "Generating memory initialization file for simulated flash model"
