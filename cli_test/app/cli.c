@@ -205,6 +205,9 @@ static void simulator_on_off(const struct cli_cmd_entry *pEntry)
 
 	if( lSimulatorFlg == 1 )
 		gSimulatorCmdTableIndex = 0;
+	else if( lSimulatorFlg == 'F' )
+		gSimulatorCmdTableIndex = 22;
+
 	CLI_cmd_stack_clear();
 	memset( (void *)(&(CLI_common.cmdline[0])), 0, sizeof(CLI_common.cmdline) );
 	dbg_str("<<DONE>>\r\n");

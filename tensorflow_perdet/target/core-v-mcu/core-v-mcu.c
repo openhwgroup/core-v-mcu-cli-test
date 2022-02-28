@@ -183,7 +183,7 @@ void udma_cam_open (uint8_t cam_id)
 	return;
 }
 
-void cam_interface_init (uint16_t x, uint16_t y)
+void cam_interface_init (uint16_t x, uint16_t y, uint8_t aBitMode)
 {
 	camera_struct_t *camera;
 
@@ -201,7 +201,19 @@ void cam_interface_init (uint16_t x, uint16_t y)
 	//camera->cfg_size = 324;
 	camera->cfg_size = y + 4;
 	camera->vsync_pol = 1;
-	camera->cfg_glob = (0 << 0) | //  framedrop disabled
+	if( aBitMode == 1 )
+	{
+		camera->cfg_glob |= (1 << 17);
+	}
+	else if( aBitMode == 4 )
+	{
+		camera->cfg_glob |= (1 << 16);
+	}
+	else if( aBitMode == 8 )
+	{
+		camera->cfg_glob |= (0 << 0);
+	}
+	camera->cfg_glob |= (0 << 0) | //  framedrop disabled
 			(000000 << 1) | // number of frames to drop
 			(0 << 7) | // Frame slice disabled
 			(004 << 8) | // Format binary 100 = ByPass little endian
@@ -222,7 +234,7 @@ uint8_t cam_grab_frame (int x, int y, uint8_t* pparam)
 	camera->rx_saddr = pparam;
 	camera->rx_size = (lX * lY);
 	camera->rx_cfg = 0x12;  // start 16-bit transfers
-	camera->cfg_glob = camera->cfg_glob | (1 << 31) ; // enable 1 == go
+	camera->cfg_glob |= camera->cfg_glob | (1 << 31) ; // enable 1 == go
 
 	lCounter = 0;
 	while (camera->rx_size != 0) {
@@ -256,6 +268,7 @@ void initPictureBuf(int x, int y, uint8_t* pictureBuf)
 void displayFrame(int x, int y, uint8_t* pictureBuf)
 {
 	volatile int i = 0, j = 0, k = 0;
+	uint8_t lChar = 0;
 
 	for (i = 0; i<x; i++)
 	{
@@ -263,8 +276,13 @@ void displayFrame(int x, int y, uint8_t* pictureBuf)
 		{
 			CLI_printf(1,"ImAgE %d %d",i,j);
 			k = 0;
-			while( k <16 )
-				CLI_printf(1," %02x",pictureBuf[i*324+j+(k++)] & 0xf);
+			while( k <16 ) {
+				//lChar = ( (pictureBuf[i*324+j+(k)] & 0x0f) << 4 );
+				//lChar |= ( (pictureBuf[i*324+j+(k)] & 0xf0) >> 4 );
+				CLI_printf(1," %02x",pictureBuf[i*324+j+(k++)] & 0xff);
+				//CLI_printf(1," %02x",lChar);
+				//k++;
+			}
 			CLI_printf(1,"\n");
 		}
 	}

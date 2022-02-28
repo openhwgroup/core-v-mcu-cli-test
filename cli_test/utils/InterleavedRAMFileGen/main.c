@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <string.h>
+#include <getopt.h>
 
 typedef union {
 	uint32_t w;
@@ -109,8 +112,37 @@ void gf22dxSplitFilesInto4KLineWords(FILE *inFile, FILE **outFile, int aNumOfSpl
     }
 }
 
+//stops parsing, if a NULL or space or is encountered or entire length of the buffer is read
+uint32_t atoh(uint8_t *aBuf, uint16_t aSize)
+{
+    uint16_t i = 0;
+    uint32_t lValue = 0;
+    uint8_t lChar = 0;
+
+    for(i=0; ( (i < aSize ) && (aBuf[i] != '\0') && (aBuf[i] != ' ') ); i++)
+    {
+        if( (aBuf[i] >= '0') && ( aBuf[i] <= '9') )
+        {
+            lChar = aBuf[i] - '0';
+        }
+        else if( (aBuf[i] >= 'A') && ( aBuf[i] <= 'F') )
+        {
+            lChar = (aBuf[i] - 'A') + 10;
+        }
+        else if( (aBuf[i] >= 'a') && ( aBuf[i] <= 'f') )
+        {
+            lChar = (aBuf[i] - 'a') + 10;
+        }
+        lValue *= 16;
+        lValue += lChar;
+    }
+    return lValue;
+}
+
+
 int main(int argc, char *argv[])
 {
+    char *inFile = (char *)NULL;
     FILE *lBinFileReadPtr = (FILE *)NULL;
     FILE *lPrivateBank0FileWritePtr = (FILE *)NULL;
     FILE *lPrivateBank1FileWritePtr = (FILE *)NULL;
@@ -118,6 +150,7 @@ int main(int argc, char *argv[])
     FILE *lCol1FileWritePtr = (FILE *)NULL;
     FILE *lCol2FileWritePtr = (FILE *)NULL;
     FILE *lCol3FileWritePtr = (FILE *)NULL;
+    int opt = 0;
 
     long int lBinFileSize = 0;
     long int lReadByteCount = 0;
@@ -134,18 +167,41 @@ int main(int argc, char *argv[])
     uint32_t lCol2FileEndOffset = 0;
     uint32_t lCol3FileEndOffset = 0;
 
+    uint32_t lOffset = 0x0;
     split_4Byte_t l4ByteData;
 
     l4ByteData.w = 0;
-    if(argc < 2 )
-    {
-        printf("Usage: ./InterleavedRAMFileGen <input.bin>\n");
-    }
-    else
-    {
-        printf("Converting %s.\n", argv[1]);
 
-        lBinFileReadPtr = fopen(argv[1],"rb");  // r for read, b for binary
+    while ((opt = getopt(argc, argv, "i:o:h")) != -1) {
+        switch (opt) {
+            case 'i':
+                inFile = optarg;
+                break;
+            case 'o':
+                lOffset = atoh((uint8_t *)optarg, (uint16_t)strlen(optarg));
+                break;
+            case 'h':
+            default: /* '?' */
+                fprintf(stderr, "Usage: %s -f infile [-o offset in hex]\n", argv[0]);
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    printf("inFile=%s; lOffset=%d;\n", inFile, lOffset);
+
+    if (optind >= argc) {
+       fprintf(stderr, "Expected argument after options\n");
+       exit(EXIT_FAILURE);
+    }
+
+    printf("name argument = %s\n", argv[optind]);
+
+
+    if( inFile != NULL )
+    {
+        printf("Converting %s.\n", inFile);
+
+        lBinFileReadPtr = fopen(inFile,"rb");  // r for read, b for binary
         lPrivateBank0FileWritePtr = fopen ("../../../memoryInitFiles/privateBank0.mem","w");
         lPrivateBank1FileWritePtr = fopen ("../../../memoryInitFiles/privateBank1.mem","w");
         lCol0FileWritePtr = fopen ("../../../memoryInitFiles/col0.mem","w");
@@ -162,20 +218,20 @@ int main(int argc, char *argv[])
             fseek(lBinFileReadPtr, 0, SEEK_SET); // seek back to beginning of file
             printf("File [%s] is of %ld bytes\n",argv[1], lBinFileSize);
 
-            lCol0FileStartOffset = 0x0000F800 + 0;
-            lCol1FileStartOffset = 0x0000F800 + 4;
-            lCol2FileStartOffset = 0x0000F800 + 8;
-            lCol3FileStartOffset = 0x0000F800 + 12;
+            lCol0FileStartOffset = (0x00010000 - lOffset) + 0;
+            lCol1FileStartOffset = (0x00010000 - lOffset) + 4;
+            lCol2FileStartOffset = (0x00010000 - lOffset) + 8;
+            lCol3FileStartOffset = (0x00010000 - lOffset) + 12;
 
             lCol0FileEndOffset = lBinFileSize - 16;
             lCol1FileEndOffset = lBinFileSize - 12;
             lCol2FileEndOffset = lBinFileSize - 8;
             lCol3FileEndOffset = lBinFileSize - 4;
 
-            for(i=0; i<(2048/4); i++)
+            for(i=0; i<(lOffset/4); i++)
                 fprintf(lPrivateBank0FileWritePtr,"00000000\n");
 
-            for(i=0; i<(32768-2048);)
+            for(i=0; i<(32768-lOffset);)
             {
                 for(j=0; j< 4; j++ )
                 {
@@ -188,7 +244,7 @@ int main(int argc, char *argv[])
                 fflush(lPrivateBank0FileWritePtr);
             }
 
-            fseek(lBinFileReadPtr, (32768-2048), SEEK_SET); //
+            fseek(lBinFileReadPtr, (32768-lOffset), SEEK_SET); //
             for(i=0; i<32768; )
             {
                 for(j=0; j< 4; j++ )

@@ -183,8 +183,8 @@ def render_line(fld,screen):
   #print(len(fld))
   #print(count)
   for x in range (0, count):
-    color = (int(fld[x+3],16) * 16 ,int(fld[x+3],16)* 16,int(fld[x+3],16)* 16)
-    #color = (int(fld[x+3],16) ,int(fld[x+3],16),int(fld[x+3],16))
+    #color = (int(fld[x+3],16) * 16 ,int(fld[x+3],16)* 16,int(fld[x+3],16)* 16)
+    color = (int(fld[x+3],16) ,int(fld[x+3],16),int(fld[x+3],16))
     pygame.gfxdraw.pixel(screen,x+offset,y,color)
   if (y == 239) :
     pygame.draw.rect(screen,(0,255,0),[122,74,96,96],2)

@@ -27,13 +27,15 @@ typedef union {
 	uint8_t b[4];
 } split_4Byte_t ;
 
-extern uint8_t gQSPIFlashPresentFlg;
-extern uint8_t gMicronFlashDetectedFlg;
+extern uint8_t gQSPIFlashPresentFlg[];
+extern uint8_t gMicronFlashDetectedFlg[];
+extern uint8_t gQSPIIdNum;
 
-uint8_t gQuadModeSupportedFlg = 0;
-uint8_t gMicronFlashInitDoneFlag = 0;
+uint8_t gQuadModeSupportedFlg[N_QSPIM] = {0};
+uint8_t gMicronFlashInitDoneFlag[N_QSPIM] = {0};
+uint8_t gMuxSelSaveBuf[10] = {0};
 
-extern FLASH_DEVICE_OBJECT gFlashDeviceObject;
+extern FLASH_DEVICE_OBJECT gFlashDeviceObject[];
 
 extern int x_main(void);
 
@@ -75,13 +77,77 @@ const struct cli_cmd_entry qspi_cli_tests[] =
   CLI_CMD_TERMINATE()
 };
 
+void setQspimPinMux(uint8_t aQspimID)
+{
+	uint8_t i = 0;
+
+	if( aQspimID == 0 )
+	{
+		for(i=0; i<4; i++ )
+		{
+			//Save pin muxes
+			gMuxSelSaveBuf[i] = hal_getpinmux(13+i);
+			hal_setpinmux(13+i, 0);
+		}
+		for(i=0; i<2; i++ )
+		{
+			//Save pin muxes
+			gMuxSelSaveBuf[i] = hal_getpinmux(19+i);
+			hal_setpinmux(19+i, 0);
+		}
+		for(i=0; i<3; i++ )
+		{
+			//Save pin muxes
+			gMuxSelSaveBuf[i] = hal_getpinmux(26+i);
+			hal_setpinmux(26+i, 1);
+		}
+	}
+	else if( aQspimID == 1 )
+	{
+		for(i=0; i<8; i++ )
+		{
+			//Save pin muxes
+			gMuxSelSaveBuf[i] = hal_getpinmux(29+i);
+			hal_setpinmux(29+i, 1);
+		}
+	}
+}
+
+void restoreQspimPinMux(uint8_t aQspimID)
+{
+	uint8_t i = 0;
+
+	if( aQspimID == 0 )
+	{
+		for(i=0; i<4; i++ )
+		{
+			hal_setpinmux(13+i, gMuxSelSaveBuf[i]);
+		}
+		for(i=0; i<2; i++ )
+		{
+			hal_setpinmux(19+i, gMuxSelSaveBuf[i]);
+		}
+		for(i=0; i<3; i++ )
+		{
+			hal_setpinmux(26+i, gMuxSelSaveBuf[i]);
+		}
+	}
+	else if( aQspimID == 1 )
+	{
+		for(i=0; i<8; i++ )
+		{
+			hal_setpinmux(29+i, gMuxSelSaveBuf[i]);
+		}
+	}
+}
+
 int8_t flashWrite_Micron(uint32_t addr, uint8_t *aWritebuff, uint32_t aLen)
 {
 	ParameterType para;
 	para.PageProgram.udAddr = addr;
 	para.PageProgram.pArray = aWritebuff;
 	para.PageProgram.udNrOfElementsInArray = aLen;
-	if(gFlashDeviceObject.GenOp.DataProgram(PageProgram, &para)!=Flash_Success)
+	if(gFlashDeviceObject[gQSPIIdNum].GenOp.DataProgram(PageProgram, &para)!=Flash_Success)
 		return -1;
 	return 0;
 }
@@ -92,7 +158,7 @@ int8_t flashRead_Micron(uint32_t addr, uint8_t *aReadBuf, uint32_t aLen)
 	para.Read.udAddr = addr;
 	para.Read.pArray = aReadBuf;
 	para.Read.udNrOfElementsToRead = aLen;
-	if(gFlashDeviceObject.GenOp.DataRead(Read, &para)!=Flash_Success)
+	if(gFlashDeviceObject[gQSPIIdNum].GenOp.DataRead(Read, &para)!=Flash_Success)
 		return -1;
 	return 0;
 }
@@ -103,7 +169,7 @@ int8_t flashQuadInputFastProgram_Micron(uint32_t addr, uint8_t *aWritebuff, uint
 	para.PageProgram.udAddr = addr;
 	para.PageProgram.pArray = aWritebuff;
 	para.PageProgram.udNrOfElementsInArray = aLen;
-	if(gFlashDeviceObject.GenOp.DataProgram(QuadInputProgram, &para)!=Flash_Success)
+	if(gFlashDeviceObject[gQSPIIdNum].GenOp.DataProgram(QuadInputProgram, &para)!=Flash_Success)
 		return -1;
 	return 0;
 }
@@ -114,7 +180,7 @@ int8_t flashQuadOutputFastRead_Micron(uint32_t addr, uint8_t *aReadBuf, uint32_t
 	para.Read.udAddr = addr;
 	para.Read.pArray = aReadBuf;
 	para.Read.udNrOfElementsToRead = aLen;
-	if(gFlashDeviceObject.GenOp.DataRead(QuadOutputFastRead, &para)!=Flash_Success)
+	if(gFlashDeviceObject[gQSPIIdNum].GenOp.DataRead(QuadOutputFastRead, &para)!=Flash_Success)
 		return -1;
 	return 0;
 }
@@ -130,11 +196,11 @@ int8_t flashEraseSector_Micron(uint16_t startSecNum, uint16_t numOfSectors)
 {
 	int i;
 	ReturnType ret;
-	if((startSecNum + numOfSectors) > gFlashDeviceObject.Desc.FlashSectorCount)
+	if((startSecNum + numOfSectors) > gFlashDeviceObject[gQSPIIdNum].Desc.FlashSectorCount)
 		return -2;
 	for (i=0; i<numOfSectors; i++) {
 		do {
-			ret = gFlashDeviceObject.GenOp.SectorErase(startSecNum + i);
+			ret = gFlashDeviceObject[gQSPIIdNum].GenOp.SectorErase(startSecNum + i);
 			if(ret!=Flash_OperationOngoing && ret!=Flash_Success) {
 				CLI_printf("Error number (%d) in sector number (%d)\n", ret, i);
 				return -1;
@@ -149,11 +215,11 @@ int8_t flashEraseSubsector_Micron(uint16_t startSubsecNum, uint16_t numOfSubsect
 {
 	int i;
 	ReturnType ret;
-	if((startSubsecNum + numOfSubsectors) > gFlashDeviceObject.Desc.FlashSubSectorCount)
+	if((startSubsecNum + numOfSubsectors) > gFlashDeviceObject[gQSPIIdNum].Desc.FlashSubSectorCount)
 		return -2;
 	for (i=0; i<numOfSubsectors; i++) {
 		do {
-			ret = gFlashDeviceObject.GenOp.SubSectorErase(startSubsecNum+i);
+			ret = gFlashDeviceObject[gQSPIIdNum].GenOp.SubSectorErase(startSubsecNum+i);
 			if(ret!=Flash_OperationOngoing && ret!=Flash_Success) {
 				CLI_printf("Error number (%d) in subsector number (%d)\n", ret, i);
 				return -1;
@@ -167,8 +233,8 @@ void getSectorNumAndSubSectorNumFromAddress(uint32_t aAddress, uint32_t *aSector
 {
     uint32_t lSectorNum = 0;
     uint32_t lSubSectorNum = 0;
-    lSectorNum = ( aAddress >> gFlashDeviceObject.Desc.FlashSectorSize_bit ) & 0x1FF;
-    lSubSectorNum = ( ( lSectorNum * 16 ) + ( ( aAddress >> gFlashDeviceObject.Desc.FlashSubSectorSize_bit ) & 0xF ) );
+    lSectorNum = ( aAddress >> gFlashDeviceObject[gQSPIIdNum].Desc.FlashSectorSize_bit ) & 0x1FF;
+    lSubSectorNum = ( ( lSectorNum * 16 ) + ( ( aAddress >> gFlashDeviceObject[gQSPIIdNum].Desc.FlashSubSectorSize_bit ) & 0xF ) );
     if( aSectorNum )
         *aSectorNum = lSectorNum;
      if( aSubSectorNum )
@@ -194,11 +260,39 @@ char*  pzArg = NULL;
 	uint16_t lSectorNum = 0;
 	uint32_t lSubSectorNum = 0;
 	uint16_t lSectorsToErase = 0;
-	// Add functionality here
-	if( gMicronFlashInitDoneFlag == 0 )
-		flash_init(NULL);
-	CLI_string_ptr_required("Loading file: ", &pzArg);
-	CLI_uint32_required( "addr", &fl_addr );
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+	gQSPIIdNum = lQSPIMIdNum;
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
+	{
+		if( gMicronFlashDetectedFlg[gQSPIIdNum] == 1 )
+		{
+			setQspimPinMux(gQSPIIdNum);
+			if( gMicronFlashInitDoneFlag[gQSPIIdNum] == 0 )
+			{
+				Driver_Init(&gFlashDeviceObject[gQSPIIdNum]);
+
+				dbg_str("<<DONE>>\r\n");
+				gMicronFlashInitDoneFlag[gQSPIIdNum] = 1;
+			}
+			restoreQspimPinMux(gQSPIIdNum);
+		}
+		else
+		{
+			CLI_printf("NON MICRON FLASH INIT <<ABSENT>>\n");
+		}
+	}
+	else
+	{
+		CLI_printf("FLASH NOT PRESENT <<FAILED>>\n");
+	}
+
+	if ( gMicronFlashInitDoneFlag[gQSPIIdNum] == 1 )
+	{
+		CLI_string_ptr_required("Loading file: ", &pzArg);
+		CLI_uint32_required( "addr", &fl_addr );
 		if (pzArg != NULL) {
 			udma_uart_writeraw(1, 5, "Load ");
 			udma_uart_writeraw(1, strlen(pzArg), pzArg);
@@ -243,7 +337,7 @@ char*  pzArg = NULL;
 						sdata.d8[i]= uart_getchar(1);
 					lRemaingBytes = sdata.d32;
 					getSectorNumAndSubSectorNumFromAddress(fl_addr, &lSectorNum, &lSubSectorNum);
-					lSectorsToErase = (lRemaingBytes / gFlashDeviceObject.Desc.FlashSectorSize);
+					lSectorsToErase = (lRemaingBytes / gFlashDeviceObject[gQSPIIdNum].Desc.FlashSectorSize);
 
 					dbg_str("Expecting ");
 					dbg_hex32(sdata.d32);
@@ -272,6 +366,7 @@ char*  pzArg = NULL;
 					udma_uart_writeraw(1,1,&lChar);
 			}
 			CLI_printf("Received Bytes 0x%08x\n",count);
+		}
 	}
 }
 
@@ -286,21 +381,28 @@ static void flash_write (const struct cli_cmd_entry *pEntry)
 	uint16_t length;
 	uint8_t l2addr[4];
 	uint32_t wdata;
+	uint8_t lQSPIMIdNum = 0;
 
-	if( gQSPIFlashPresentFlg == 1)
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+	CLI_uint32_required( "addr", &addr );
+	CLI_uint32_required( "data", &wdata );
+
+	gQSPIIdNum = lQSPIMIdNum;
+
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1)
 	{
-		CLI_uint32_required( "addr", &addr );
-		CLI_uint32_required( "data", &wdata );
+		setQspimPinMux(gQSPIIdNum);
+
 		l2addr[0] = (wdata >> 24) & 0xff;
 		l2addr[1] = (wdata >> 16) & 0xff;
 		l2addr[2] = (wdata >> 8) & 0xff;
 		l2addr[3] = wdata  & 0xff;
 		message  = pvPortMalloc(80);
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		udma_qspim_control((uint8_t) gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		sprintf(message,"Qspi Flash write\n");
 		dbg_str(message);
-		udma_flash_write(0, 0, addr, l2addr, 4);
-		udma_flash_read(0, 0, addr, l2addr, 4);
+		udma_flash_write(gQSPIIdNum, 0, addr, l2addr, 4);
+		udma_flash_read(gQSPIIdNum, 0, addr, l2addr, 4);
 		sprintf(message,"Read data = %02x",l2addr[0]);
 		dbg_str(message);
 		for (i = 1; i < 4; i++) {
@@ -309,6 +411,7 @@ static void flash_write (const struct cli_cmd_entry *pEntry)
 		}
 		dbg_str("\n");
 		vPortFree(message);
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -324,16 +427,23 @@ static void flash_read(const struct cli_cmd_entry *pEntry)
 	uint32_t addr, i;
 	uint16_t length;
 	uint8_t *l2addr;
-	if( gQSPIFlashPresentFlg == 1 )
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+	CLI_uint32_required( "addr", &addr );
+	CLI_uint16_required( "length", &length );
+
+	gQSPIIdNum = lQSPIMIdNum;
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		CLI_uint32_required( "addr", &addr );
-		CLI_uint16_required( "length", &length );
+		setQspimPinMux(gQSPIIdNum);
+
 		message  = pvPortMalloc(80);
 		l2addr = pvPortMalloc(length);
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		sprintf(message,"Qspi Flash Read\n");
 		dbg_str(message);
-		udma_flash_read(0, 0, addr, l2addr, length);
+		udma_flash_read(gQSPIIdNum, 0, addr, l2addr, length);
 		sprintf(message,"Read data = %02x",l2addr[0]);
 		dbg_str(message);
 		for (i = 1; i < length; i++) {
@@ -343,6 +453,7 @@ static void flash_read(const struct cli_cmd_entry *pEntry)
 		dbg_str("\n");
 		vPortFree(l2addr);
 		vPortFree(message);
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -358,16 +469,24 @@ static void flash_bulk_erase (const struct cli_cmd_entry *pEntry)
 	int errors = 0;
 	int addr,i;
 	uint8_t result;
-	if( gQSPIFlashPresentFlg == 1 )
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+	CLI_uint32_required( "addr", &addr );
+
+	gQSPIIdNum = lQSPIMIdNum;
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
+		setQspimPinMux(gQSPIIdNum);
 		message  = pvPortMalloc(80);
-		CLI_uint32_required( "addr", &addr );
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		result = udma_flash_erase(0,0,addr,2);
+
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		result = udma_flash_erase(gQSPIIdNum,0,addr,2);
 		sprintf(message,"FLASH all erase = %s\n",
 				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -383,16 +502,24 @@ static void flash_sector_erase (const struct cli_cmd_entry *pEntry)
 	int errors = 0;
 	int addr,i;
 	uint8_t result;
-	if( gQSPIFlashPresentFlg == 1 )
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+	CLI_uint32_required( "addr", &addr );
+
+	gQSPIIdNum = lQSPIMIdNum;
+
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
+		setQspimPinMux(gQSPIIdNum);
 		message  = pvPortMalloc(80);
-		CLI_uint32_required( "addr", &addr );
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		result = udma_flash_erase(0,0,addr,1);
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		result = udma_flash_erase(gQSPIIdNum,0,addr,1);
 		sprintf(message,"FLASH sector 0x%x = %s\n", addr,
 				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -409,16 +536,25 @@ static void flash_subsector_erase (const struct cli_cmd_entry *pEntry)
 	int errors = 0;
 	int addr,i;
 	uint8_t result;
-	if( gQSPIFlashPresentFlg == 1 )
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+	CLI_uint32_required( "addr", &addr );
+
+	gQSPIIdNum = lQSPIMIdNum;
+
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
+		setQspimPinMux(gQSPIIdNum);
 		message  = pvPortMalloc(80);
-		CLI_uint32_required( "addr", &addr );
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		result = udma_flash_erase(0,0,addr,0);
+
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		result = udma_flash_erase(gQSPIIdNum,0,addr,0);
 		sprintf(message,"FLASH subsector 0x%x = %s\n", addr,
 				result ? "<<PASSED>>" : "<<FAILED>>");
 		dbg_str(message);
 		vPortFree(message);
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -434,16 +570,24 @@ static void flash_subsector_erase_new (const struct cli_cmd_entry *pEntry)
 	uint32_t lStartSubSectorNum = 0;
 	uint32_t lNumOfSubSectors = 0;
 	uint8_t result;
-	if(gQSPIFlashPresentFlg == 1 )
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+	CLI_uint32_required( "start addr", &lStartSubSectorNum );
+	CLI_uint32_required( "Num of sub sectors", &lNumOfSubSectors );
+
+	gQSPIIdNum = lQSPIMIdNum;
+	if(gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		CLI_uint32_required( "start addr", &lStartSubSectorNum );
-		CLI_uint32_required( "Num of sub sectors", &lNumOfSubSectors );
+		setQspimPinMux(gQSPIIdNum);
+
 		//udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		//result = udma_flash_erase(0,0,addr,0);
 		if( flashEraseSubsector_Micron(lStartSubSectorNum, lNumOfSubSectors) == 0 )
 			dbg_str("<<PASSED>>\r\n");
 		else
 			dbg_str("<<FAILED>>\r\n");
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -463,11 +607,17 @@ static void flash_readid(const struct cli_cmd_entry *pEntry)
 	} result ;
 
 	result.w = 0;
-	if( gQSPIFlashPresentFlg == 1 )
-	{
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	uint8_t lQSPIMIdNum = 0;
 
-		result.w = udma_flash_readid(0,0);
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+	gQSPIIdNum = lQSPIMIdNum;
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
+	{
+		setQspimPinMux(gQSPIIdNum);
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+
+		result.w = udma_flash_readid(gQSPIIdNum,0);
 
 		CLI_printf("FLASH read ID results = 0x%08x %02x %02x %02x %02x\n",
 				result.w, result.b[0],result.b[1],result.b[2],result.b[3]);
@@ -475,6 +625,7 @@ static void flash_readid(const struct cli_cmd_entry *pEntry)
 			CLI_printf("<<PASSED>>\n");
 		else
 			CLI_printf("<<FAILED>>\n");
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -494,10 +645,19 @@ static void flash_quad(const struct cli_cmd_entry *pEntry)
 		uint8_t b[4];
 	} result ;
 	result.w = 0;
-	if( gQSPIFlashPresentFlg == 1 )
+
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+	gQSPIIdNum = lQSPIMIdNum;
+
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-		udma_flash_enterQuadIOMode(0, 0 );
+		setQspimPinMux(gQSPIIdNum);
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		udma_flash_enterQuadIOMode(gQSPIIdNum, 0 );
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -513,18 +673,24 @@ static void flash_init(const struct cli_cmd_entry *pEntry)
 
 	(void)pEntry;
 	// Add functionality here
+	uint8_t lQSPIMIdNum = 0;
 
-	if( gQSPIFlashPresentFlg == 1 )
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+	gQSPIIdNum = lQSPIMIdNum;
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		if( gMicronFlashDetectedFlg == 1 )
+		if( gMicronFlashDetectedFlg[gQSPIIdNum] == 1 )
 		{
-			if( gMicronFlashInitDoneFlag == 0 )
+			setQspimPinMux(gQSPIIdNum);
+			if( gMicronFlashInitDoneFlag[gQSPIIdNum] == 0 )
 			{
-				Driver_Init(&gFlashDeviceObject);
+				Driver_Init(&gFlashDeviceObject[gQSPIIdNum]);
 
 				dbg_str("<<DONE>>\r\n");
-				gMicronFlashInitDoneFlag = 1;
+				gMicronFlashInitDoneFlag[gQSPIIdNum] = 1;
 			}
+			restoreQspimPinMux(gQSPIIdNum);
 		}
 		else
 		{
@@ -542,14 +708,20 @@ static void flash_reset(const struct cli_cmd_entry *pEntry)
 	int i = 0;
 	(void)pEntry;
 	// Add functionality here
+	uint8_t lQSPIMIdNum = 0;
 
-	if( gQSPIFlashPresentFlg == 1 )
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+	gQSPIIdNum = lQSPIMIdNum;
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		udma_flash_reset_enable(0, 0);
+		setQspimPinMux(gQSPIIdNum);
+		udma_flash_reset_enable(gQSPIIdNum, 0);
 		for (i = 0; i < 10000; i++);
-		udma_flash_reset_memory(0, 0);
+		udma_flash_reset_memory(gQSPIIdNum, 0);
 		for (i = 0; i < 10000; i++);
 
+		restoreQspimPinMux(gQSPIIdNum);
 		dbg_str("<<DONE>>\r\n");
 	}
 	else
@@ -567,10 +739,11 @@ static void qspi_read(const struct cli_cmd_entry *pEntry)
 	uint8_t read_data[8] = {0xff,0xfe,0xfc,0xf8,0xf0,0xe0,0xc0,0x80};
 	uint8_t lRead_data[8] = {0};
 
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
-	udma_qspim_read(0, 0, 4, lRead_data);
+	setQspimPinMux(gQSPIIdNum);
+	udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+	udma_qspim_read(gQSPIIdNum, 0, 4, lRead_data);
 	CLI_printf("[0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n",lRead_data[0], lRead_data[1], lRead_data[2], lRead_data[3]);
-
+	restoreQspimPinMux(gQSPIIdNum);
 }
 
 static void qspi_write(const struct cli_cmd_entry *pEntry)
@@ -582,7 +755,9 @@ static void qspi_write(const struct cli_cmd_entry *pEntry)
 	int i, length;
 	CLI_uint32_required( "length", &length );
 	message  = pvPortMalloc(80);
-	udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+
+	setQspimPinMux(gQSPIIdNum);
+	udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 	sprintf(message,"Qspi Write tests");
 	dbg_str(message);
 	message[0] = 0x01;
@@ -606,6 +781,7 @@ static void qspi_write(const struct cli_cmd_entry *pEntry)
 	udma_qspim_write(0, 2, length, message);
 	udma_qspim_write(0, 3, length, message);
 	vPortFree(message);
+	restoreQspimPinMux(gQSPIIdNum);
 }
 
 static void flash_peek(const struct cli_cmd_entry *pEntry)
@@ -616,36 +792,30 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 	split_4Byte_t    lExpVal;
 	uint8_t 	lExpValTrueOrFalse = 0;
 	uint32_t	lAddress = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
-	uint8_t i = 0;
+
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+
+	gQSPIIdNum = lQSPIMIdNum;
 
 	xValue.w = 0;
 	lExpVal.w = 0;
 
-	if( gQSPIFlashPresentFlg == 1 )
+
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		for(i=0; i<8; i++ )
-		{
-			//Save pin muxes
-			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-		}
-
-		for(i=0; i<8; i++ )
-		{
-			//set pin muxes
-			hal_setpinmux(13+i, 0);
-		}
-
+		setQspimPinMux(gQSPIIdNum);
 		CLI_uint32_required( "addr", &lAddress );
-
 		if( CLI_is_more_args() ){
 			lExpValTrueOrFalse = 1;
 			CLI_uint32_required("exp", &lExpVal.w);
 		}
 
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		dbg_str("Qspi Flash Read\n");
-		udma_flash_read(0, 0, lAddress, &xValue.b[0], 4);
+		udma_flash_read(gQSPIIdNum, 0, lAddress, &xValue.b[0], 4);
 		CLI_printf("0x%08x - [0x%02x]/[0x%02x]/[0x%02x]/[0x%02x]\n", xValue.w, xValue.b[0], xValue.b[1], xValue.b[2], xValue.b[3]);
 
 		if( lExpValTrueOrFalse )
@@ -664,12 +834,7 @@ static void flash_peek(const struct cli_cmd_entry *pEntry)
 			dbg_str("<<DONE>>\r\n");
 		}
 
-		//Restore pin muxes
-		for(i=0; i<8; i++ )
-		{
-			//Save pin muxes
-			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
-		}
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -683,40 +848,27 @@ static void flash_poke(const struct cli_cmd_entry *pEntry)
 	// Add functionality here
 	split_4Byte_t	xValue;
 	uint32_t	lAddress = 0;
-	uint8_t i = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
-
+	uint8_t lQSPIMIdNum = 0;
 	xValue.w = 0;
 
-	if( gQSPIFlashPresentFlg == 1 )
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+	gQSPIIdNum = lQSPIMIdNum;
+
+	CLI_uint32_required( "addr", &lAddress );
+	CLI_uint32_required( "value", &xValue.w);
+
+
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		for(i=0; i<8; i++ )
-		{
-			//Save pin muxes
-			lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-		}
+		setQspimPinMux(gQSPIIdNum);
 
-		for(i=0; i<8; i++ )
-		{
-			//set pin muxes
-			hal_setpinmux(13+i, 0);
-		}
-
-		CLI_uint32_required( "addr", &lAddress );
-		CLI_uint32_required( "value", &xValue.w);
-
-		udma_qspim_control((uint8_t) 0, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
+		udma_qspim_control(gQSPIIdNum, (udma_qspim_control_type_t) kQSPImReset , (void*) 0);
 		dbg_str("Qspi Flash write\n");
-		udma_flash_write(0, 0, lAddress, &xValue.b[0], 4);
+		udma_flash_write(gQSPIIdNum, 0, lAddress, &xValue.b[0], 4);
 
 		dbg_str("<<DONE>>\r\n");
 
-		//Restore pin muxes
-		for(i=0; i<8; i++ )
-		{
-			//Save pin muxes
-			 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
-		}
+		restoreQspimPinMux(gQSPIIdNum);
 	}
 	else
 	{
@@ -733,30 +885,23 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 	//split_8Byte_t lLongVal;
 	uint8_t 	lExpValTrueOrFalse = 0;
 	uint32_t	lAddress = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
-	uint8_t i = 0;
+
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+	gQSPIIdNum = lQSPIMIdNum;
 
 	xValue.w = 0;
 	lExpVal.w = 0;
 	//lLongVal.w = 0;
-	if( gQSPIFlashPresentFlg == 1 )
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		if( gMicronFlashDetectedFlg == 1 )
+		if( gMicronFlashDetectedFlg[gQSPIIdNum] == 1 )
 		{
-			if( gQuadModeSupportedFlg == 1 )
+			if( gQuadModeSupportedFlg[gQSPIIdNum] == 1 )
 			{
-				for(i=0; i<8; i++ )
-				{
-					//Save pin muxes
-					lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-				}
-
-				for(i=0; i<8; i++ )
-				{
-					//set pin muxes
-					hal_setpinmux(13+i, 0);
-				}
-
+				setQspimPinMux(gQSPIIdNum);
 				CLI_uint32_required( "addr", &lAddress );
 
 				if( CLI_is_more_args() ){
@@ -790,13 +935,7 @@ static void flash_quad_peek(const struct cli_cmd_entry *pEntry)
 				{
 					dbg_str("qpeek <<DONE>>\r\n");
 				}
-
-				//Restore pin muxes
-				for(i=0; i<8; i++ )
-				{
-					//Save pin muxes
-					 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
-				}
+				restoreQspimPinMux(gQSPIIdNum);
 			}
 			else
 			{
@@ -822,30 +961,25 @@ static void flash_quad_poke(const struct cli_cmd_entry *pEntry)
 	split_4Byte_t	xValue;
 	uint32_t	lAddress = 0;
 	uint8_t i = 0;
-	uint8_t lMuxSelSaveBuf[8] = {0};
 
-	if( gQSPIFlashPresentFlg == 1 )
+	uint8_t lQSPIMIdNum = 0;
+
+	CLI_uint8_required( "lQSPIMIdNum", &lQSPIMIdNum );
+
+	gQSPIIdNum = lQSPIMIdNum;
+
+	if( gQSPIFlashPresentFlg[gQSPIIdNum] == 1 )
 	{
-		if( gMicronFlashDetectedFlg == 1 )
+		if( gMicronFlashDetectedFlg[gQSPIIdNum] == 1 )
 		{
-			if( gQuadModeSupportedFlg == 1 )
+			if( gQuadModeSupportedFlg[gQSPIIdNum] == 1 )
 			{
 				for( i=0 ;i <32; i++ )
 				{
 					gBuf[i] = i;
 				}
 				xValue.w = 0;
-				for(i=0; i<8; i++ )
-				{
-					//Save pin muxes
-					lMuxSelSaveBuf[i] = hal_getpinmux(13+i);
-				}
-
-				for(i=0; i<8; i++ )
-				{
-					//set pin muxes
-					hal_setpinmux(13+i, 0);
-				}
+				setQspimPinMux(gQSPIIdNum);
 
 				CLI_uint32_required( "addr", &lAddress );
 				CLI_uint32_required( "value", &xValue.w);
@@ -859,12 +993,7 @@ static void flash_quad_poke(const struct cli_cmd_entry *pEntry)
 				//flashQuadInputFastProgram_Micron(0, gBuf, 32);
 				dbg_str("qpoke <<DONE>>\r\n");
 
-				//Restore pin muxes
-				for(i=0; i<8; i++ )
-				{
-					//Save pin muxes
-					 hal_setpinmux(13+i, lMuxSelSaveBuf[i]);
-				}
+				restoreQspimPinMux(gQSPIIdNum);
 			}
 			else
 			{

@@ -228,11 +228,11 @@ void person_detection_task( void *pParameter )
     {
     	if( camera_present )
     	{
-#if 1
+
     		initPictureBuf(PICTURE_X_SIZE, PICTURE_Y_SIZE, tensor_arena);
     		cam_grab_frame(PICTURE_X_SIZE,PICTURE_Y_SIZE, tensor_arena);
-    		displayFrame(PICTURE_X_SIZE,PICTURE_Y_SIZE,tensor_arena );
-
+    		//displayFrame(PICTURE_X_SIZE,PICTURE_Y_SIZE,tensor_arena );
+#if 1
 			for (int i = 0; i < 96; ++i)
 			{
 				for (int j = 0; j<96; j++)
@@ -249,7 +249,7 @@ void person_detection_task( void *pParameter )
 					int l = 0;
 					CLI_printf(1, "ImAgE %d %d",j,k);
 					while (l < 32)
-						CLI_printf(1," %02x",input->data.uint8[j*96+k+(l++)] & 0xf);
+						CLI_printf(1," %02x",input->data.uint8[j*96+k+(l++)] & 0xff);
 					CLI_printf(1,"\n");
 					//for (int m=0; m < 20000; m++)
 					//	asm volatile("nop");
