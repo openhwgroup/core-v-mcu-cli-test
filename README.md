@@ -116,7 +116,6 @@ Currently only one board is supported:
 ## Emulation bitsream
 Bistreams compatible with the Nexys A7 100T can be found at:
 http://downloads.openhwgroup.org/
-![bitstream](./images/bit-stream-url.png)
 
 ## Peripheral support
 The type and number of peripherals supported are defined by 'pulp_soc_defines.sv'.
