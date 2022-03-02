@@ -1,6 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+int stat(const char *path, struct stat *buf);
+int fstat(int fd, struct stat *buf);
+int lstat(const char *path, struct stat *buf);
 
 
 int main(int argc, char *argv[])
@@ -9,6 +16,7 @@ int main(int argc, char *argv[])
     FILE *lCArrayFileWritePtr = (FILE *)NULL;
     long int lBinFileSize = 0;
     uint8_t lData = 0;
+    struct stat st = {0};
 
     if(argc < 1 )
     {
@@ -16,6 +24,9 @@ int main(int argc, char *argv[])
     }
     else
     {
+        if (stat("../../../generated_c_array_file/", &st) == -1)
+            mkdir("../../../generated_c_array_file/", 0700);
+
         printf("Converting %s to c array file.\n", argv[1]);
 
         lBinFileReadPtr = fopen(argv[1],"rb");  // r for read, b for binary
