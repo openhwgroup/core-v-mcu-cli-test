@@ -111,8 +111,6 @@ Currently only one board is supported:
 
 * Nexys A7 100T
 
-![Nexys Setup](./images/nexys-setup.png)
-
 ## Emulation bitsream
 Bistreams compatible with the Nexys A7 100T can be found at:
 http://downloads.openhwgroup.org/
