@@ -57,13 +57,15 @@ eclipse
 
 ![step4](./images/4-ImportFromGit.png)
 
-#### Step 4.5: Tell Git which repo to use (core-v-mcu-eclipse-cli-test)
+#### Step 4.5: Specify the Source Git Repository
+Provide the full URL path to `core-v-mcu-cli-test`.
 
 ![step5](./images/5-RepoName.png)
 
 #### Step 4.6: Select the branch to clone
 Note: the list of branches will change over time.
 The `main` branch is stable, but not necessarily the latest.
+All other branches are development branches and may not be stable.
 
 ![step6](./images/6-BranchName.png)
 
@@ -79,42 +81,54 @@ The `main` branch is stable, but not necessarily the latest.
 
 ![step9](./images/9-ImportProjects.png)
 
-#### Step 4.10: Selected 'Finish'
-What you should see after selected 'Finish'
+#### Step 4.10: Select 'Finish'
+You should see something like this after selecting 'Finish'.
 
 ![step10](./images/10-ProjectsAreSetup.png)
 
-### Step 5: Import launch configuration.
+### Step 5: Configure the Toolchain
+This step configures Eclipse so that it finds the CORE-V toolchain that was downloaded and installed in **Step 1**.
 
-This step pulls in the launch configurations which are configured to use hs2 and OpenOCD.
+In the Eclipse Project Explorer select the `cli_test` Project, right click and select `Properties` (typically appears at the bottom of the pop-up menu).
+Select `C/C++ Build / Settings` to bring up the window below:
+
+![Step 5.1](.images/5p1-Properties_for_cli_test)
+
+### Step 6: Import launch configuration
+
+This step pulls in the launch configurations which are configured to use **OpenOCD** and the [JTAG-HS2](https://digilent.com/shop/jtag-hs2-programming-cable/) programmer.
+Reminder: the instructions for connecting the HS2 to the Nexys A7 can be found in the core-v-mcu quick start guide (a link can be found at the top of this README).
+
 If your hardware setup is different, you can either ignore this step and create your own, or use this step and modify to fit your configuration.
 
-#### Step 5.1:
-Select 'Import...'.
+#### Step 6.1:
+Select 'File' and then 'Import...'.
 
 ![step11](./images/11-ImportLaunch.png)
 
-#### Step 5.2:
-Select Launch Configurations.
+#### Step 6.2:
+Select 'Run/Debug' and then 'Launch Configurations'.
 
 ![step12](./images/12-SelectLaunchConfig.png)
 
-#### Step 5.3:
-Browse to the git directory that was chosen as the Local Destination.
+#### Step 6.3:
+Here you will fetch the HS2 launch configuration from your clone of core-v-mcu-cli-test.
+In the `core-v-mcu-cli-test` repo there is a set of launch configurations in the `launch` directory.
+Browse to the git directory that was chosen as the 'Local Destination' in **Step 4.7**.
 
 ![step13](./images/13-ImportLaunchConfigurations.png)
 
-#### Step 5.4:
-Select launchconfig and cli_test Default.
+#### Step 6.4:
+Select 'launch' and 'cli_test Default'.
 
 ![step14](./images/14-SelectLaunchConfigurations.png)
 
-#### Step 5.5:
+#### Step 6.5:
 Under the `Run` menu select `Debug Configurations...`
 
 ![step15](./images/15-DebugConfig.png)
 
-#### Step 5.6:
+#### Step 6.6:
 Under `GDB OpenOCD Debugging` select `cli_test Default` and then `Debug`.
 
 ![step16](./images/16-cli_testDefault.png)
@@ -123,7 +137,7 @@ This should compile, link and load the application and stop at main waiting for 
 
 
 ## Emulation bitsream
-Bistreams compatible with the Nexys A7-100T can be found at:
+Bitsreams compatible with the Nexys A7-100T can be found at:
 http://downloads.openhwgroup.org/
 
 ## Peripheral support
