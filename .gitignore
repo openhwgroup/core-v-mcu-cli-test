@@ -1,4 +1,5 @@
 *~
+*.swp
 autotest/TestOutputs/*
 autotest/RunOnEmulOrSimul/TestOutputs/*
 cli_test/logfile.txt
