@@ -1,5 +1,6 @@
 # core-v-mcu-cli-test
-Command-Line-Interface test routines for the CORE-V MCU.
+Repository of Command-Line-Interface test routines for the CORE-V MCU.
+
 Core-v-mcu-cli-test runs on FreeRTOS and can be used from a terminal emulator or via the Eclipse IDE.
 At the time of this writing (2022-03-09) `cli-test` runs under Verilator or in emulation on a Digilent Nexys A7-100T evaluation kit.
 Setup instructions for the Nexys A7 and a terminal emulator to run `cli-test` can be found in the [core-v-mcu quick start guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
