@@ -1,18 +1,18 @@
 # core-v-mcu-cli-test
 Repository of Command-Line-Interface test routines for the CORE-V MCU.
 
-Core-v-mcu-cli-test runs on FreeRTOS and can be used from a terminal emulator or via the Eclipse IDE.
-At the time of this writing (2022-03-09) `cli-test` runs under Verilator or in emulation on a Digilent Nexys A7-100T evaluation kit.
-Setup instructions for the Nexys A7 and a terminal emulator to run `cli-test` can be found in the [core-v-mcu quick start guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
+Core-v-mcu-cli-test is a stand-alone program that runs on the CORE-V MCU under FreeRTOS and is controlled from a terminal.
+At the time of this writing (2022-03-09) "cli-test" runs under Verilator or in emulation on a Digilent Nexys A7-100T evaluation kit.
+Setup instructions for the Nexys A7 and a terminal emulator to run cli-test can be found in the [core-v-mcu quick start guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
 
-It is expected that the majority of `cli-test` users will want to run it from an Integrated Development Environment.
-The remainder of this document will get you set up with the Eclipse-IDE.
+It is expected that the majority of cli-test users will want to run it from an Integrated Development Environment.
+The remainder of this document will get you set up with the **Eclipse-IDE**.
 
 ### Eclipse IDE Installation
 The Eclipse IDE relies on a larger ecosystem of tools and these instructions assume you are familar enough with the Eclispe IDE environment to make any required configuration changes to the IDE setup.
 
 ### Step 1:
-Downlad and install the approriate corev-gcc toolchain from
+Download and install the approriate corev-gcc toolchain from
 ~~~
 https://www.embecosm.com/resources/tool-chain-downloads/#corev
 ~~~
@@ -34,12 +34,11 @@ Installation is accomplished by:
 ~~~
 ./configure --enable-ftdi && make
 sudo make install
-~~~ 
-
+~~~
 
 ### Step 4: run the Eclipse IDE and import projects directly from this OpenHW git repo
 
-NOTE: importing the `cli_test` project into the IDE does not import the information to launch the debugger, so after importing cli_test, be sure to either import the launch configuration (below in Step 5) or create your own.
+NOTE: importing the cli_test project into the IDE does not import the information to launch the debugger, so after importing cli_test, be sure to either import the launch configuration (below in Step 5) or create your own.
 
 #### Step 4.1: Launch Eclipse
 ~~~
@@ -80,7 +79,8 @@ The `main` branch is stable, but not necessarily the latest.
 
 ![step9](./images/9-ImportProjects.png)
 
-#### Step 4.10: What you should see after slected 'Finish'
+#### Step 4.10: Selected 'Finish'
+What you should see after selected 'Finish'
 
 ![step10](./images/10-ProjectsAreSetup.png)
 
