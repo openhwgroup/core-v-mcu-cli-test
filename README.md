@@ -77,7 +77,8 @@ All other branches are development branches and may not be stable.
 
 ![step8](./images/8-SelectWizard.png)
 
-#### Step 4.9: Tell it which projects to import (cli_test is the only one you need)
+#### Step 4.9: Seelct projects to import
+`cli_test` is the only one you need.
 
 ![step9](./images/9-ImportProjects.png)
 
@@ -92,7 +93,7 @@ This step configures Eclipse so that it finds the CORE-V toolchain that was down
 In the Eclipse Project Explorer select the `cli_test` Project, right click and select `Properties` (typically appears at the bottom of the pop-up menu).
 Select `C/C++ Build / Settings` to bring up the window below:
 
-![Step 5.1](.images/5p1-Properties_for_cli_test)
+![Step 5.1](.images/5p1-Properties_for_cli_test.png)
 
 ### Step 6: Import launch configuration
 
