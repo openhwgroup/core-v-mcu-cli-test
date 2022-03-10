@@ -63,6 +63,8 @@ eclipse
 ![step5](./images/5-RepoName.png)
 
 #### Step 4.6: Select the branch to clone
+Note: the list of branches will change over time.
+The `main` branch is stable, but not necessarily the latest.
 
 ![step6](./images/6-BranchName.png)
 
