@@ -3,10 +3,15 @@ Repository of Command-Line-Interface test routines for the CORE-V MCU.
 
 Core-v-mcu-cli-test is a stand-alone program that runs on the CORE-V MCU under FreeRTOS and is controlled from a terminal.
 At the time of this writing (2022-03-09) "cli-test" runs under Verilator or in emulation on a Digilent Nexys A7-100T evaluation kit.
-Setup instructions for the Nexys A7 and a terminal emulator to run cli-test can be found in the [core-v-mcu quick start guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
+Setup instructions for the Nexys A7 and a terminal emulator to run cli-test can be found in the [CORE-V-MCU Quick Start Guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
 
 It is expected that the majority of cli-test users will want to run it from an Integrated Development Environment.
 The remainder of this document will get you set up with the **Eclipse-IDE**.
+
+### Emulation bitsream
+Bitsreams compatible with the Nexys A7-100T can be found at:
+http://downloads.openhwgroup.org/
+Follow the instructions provided in the CORE-V MCU Quick Start Guide to load the bitstream.
 
 ### Eclipse IDE Installation
 The Eclipse IDE relies on a larger ecosystem of tools and these instructions assume you are familar enough with the Eclispe IDE environment to make any required configuration changes to the IDE setup.
@@ -103,14 +108,14 @@ Update the Toolchain folder to point to your install path.
 
 ### Step 6: Compile cli_test
 Assuming everything above has completed this step is simplicity itself.
-iWith `cli_test` selected in the Project Explorer pane, click on Build (the hammer icon):
+With `cli_test` selected in the Project Explorer pane, click on Build (the hammer icon):
 
 ![Step6.0](./images/BuildCliTest.png)
 
 ### Step 7: Import launch configuration
 
 This step pulls in the launch configurations which are configured to use **OpenOCD** and the [JTAG-HS2](https://digilent.com/shop/jtag-hs2-programming-cable/) programmer.
-Reminder: the instructions for connecting the HS2 to the Nexys A7 can be found in the core-v-mcu quick start guide (a link can be found at the top of this README).
+Reminder: the instructions for connecting the HS2 to the Nexys A7 can be found in the CORE-V-MCU Quick Start Guide (a link can be found at the top of this README).
 
 If your hardware setup is different, you can either ignore this step and create your own, or use this step and modify to fit your configuration.
 
@@ -125,14 +130,11 @@ Select 'Run/Debug' and then 'Launch Configurations'.
 ![step12](./images/12-SelectLaunchConfig.png)
 
 #### Step 7.3:
-Here you will fetch the HS2 launch configuration from your clone of core-v-mcu-cli-test.
+Here you will fetch the HS2 launch configuration from your clone of core-v-mcu-cli-test repository.
 In the `core-v-mcu-cli-test` repo there is a set of launch configurations in the `launch` directory.
-Browse to the git directory that was chosen as the 'Local Destination' in **Step 4.7**.
+Use the `Browse...` button to navigate to the git directory that was chosen as the 'Local Destination' in **Step 4.7** and then `launch`.
 
-![step13](./images/13-ImportLaunchConfigurations.png)
-
-#### Step 7.4:
-Select 'launch' and 'cli_test Default'.
+Select 'launch' and 'cli_test hs2.lauch'.
 
 ![step14](./images/14-SelectLaunchConfigurations.png)
 
@@ -148,10 +150,6 @@ Under `GDB OpenOCD Debugging` select `cli_test Default` and then `Debug`.
 
 This should compile, link and load the application and stop at main waiting for you to start debugging.
 
-
-## Emulation bitsream
-Bitsreams compatible with the Nexys A7-100T can be found at:
-http://downloads.openhwgroup.org/
 
 ## Peripheral support
 The type and number of peripherals supported are defined by `pulp_soc_defines.sv`.
