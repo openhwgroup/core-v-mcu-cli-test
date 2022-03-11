@@ -95,6 +95,12 @@ Select `C/C++ Build / Settings` to bring up the window below:
 
 ![Step 5.1](./images/5p1-Properties_for_cli_test.png)
 
+In this example, the `Toolchain path` was changed by selecting the `workspace` preference page.
+This brings up the "Workspace RISC-V Toolchains Paths" preferences selection window.
+Update the Toolchain folder to point to your install path.
+
+![Step 5.2](./images/5p2-WorkspaceRISC-VToolchainsPaths.png)
+
 ### Step 6: Import launch configuration
 
 This step pulls in the launch configurations which are configured to use **OpenOCD** and the [JTAG-HS2](https://digilent.com/shop/jtag-hs2-programming-cable/) programmer.
