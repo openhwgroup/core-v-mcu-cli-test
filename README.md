@@ -2,18 +2,14 @@
 Repository of Command-Line-Interface test routines for the CORE-V MCU.
 
 Core-v-mcu-cli-test is a stand-alone program that runs on the CORE-V MCU under FreeRTOS and is controlled from a terminal.
-At the time of this writing (2022-03-09) "cli-test" runs under Verilator or in emulation on a Digilent Nexys A7-100T evaluation kit.
+At the time of this writing (2022-03-09) "cli-test" runs in simulation under Verilator or in FPGA emulation on a Digilent Nexys A7-100T evaluation kit.
 Setup instructions for the Nexys A7 and a terminal emulator to run cli-test can be found in the [CORE-V-MCU Quick Start Guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
+A bitstream compatible with the Nexys A7-100T that supports cli-test, and instructions for loading the bitstream onto the Nexys can be found with the Quick Start Guide.
 
 It is expected that the majority of cli-test users will want to run it from an Integrated Development Environment.
 The remainder of this document will get you set up with the **Eclipse-IDE**.
 
-### Emulation bitsream
-Bitsreams compatible with the Nexys A7-100T can be found at:
-http://downloads.openhwgroup.org/
-Follow the instructions provided in the CORE-V MCU Quick Start Guide to load the bitstream.
-
-### Eclipse IDE Installation
+## Eclipse IDE Installation
 The Eclipse IDE relies on a larger ecosystem of tools and these instructions assume you are familar enough with the Eclispe IDE environment to make any required configuration changes to the IDE setup.
 
 ### Step 1:
@@ -64,6 +60,8 @@ eclipse
 
 #### Step 4.5: Specify the Source Git Repository
 Provide the full URL path to `core-v-mcu-cli-test`.
+The path you provide will depend on the protocol used to access GitHub.
+For example, [https://github.com/openhwgroup/core-v-mcu-cli-test.git](https://github.com/openhwgroup/core-v-mcu-cli-test.git) is the path when using https.
 
 ![step5](./images/5-RepoName.png)
 
