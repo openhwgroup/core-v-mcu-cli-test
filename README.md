@@ -1,11 +1,12 @@
 # core-v-mcu-cli-test
-Repository of Command-Line-Interface test routines for the CORE-V MCU.
+Command-Line-Interface test routines for the CORE-V MCU.
 
 Core-v-mcu-cli-test is a stand-alone program that runs on the CORE-V MCU under FreeRTOS and is controlled from a terminal.
 At the time of this writing (2022-03-09) "cli-test" runs in simulation under Verilator or in FPGA emulation on a Digilent Nexys A7-100T evaluation kit.
 Setup instructions for the Nexys A7 and a terminal emulator to run cli-test can be found in the [CORE-V-MCU Quick Start Guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
-A bitstream compatible with the Nexys A7-100T that supports cli-test, and instructions for loading the bitstream onto the Nexys can be found with the Quick Start Guide.
+A bitstream compatible with the Nexys A7-100T that supports cli-test, and instructions for loading the bitstream onto the Nexys can also be found with the Quick Start Guide.
 
+The Quick Start Guide will get you up and running with cli-test, which is a reasonable testing platform, but not a convenient development platform.
 It is expected that the majority of cli-test users will want to run it from an Integrated Development Environment.
 The remainder of this document will get you set up with the **Eclipse-IDE**.
 
@@ -13,15 +14,15 @@ The remainder of this document will get you set up with the **Eclipse-IDE**.
 The Eclipse IDE relies on a larger ecosystem of tools and these instructions assume you are familar enough with the Eclispe IDE environment to make any required configuration changes to the IDE setup.
 
 ### Step 1:
-Download and install the approriate corev-gcc toolchain from
-~~~
-https://www.embecosm.com/resources/tool-chain-downloads/#corev
-~~~
-
-### Step 2:
 Download and install the **Eclipse IoT Embedded CDT IDE** (this will eventually be replaced by a pre-configured CORE-V IDE based on the Eclipse IDE tools).  
 ~~~
 https://projects.eclipse.org/projects/iot.embed-cdt/downloads
+~~~
+
+### Step 2:
+Download and install the approriate corev-gcc toolchain from
+~~~
+https://www.embecosm.com/resources/tool-chain-downloads/#corev
 ~~~
 
 ### Step 3:
@@ -91,18 +92,26 @@ You should see something like this after selecting 'Finish'.
 ![step10](./images/10-ProjectsAreSetup.png)
 
 ### Step 5: Configure the Toolchain
-This step configures Eclipse so that it finds the CORE-V toolchain that was downloaded and installed in **Step 1**.
+This step configures Eclipse so that it finds the CORE-V toolchain and OpenOCD that were downloaded and installed in **Step 2** and **Step 3**.
 
+#### Step 5.1: Select Properties
 In the Eclipse Project Explorer select the `cli_test` Project, right click and select `Properties` (typically appears at the bottom of the pop-up menu).
 Select `C/C++ Build / Settings` to bring up the window below:
 
 ![Step 5.1](./images/5p1-Properties_for_cli_test.png)
 
+#### Step 5.2: Configure Toolchain
 In this example, the `Toolchain path` was changed by selecting the `workspace` preference page.
-This brings up the "Workspace RISC-V Toolchains Paths" preferences selection window.
-Update the Toolchain folder to point to your install path.
+This brings up the Preferences selection window.
+On the left-hand pane select  "MCU/Workspace RISC-V Toolchains Paths" and update the Toolchain folder to point to your toolchain install path.
 
 ![Step 5.2](./images/5p2-WorkspaceRISC-VToolchainsPaths.png)
+
+#### Step 5.3: Configure OpenOCD
+This is similar to setting the Toolchain tool.
+In the Preferneces selectionn window select "MCU/Workspace OpenOCD Path" and update to point to your openocd install path.
+
+![Step 5.3](./images/5p3-WorkspaceOpenOCDPaths.png)
 
 ### Step 6: Compile cli_test
 Assuming everything above has completed this step is simplicity itself.
@@ -141,10 +150,15 @@ Under the `Run` menu select `Debug Configurations...`
 
 ![step15](./images/15-DebugConfig.png)
 
-#### Step 7.6:
+#### Step 7.6: Run/Restart settings
+Edit the debug configurations and in the Startup tab scroll down to the Run/Restart Commands section to make sure the `Pre-run/Restart Reset` box is _not_ checked.
+
+![step16](./images/RunRestart.png)
+
+#### Step 7.7:
 Under `GDB OpenOCD Debugging` select `cli_test Default` and then `Debug`.
 
-![step16](./images/16-cli_testDefault.png)
+![step17](./images/16-cli_testDefault.png)
 
 This should compile, link and load the application and stop at main waiting for you to start debugging.
 
