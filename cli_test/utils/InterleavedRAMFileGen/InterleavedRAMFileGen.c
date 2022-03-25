@@ -4,6 +4,14 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+
+
+int stat(const char *path, struct stat *buf);
+int fstat(int fd, struct stat *buf);
+int lstat(const char *path, struct stat *buf);
 
 typedef union {
 	uint32_t w;
@@ -23,35 +31,35 @@ void gf22dxInitPathAndOpenFilePtrs(void)
     int i = 0;
     for( i=0; i<2; i++ )
     {
-        sprintf(gf22dxMemInitFilesPathBuf, "../../../gf22dxMemoryInitFiles/privateBank0_%d.mem", i);
+        sprintf(gf22dxMemInitFilesPathBuf, "gf22dxMemoryInitFiles/privateBank0_%d.mem", i);
         gf22dxPrivRam0FilePtr[i] = fopen (gf22dxMemInitFilesPathBuf,"w");
     }
     for( i=0; i<2; i++ )
     {
-        sprintf(gf22dxMemInitFilesPathBuf, "../../../gf22dxMemoryInitFiles/privateBank1_%d.mem", i);
+        sprintf(gf22dxMemInitFilesPathBuf, "gf22dxMemoryInitFiles/privateBank1_%d.mem", i);
         gf22dxPrivRam1FilePtr[i] = fopen (gf22dxMemInitFilesPathBuf,"w");
     }
     for( i=0; i<7; i++ )
     {
-        sprintf(gf22dxMemInitFilesPathBuf, "../../../gf22dxMemoryInitFiles/col0_%d.mem", i);
+        sprintf(gf22dxMemInitFilesPathBuf, "gf22dxMemoryInitFiles/col0_%d.mem", i);
         gf22dxCol0FilePtr[i] = fopen (gf22dxMemInitFilesPathBuf,"w");
     }
 
     for( i=0; i<7; i++ )
     {
-        sprintf(gf22dxMemInitFilesPathBuf, "../../../gf22dxMemoryInitFiles/col1_%d.mem", i);
+        sprintf(gf22dxMemInitFilesPathBuf, "gf22dxMemoryInitFiles/col1_%d.mem", i);
         gf22dxCol1FilePtr[i] = fopen (gf22dxMemInitFilesPathBuf,"w");
     }
 
     for( i=0; i<7; i++ )
     {
-        sprintf(gf22dxMemInitFilesPathBuf, "../../../gf22dxMemoryInitFiles/col2_%d.mem", i);
+        sprintf(gf22dxMemInitFilesPathBuf, "gf22dxMemoryInitFiles/col2_%d.mem", i);
         gf22dxCol2FilePtr[i] = fopen (gf22dxMemInitFilesPathBuf,"w");
     }
 
     for( i=0; i<7; i++ )
     {
-        sprintf(gf22dxMemInitFilesPathBuf, "../../../gf22dxMemoryInitFiles/col3_%d.mem", i);
+        sprintf(gf22dxMemInitFilesPathBuf, "gf22dxMemoryInitFiles/col3_%d.mem", i);
         gf22dxCol3FilePtr[i] = fopen (gf22dxMemInitFilesPathBuf,"w");
     }
 }
@@ -151,6 +159,7 @@ int main(int argc, char *argv[])
     FILE *lCol2FileWritePtr = (FILE *)NULL;
     FILE *lCol3FileWritePtr = (FILE *)NULL;
     int opt = 0;
+    struct stat st = {0};
 
     long int lBinFileSize = 0;
     long int lReadByteCount = 0;
@@ -172,13 +181,19 @@ int main(int argc, char *argv[])
 
     l4ByteData.w = 0;
 
-    while ((opt = getopt(argc, argv, "i:o:h")) != -1) {
+    while ((opt = getopt(argc, argv, ":i:o:h")) != -1) {
         switch (opt) {
             case 'i':
                 inFile = optarg;
                 break;
             case 'o':
                 lOffset = atoh((uint8_t *)optarg, (uint16_t)strlen(optarg));
+                break;
+            case ':':
+                printf("option needs a value\n");
+                break;
+            case '?':
+                printf("unknown option: %c\n",optopt);
                 break;
             case 'h':
             default: /* '?' */
@@ -188,26 +203,27 @@ int main(int argc, char *argv[])
     }
 
     printf("inFile=%s; lOffset=%d;\n", inFile, lOffset);
-
-    if (optind >= argc) {
-       fprintf(stderr, "Expected argument after options\n");
-       exit(EXIT_FAILURE);
+    for(; optind < argc; optind++){
+        printf("extra arguments: %s\n", argv[optind]);
     }
-
-    printf("name argument = %s\n", argv[optind]);
-
 
     if( inFile != NULL )
     {
         printf("Converting %s.\n", inFile);
 
+        if (stat("memoryInitFiles", &st) == -1)
+            mkdir("memoryInitFiles", 0700);
+
+        if (stat("gf22dxMemoryInitFiles", &st) == -1)
+            mkdir("gf22dxMemoryInitFiles", 0700);
+
         lBinFileReadPtr = fopen(inFile,"rb");  // r for read, b for binary
-        lPrivateBank0FileWritePtr = fopen ("../../../memoryInitFiles/privateBank0.mem","w");
-        lPrivateBank1FileWritePtr = fopen ("../../../memoryInitFiles/privateBank1.mem","w");
-        lCol0FileWritePtr = fopen ("../../../memoryInitFiles/col0.mem","w");
-        lCol1FileWritePtr = fopen ("../../../memoryInitFiles/col1.mem","w");
-        lCol2FileWritePtr = fopen ("../../../memoryInitFiles/col2.mem","w");
-        lCol3FileWritePtr = fopen ("../../../memoryInitFiles/col3.mem","w");
+        lPrivateBank0FileWritePtr = fopen ("memoryInitFiles/privateBank0.mem","w");
+        lPrivateBank1FileWritePtr = fopen ("memoryInitFiles/privateBank1.mem","w");
+        lCol0FileWritePtr = fopen ("memoryInitFiles/col0.mem","w");
+        lCol1FileWritePtr = fopen ("memoryInitFiles/col1.mem","w");
+        lCol2FileWritePtr = fopen ("memoryInitFiles/col2.mem","w");
+        lCol3FileWritePtr = fopen ("memoryInitFiles/col3.mem","w");
 
         if(  ( lBinFileReadPtr ) && ( lPrivateBank0FileWritePtr ) && ( lPrivateBank1FileWritePtr ) && ( lCol0FileWritePtr )
             && (lCol1FileWritePtr ) && (lCol2FileWritePtr) && (lCol3FileWritePtr)
@@ -216,7 +232,7 @@ int main(int argc, char *argv[])
             fseek(lBinFileReadPtr, 0, SEEK_END); // seek to end of file
             lBinFileSize = ftell(lBinFileReadPtr); // get current file pointer
             fseek(lBinFileReadPtr, 0, SEEK_SET); // seek back to beginning of file
-            printf("File [%s] is of %ld bytes\n",argv[1], lBinFileSize);
+            printf("File [%s] is of %ld bytes\n",inFile, lBinFileSize);
 
             lCol0FileStartOffset = (0x00010000 - lOffset) + 0;
             lCol1FileStartOffset = (0x00010000 - lOffset) + 4;
@@ -327,12 +343,12 @@ int main(int argc, char *argv[])
             fclose(lCol2FileWritePtr);
             fclose(lCol3FileWritePtr);
 
-            lPrivateBank0FileWritePtr = fopen ("../../../memoryInitFiles/privateBank0.mem","r");
-            lPrivateBank1FileWritePtr = fopen ("../../../memoryInitFiles/privateBank1.mem","r");
-            lCol0FileWritePtr = fopen ("../../../memoryInitFiles/col0.mem","r");
-            lCol1FileWritePtr = fopen ("../../../memoryInitFiles/col1.mem","r");
-            lCol2FileWritePtr = fopen ("../../../memoryInitFiles/col2.mem","r");
-            lCol3FileWritePtr = fopen ("../../../memoryInitFiles/col3.mem","r");
+            lPrivateBank0FileWritePtr = fopen ("memoryInitFiles/privateBank0.mem","r");
+            lPrivateBank1FileWritePtr = fopen ("memoryInitFiles/privateBank1.mem","r");
+            lCol0FileWritePtr = fopen ("memoryInitFiles/col0.mem","r");
+            lCol1FileWritePtr = fopen ("memoryInitFiles/col1.mem","r");
+            lCol2FileWritePtr = fopen ("memoryInitFiles/col2.mem","r");
+            lCol3FileWritePtr = fopen ("memoryInitFiles/col3.mem","r");
 
             gf22dxInitPathAndOpenFilePtrs();
 

@@ -52,12 +52,13 @@ _start:
 	csrr a0, mie
 /* set vector table address */
 	la a0, __vector_start
-	or a0, a0, 1 /* enable vectored mode (hardcoded anyway for RI5CY) */
+	or a0, a0, 1 /* enable vectored mode (hardcoded anyway for CV32E40P) */
 	csrw mtvec, a0
 
 /* clear the bss segment */
 	la t0, __bss_start
         la t1, __bss_end
+/* TODO: optionally compile this out to speed simulation */
 1:
 	sw zero,0(t0)
 	addi t0, t0, 4
