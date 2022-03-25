@@ -1,4 +1,6 @@
-Fast Interrupt mapping
+# Using CLI Test on the CORE-V-MCU
+
+## Interrupt Assignments
 
 Interrupt 0 - 6   RESERVED for sw events
 Interrupt 7       Timer low event
@@ -21,6 +23,8 @@ Interrupt 28      eFPGA event 3
 Interrupt 29      eFPGA event 4
 Interrupt 30      eFPGA event 5
 Interrupt 31      Error event 
+
+## cli_test.bin
 
 cli_test.bin is the actual application binary file generated
 Header.bin is added to cli_test.bin at the beginning for the bootloader to understand and load the application.
@@ -118,30 +122,22 @@ Memory area 16 (unused)
 [0xff,0xff,0xff,0xff],[0xff,0xff,0xff,0xff],[0xff,0xff,0xff,0xff],[0xff,0xff,0xff,0xff],
 start=0xffffffff      ptr=0xffffffff        size=0xffffffff       blocks=0xffffffff
 
-Connecting an external host to load an application into Arnold2
-Example host board: STM32F407 discovery kit
-STM32 application is located at core-v-mcu-cli-test/STM32
-STM32
-PB6     Master SCL
-PB9     Master SDA
+## Connecting an external host to load an application into CORE-V-MCU
 
-Nexsys
+### Nexsys
 JC10    Slave SCL
 JC9     Slave SDA    
 
-Connect 2 grounds between STM and Nexsys
+1. Load the bit file into the SD card. Insert the SD card and power on the Nexsys board. Press program button to program the bit file to FPGA.
+2. Open a terminal window for UART1 of CORE-V-MCU. Once the Nexsys bit file is programmed and done bit is high, you can see bootloader message from CORE-V-MCU UART1 on the terminal. 
+3. The value of the bootsel switch should be indicating 0 and dots will be printing indicating that CORE-V-MCU bootloader is waiting for an external host to connect to it over I2C.
+4. Now, reset the STM32 board. The green LED will stay on and red LED will keep blinking indicating that the host is loading the application over I2C.
+5. Once the application is loaded, the orange led will glow indicating the completion of loading the application code. The blue LED will keep blinking to indicate that STM32 is in a while (1) loop.
+6. CORE-V-MCU should have loaded the application and this can be verified by connecting a termial to UART0 and checking if the command line is up. I2C BL JMP 1c000880 is printed on the terminal connected to UART1 of CORE-V-MCU.
 
-1. Program STM32. Start STM32. All 4 LEDs will rapidly blink. This indicates that the STM has not detected Arnold2 slave.
-2. Load the bit file into the SD card. Insert the SD card and power on the Nexsys board. Press program button to program the bit file to FPGA.
-3. Open a terminal window for UART1 of Arnold2. Once the Nexsys bit file is programmed and done bit is high, you can see bootloader message from Arnold2 UART1 on the terminal. 
-4. The value of the bootsel switch should be indicating 0 and dots will be printing indicating that Arnold2 bootloader is waiting for an external host to connect to it over I2C.
-5. Now, reset the STM32 board. The green LED will stay on and red LED will keep blinking indicating that the host is loading the application over I2C.
-6. Once the application is loaded, the orange led will glow indicating the completion of loading the application code. The blue LED will keep blinking to indicate that STM32 is in a while (1) loop.
-7. Arnold 2 should have loaded the application and this can be verified by connecting a termial to UART0 and checking if the command line is up. I2C BL JMP 1c000880 is printed on the terminal connected to UART1 of Arnold2.
+### I2C protocol between an external host and CORE-V-MCU bootloader
 
-I2C protocol between an external host and Arnold2 bootloader
-
-Arnold2 bootloader is running as an I2C slave with a 8-bit slave address 0x62
+CORE-V-MCU bootloader is running as an I2C slave with a 8-bit slave address 0x62
 
 Protocol structure
 2 Bytes   Start Of Frame (SOF)
@@ -157,42 +153,36 @@ RAM address indicates the A2 RAM address which needs to be written to read from.
 All command and responses are implemented in the 1 byte I2C to APB / APB to I2C single-byte message register, except load memory command and jump to address command.
 The command load memory uses the 256 byte deep FIFO to communicate with I2C slave. It uses the above mentioned protocol structure.
 
-Arnold2 slave on booting up writes the reason for power on and waits for the host to connect on I2C bus.
+CORE-V-MCU slave on booting up writes the reason for power on and waits for the host to connect on I2C bus.
 
-- Initial connection process
+#### Initial connection process
 The external host connects to the I2C slave and reads the reset reason.
-Depending on the reset reason the host decides whether to program Arnold2 or not.
+Depending on the reset reason the host decides whether to program CORE-V-MCU or not.
 
-- Programming Arnold2 via I2C
-1. The I2C master (external host) after the initial connection process, checks if the I2C slave (Arnold2) is ready. There are 2 options with CRC and without CRC.
+#### Programming CORE-V-MCU via I2C
+1. The I2C master (external host) after the initial connection process, checks if the I2C slave (CORE-V-MCU) is ready. There are 2 options with CRC and without CRC.
 Both options are supported by the example implementation.
-
 2. The host waits until there is a response from the slave to be ready. Once the slave replies with a ready status, the host proceeds next.
-
 3. The host sends the firmware data using the load command to the slave. If the CRC is enabled the host calculates the CRC and sends it in the CRC field.
-
 4. The slave upon receiving the firmware data, checks the CRC and copies the data into the RAM addresss specified - if CRC is enabled or if CRC is disabled, the slave directly copies the data into the RAM address specified.
-
 5. If the CRC check has failed, the slave informs the host, so that the host can retry the frame.
-
 6. Once all firmware data is pushed to the slave, the host issues a jump to address command with the RAM address to jump.
+7. The slave (CORE-V-MCU) jumps to the RAM address mentioned by the host.
 
-7. The slave (Arnold2) jumps to the RAM address mentioned by the host.
-
-Programming QSPI flash
+## Programming QSPI flash
 
 launch spi_load.py in a terminal using 
 python3 spi_load.py /dev/ttyUSB1
 
-load the cli_test application on Arnold2.
-Commands on Arnold2
+load the cli_test application on CORE-V-MCU.
+Commands on CORE-V-MCU
 qspi
 program Default/cli.bin 0x0
 
-Programming will start indicating the progress on Arnold2 UART terminal
+Programming will start indicating the progress on CORE-V-MCU UART terminal
 
 To change the bootsel pin status:
-Open the terminal connected to UART 1 of Arnold2. 
+Open the terminal connected to UART 1 of CORE-V-MCU. 
 Load the bit file. 
 Once the bit file is programmed, and running, check the status of bootsel print.
 If boot sel status is to be changed, first set SW0 to low (south) and the set SW1 to high or low.
