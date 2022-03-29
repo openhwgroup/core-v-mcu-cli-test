@@ -30,7 +30,7 @@ Install OpenOCD.  Recommend getting it from this location:
 ~~~
 https://sourceforge.net/projects/openocd/files/openocd/
 ~~~
-Version 0.11.0-rc2 is know to work with this setup.
+Version 0.11.0-rc2 is known to work with this setup.
 
 Installation is accomplished by:
 ~~~
