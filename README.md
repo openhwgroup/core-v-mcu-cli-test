@@ -121,8 +121,9 @@ With `cli_test` selected in the Project Explorer pane, click on Build (the hamme
 
 ### Step 7: Import launch configuration
 
-This step pulls in the launch configurations which are configured to use **OpenOCD** and the [JTAG-HS2](https://digilent.com/shop/jtag-hs2-programming-cable/) programmer.
-Reminder: the instructions for connecting the HS2 to the Nexys A7 can be found in the CORE-V-MCU Quick Start Guide (a link can be found at the top of this README).
+This step pulls in the launch configurations which are configured to use **OpenOCD** with the [JTAG-HS2](https://digilent.com/shop/jtag-hs2-programming-cable/) programmer or the [Ashling Opella-LD](https://www.ashling.com/support-opella-ld/).
+
+Reminder: the instructions for connecting the HS2 to the Nexys A7 and the Ashling Opella-LD to the Nexys A7 can be found in the CORE-V-MCU Quick Start Guide (a link can be found at the top of this README) and the Ashling Opella-LD User Manual can be found [here](https://www.ashling.com/wp-content/uploads/Opella-LD_User_Manual.pdf).
 
 If your hardware setup is different, you can either ignore this step and create your own, or use this step and modify to fit your configuration.
 
@@ -137,11 +138,11 @@ Select 'Run/Debug' and then 'Launch Configurations'.
 ![step12](./images/12-SelectLaunchConfig.png)
 
 #### Step 7.3:
-Here you will fetch the HS2 launch configuration from your clone of core-v-mcu-cli-test repository.
+Here you will fetch the HS2 or the Ashling Opella-LD launch configuration from your clone of core-v-mcu-cli-test repository.
 In the `core-v-mcu-cli-test` repo there is a set of launch configurations in the `launch` directory.
 Use the `Browse...` button to navigate to the git directory that was chosen as the 'Local Destination' in **Step 4.7** and then `launch`.
 
-Select 'launch' and 'cli_test hs2.lauch'.
+Select 'launch' and choose 'cli_test hs2.lauch' or 'cli_test Ashling Opella-LD.launch'.
 
 ![step14](./images/14-SelectLaunchConfigurations.png)
 
@@ -156,7 +157,11 @@ Edit the debug configurations and in the Startup tab scroll down to the Run/Rest
 ![step16](./images/RunRestart.png)
 
 #### Step 7.7:
-Under `GDB OpenOCD Debugging` select `cli_test Default` and then `Debug`.
+Under `GDB OpenOCD Debugging` 
+
+  i) select `cli_test Default` and then `Debug`to run HS2 to the Nexys A7.
+  
+  ii) select `cli_test Ashling Opella-LD` and then `Debug`to run Opella-LD to the Nexys A7.
 
 ![step17](./images/16-cli_testDefault.png)
 
