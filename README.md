@@ -3,7 +3,7 @@ Command-Line-Interface test routines for the CORE-V MCU.
 
 Core-v-mcu-cli-test is a stand-alone program that runs on the CORE-V MCU under FreeRTOS and is controlled from a terminal.
 At the time of this writing (2022-03-09) "cli-test" runs in simulation under Verilator or in FPGA emulation on a Digilent Nexys A7-100T evaluation kit.
-Setup instructions for the Nexys A7 and a terminal emulator to run cli-test can be found in the [CORE-V-MCU Quick Start Guide](https://github.com/MikeOpenHWGroup/core-v-mcu/blob/qsg/emulation/quickstart/README.md).
+Setup instructions for the Nexys A7 and a terminal emulator to run cli-test can be found in the [CORE-V-MCU Quick Start Guide](https://github.com/openhwgroup/core-v-mcu/blob/master/emulation/quickstart/README.md).
 A bitstream compatible with the Nexys A7-100T that supports cli-test, and instructions for loading the bitstream onto the Nexys can also be found with the Quick Start Guide.
 
 The Quick Start Guide will get you up and running with cli-test, which is a reasonable testing platform, but not a convenient development platform.
