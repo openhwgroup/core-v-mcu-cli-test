@@ -192,4 +192,16 @@ When connecting JTAG interface to debug make sure that the SW0 switch is in high
 
 For any change in SW0 or SW1 settings to be reflected, press reset button.
 
+### Programming QSPI flash externally
 
+Another method to program the QSPI flash is to use an external programmer.
+For this, connect your programmer to the QSPI flash accordingly and use the spi_flasher.py script as described below.
+
+Launch a terminal and run spi_flasher.py under cli_test directory:
+
+```bash
+$ ./spi_flasher.py
+```
+You will be notified after the programming operation finishes.
+
+Note: spi_flasher.py can be used to program the flash memory externally by using either a PC with a supported programming cable, or an SBC (single-board computer) which has an SPI interface.
